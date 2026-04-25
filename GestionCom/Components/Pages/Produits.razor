@@ -1,0 +1,341 @@
+@page "/produits"
+@using System.Security.Claims
+@using GestionCom.DTOs.Produit
+@using GestionCom.DTOs.Stock
+@using GestionCom.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Produits</PageTitle>
+
+<h1>Produits</h1>
+
+<div class="produits-page">
+    @if (isLoading)
+    {
+        <div class="produits-state">Chargement...</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(loadErrorMessage))
+    {
+        <div class="produits-state produits-state-error">@loadErrorMessage</div>
+    }
+    else
+    {
+        @if (!string.IsNullOrWhiteSpace(successMessage))
+        {
+            <div class="produits-message produits-message-success">@successMessage</div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="produits-message produits-message-error">@errorMessage</div>
+        }
+
+        <div class="produits-grid">
+            <section class="produits-panel">
+                <div class="produits-panel-header">
+                    <h2>@(editingProduitId.HasValue ? "Corriger le produit" : "Nouveau produit")</h2>
+                    @if (editingProduitId.HasValue)
+                    {
+                        <button type="button" class="btn-secondary" @onclick="CancelEditProduit">Annuler</button>
+                    }
+                </div>
+
+                <EditForm Model="createProduitModel" OnValidSubmit="SaveProduitAsync" FormName="produit-create" class="produits-form">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div>
+                        <label for="designation">Désignation</label>
+                        <InputText id="designation" @bind-Value="createProduitModel.Designation" />
+                    </div>
+
+                    <div>
+                        <label for="marque">Marque</label>
+                        <InputText id="marque" @bind-Value="createProduitModel.Marque" />
+                    </div>
+
+                    <div>
+                        <label for="famille">Famille</label>
+                        <InputText id="famille" @bind-Value="createProduitModel.Famille" />
+                    </div>
+
+                    <button type="submit" disabled="@isSavingProduit">@(isSavingProduit ? "Enregistrement..." : editingProduitId.HasValue ? "Enregistrer les corrections" : "Créer le produit")</button>
+                </EditForm>
+            </section>
+
+            <section class="produits-panel">
+                <h2>Ajouter du stock</h2>
+
+                <EditForm Model="createStockModel" OnValidSubmit="AddStockAsync" FormName="stock-entry" class="produits-form">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div>
+                        <label for="produit-stock">Produit</label>
+                        <InputSelect id="produit-stock" @bind-Value="createStockModel.ProduitId">
+                            <option value="0">-- Sélectionner --</option>
+                            @foreach (var produit in produits)
+                            {
+                                <option value="@produit.Id">@GetProductLabel(produit) (stock: @produit.Stock)</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <div>
+                        <label for="quantite-stock">Quantité</label>
+                        <InputNumber id="quantite-stock" @bind-Value="createStockModel.Quantity" />
+                    </div>
+
+                    <button type="submit" disabled="@isSavingStock">@(isSavingStock ? "Enregistrement..." : "Ajouter le stock")</button>
+                </EditForm>
+            </section>
+        </div>
+
+        <section class="produits-panel">
+            <div class="produits-toolbar">
+                <input class="produits-search"
+                       @bind="searchTerm"
+                       @bind:event="oninput"
+                       placeholder="Rechercher par désignation, marque ou famille" />
+                <div class="produits-count">@FilteredProduits.Count produit(s)</div>
+            </div>
+
+            @if (FilteredProduits.Count == 0)
+            {
+                <div class="produits-state">Aucun produit trouvé.</div>
+            }
+            else
+            {
+                <div class="produits-table-wrapper">
+                    <table class="produits-table">
+                        <thead>
+                            <tr>
+                                <th class="sortable-th @(sortColumn == "Designation" ? "sorted-th" : "")" @onclick='() => SortBy("Designation")'>
+                                    Désignation <span class="sort-icon">@SortIcon("Designation")</span>
+                                </th>
+                                <th class="sortable-th @(sortColumn == "Marque" ? "sorted-th" : "")" @onclick='() => SortBy("Marque")'>
+                                    Marque <span class="sort-icon">@SortIcon("Marque")</span>
+                                </th>
+                                <th class="sortable-th @(sortColumn == "Famille" ? "sorted-th" : "")" @onclick='() => SortBy("Famille")'>
+                                    Famille <span class="sort-icon">@SortIcon("Famille")</span>
+                                </th>
+                                <th class="amount sortable-th @(sortColumn == "Stock" ? "sorted-th" : "")" @onclick='() => SortBy("Stock")'>
+                                    Stock <span class="sort-icon">@SortIcon("Stock")</span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var produit in FilteredProduits)
+                            {
+                                <tr @onclick="() => StartEditProduit(produit)"
+                                    class="produits-row-clickable"
+                                    tabindex="0"
+                                    role="button">
+                                    <td>@produit.Designation</td>
+                                    <td>@DisplayValue(produit.Marque)</td>
+                                    <td>@DisplayValue(produit.Famille)</td>
+                                    <td class="amount @(produit.Stock < 0 ? "stock-negative" : "stock-positive")">@produit.Stock</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+    }
+</div>
+
+@inject ProduitQueryService ProduitQueryService
+@inject ProduitService ProduitService
+@inject StockMovementService StockMovementService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@code {
+    private List<ProduitListItemDto> produits = [];
+    private CreateProduitDto createProduitModel = new();
+    private CreateStockMovementDto createStockModel = new() { Quantity = 1 };
+    private string searchTerm = string.Empty;
+    private bool isLoading = true;
+    private bool isSavingProduit;
+    private bool isSavingStock;
+    private string? loadErrorMessage;
+    private string? errorMessage;
+    private string? successMessage;
+    private int? editingProduitId;
+    private string sortColumn = "Designation";
+    private bool sortDesc = false;
+
+    private List<ProduitListItemDto> FilteredProduits
+    {
+        get
+        {
+            var q = produits.Where(MatchesSearch);
+            return (sortColumn switch
+            {
+                "Marque"  => sortDesc ? q.OrderByDescending(p => p.Marque)  : q.OrderBy(p => p.Marque),
+                "Famille" => sortDesc ? q.OrderByDescending(p => p.Famille) : q.OrderBy(p => p.Famille),
+                "Stock"   => sortDesc ? q.OrderByDescending(p => p.Stock)   : q.OrderBy(p => p.Stock),
+                _         => sortDesc ? q.OrderByDescending(p => p.Designation) : q.OrderBy(p => p.Designation),
+            }).ToList();
+        }
+    }
+
+    private void SortBy(string column)
+    {
+        if (sortColumn == column) sortDesc = !sortDesc;
+        else { sortColumn = column; sortDesc = false; }
+    }
+
+    private string SortIcon(string column)
+        => sortColumn != column ? "↕" : sortDesc ? "↓" : "↑";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadProduitsAsync();
+    }
+
+    private async Task LoadProduitsAsync()
+    {
+        isLoading = true;
+        loadErrorMessage = null;
+
+        try
+        {
+            produits = await ProduitQueryService.GetProductsAsync();
+        }
+        catch (Exception)
+        {
+            loadErrorMessage = "Erreur lors du chargement des produits.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveProduitAsync()
+    {
+        await ExecuteAsync(async userId =>
+        {
+            if (editingProduitId.HasValue)
+            {
+                await ProduitService.UpdateProduitAsync(editingProduitId.Value, createProduitModel, userId);
+                successMessage = "Produit corrigé avec succès.";
+            }
+            else
+            {
+                await ProduitService.CreateProduitAsync(createProduitModel, userId);
+                successMessage = "Produit créé avec succès.";
+            }
+
+            createProduitModel = new CreateProduitDto();
+            editingProduitId = null;
+            await LoadProduitsAsync();
+        }, savingProduit: true);
+    }
+
+    private void StartEditProduit(ProduitListItemDto produit)
+    {
+        editingProduitId = produit.Id;
+        createProduitModel = new CreateProduitDto
+        {
+            Designation = produit.Designation,
+            Marque = produit.Marque,
+            Famille = produit.Famille
+        };
+
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private void CancelEditProduit()
+    {
+        editingProduitId = null;
+        createProduitModel = new CreateProduitDto();
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private async Task AddStockAsync()
+    {
+        await ExecuteAsync(async userId =>
+        {
+            await StockMovementService.AddManualEntryAsync(createStockModel, userId);
+            createStockModel = new CreateStockMovementDto { Quantity = 1 };
+            successMessage = "Stock ajouté avec succès.";
+            await LoadProduitsAsync();
+        }, savingProduit: false);
+    }
+
+    private async Task ExecuteAsync(Func<int, Task> action, bool savingProduit)
+    {
+        errorMessage = null;
+        successMessage = null;
+
+        if (savingProduit)
+        {
+            isSavingProduit = true;
+        }
+        else
+        {
+            isSavingStock = true;
+        }
+
+        try
+        {
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userIdValue = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdValue, out var userId))
+            {
+                throw new InvalidOperationException("Utilisateur introuvable.");
+            }
+
+            await action(userId);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            if (savingProduit)
+            {
+                isSavingProduit = false;
+            }
+            else
+            {
+                isSavingStock = false;
+            }
+        }
+    }
+
+    private bool MatchesSearch(ProduitListItemDto produit)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            return true;
+        }
+
+        return Contains(produit.Designation, searchTerm)
+            || Contains(produit.Marque, searchTerm)
+            || Contains(produit.Famille, searchTerm);
+    }
+
+    private static bool Contains(string? value, string search)
+        => !string.IsNullOrWhiteSpace(value)
+        && value.Contains(search, StringComparison.OrdinalIgnoreCase);
+
+    private static string DisplayValue(string? value)
+        => string.IsNullOrWhiteSpace(value) ? "—" : value;
+
+    private static string GetProductLabel(ProduitListItemDto produit)
+        => string.IsNullOrWhiteSpace(produit.Marque)
+            ? produit.Designation
+            : $"{produit.Marque} - {produit.Designation}";
+}

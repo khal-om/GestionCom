@@ -1,0 +1,161 @@
+@page "/achats/{AchatId:int}"
+@using GestionCom.DTOs.Achat
+@using GestionCom.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Détail achat</PageTitle>
+
+@if (isLoading)
+{
+        <div class="achat-detail-state app-state">Chargement de l'achat...</div>
+}
+else if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="achat-detail-state achat-detail-state-error app-message app-message-error">@errorMessage</div>
+}
+else if (achat is not null)
+{
+    <div class="achat-detail-page app-page-stack">
+        <div class="achat-detail-header app-detail-header">
+            <div>
+                <a class="achat-detail-back app-back-link" href="/achats">← Retour aux achats</a>
+                <h1>Achat #@achat.Id</h1>
+                <div class="achat-detail-meta app-detail-meta">@achat.Fournisseur</div>
+            </div>
+
+            <div class="achat-detail-actions app-actions app-actions-inline">
+                <a class="app-button btn-secondary achat-detail-link-button achat-detail-link-button-secondary" href="@($"/achats/{achat.Id}/edit")">Modifier</a>
+                <a class="app-button achat-detail-link-button" href="/achats/new">Nouvel achat</a>
+            </div>
+        </div>
+
+        <div class="achat-detail-summary app-summary-grid app-summary-grid-4">
+            <div class="achat-detail-card app-summary-card">
+                <span class="achat-detail-label app-card-label">Fournisseur</span>
+                <strong>@achat.Fournisseur</strong>
+            </div>
+            <div class="achat-detail-card app-summary-card">
+                <span class="achat-detail-label app-card-label">Date achat</span>
+                <strong>@achat.DateAchat.ToString("dd/MM/yyyy")</strong>
+            </div>
+            <div class="achat-detail-card app-summary-card">
+                <span class="achat-detail-label app-card-label">Montant payé</span>
+                <strong>@achat.PaidAmount.ToString("N2")</strong>
+            </div>
+            <div class="achat-detail-card app-summary-card @(achat.RemainingAmount > 0 ? "achat-detail-card-pending" : "achat-detail-card-clear")">
+                <span class="achat-detail-label app-card-label">Montant resté</span>
+                <strong>@achat.RemainingAmount.ToString("N2")</strong>
+            </div>
+        </div>
+
+        <div class="achat-detail-grid app-detail-grid">
+            <section class="achat-detail-panel app-panel">
+                <h2>Informations</h2>
+                <dl class="achat-detail-info-list app-info-list">
+                    <div>
+                        <dt>Montant total</dt>
+                        <dd>@achat.TotalAmount.ToString("N2")</dd>
+                    </div>
+                    <div>
+                        <dt>Note</dt>
+                        <dd>@DisplayValue(achat.Note)</dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="achat-detail-panel app-panel">
+                <div class="achat-detail-section-header app-section-header">
+                    <h2>Lignes</h2>
+                    <span>@achat.Lignes.Count ligne(s)</span>
+                </div>
+
+                @if (achat.Lignes.Count == 0)
+                {
+                    <div class="achat-detail-empty app-state">Aucune ligne.</div>
+                }
+                else
+                {
+                    <div class="achat-detail-table-wrapper app-table-shell">
+                        <table class="achat-detail-table app-table">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th class="amount">Quantité</th>
+                                    <th class="amount">Stock actuel</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var line in achat.Lignes)
+                                {
+                                    <tr>
+                                        <td>@line.ProduitLabel</td>
+                                        <td class="amount">@line.Quantite</td>
+                                        <td class="amount @(line.CurrentStock > 0 ? "stock-positive" : string.Empty)">@line.CurrentStock</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </section>
+        </div>
+    </div>
+}
+
+@inject AchatQueryService AchatQueryService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@code {
+    [Parameter]
+    public int AchatId { get; set; }
+
+    private AchatDetailDto? achat;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadAchatAsync();
+    }
+
+    private async Task LoadAchatAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userIdValue = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdValue, out var userId))
+            {
+                throw new InvalidOperationException("Utilisateur introuvable.");
+            }
+
+            achat = await AchatQueryService.GetAchatDetailAsync(AchatId, userId);
+        }
+        catch (InvalidOperationException ex)
+        {
+            achat = null;
+            errorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            achat = null;
+            errorMessage = "Erreur lors du chargement de l'achat.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private static string DisplayValue(string? value)
+        => string.IsNullOrWhiteSpace(value) ? "—" : value;
+}

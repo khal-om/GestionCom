@@ -1,0 +1,328 @@
+@page "/profil"
+@using System.Security.Claims
+@using GestionCom.DTOs.Profile
+@using GestionCom.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Profil</PageTitle>
+
+<h1>Profil</h1>
+
+<div class="profile-page app-page-stack">
+    @if (isLoading)
+    {
+        <div class="app-state">Chargement du profil...</div>
+    }
+    else
+    {
+        <div class="app-summary-grid app-summary-grid-2">
+            <div class="app-summary-card">
+                <span class="app-card-label">Nom d'utilisateur</span>
+                <strong>@currentProfile.Username</strong>
+            </div>
+            <div class="app-summary-card">
+                <span class="app-card-label">Rôle</span>
+                <strong>@currentProfile.RoleName</strong>
+            </div>
+        </div>
+
+        <section class="app-panel">
+            <div class="app-section-header">
+                <h2>Informations du compte</h2>
+                <span>Mettez à jour votre nom d'utilisateur ou votre email.</span>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(profileSuccessMessage))
+            {
+                <div class="app-message app-message-success">@profileSuccessMessage</div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(profileErrorMessage))
+            {
+                <div class="app-message app-message-error">@profileErrorMessage</div>
+            }
+
+            <EditForm Model="profileModel" OnValidSubmit="SaveProfileAsync" FormName="profile-update" class="app-form-stack">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="app-form-grid app-form-grid-3">
+                    <div class="app-form-field">
+                        <label for="profile-username">Nom d'utilisateur</label>
+                        <InputText id="profile-username" class="app-input" @bind-Value="profileModel.Username" />
+                    </div>
+
+                    <div class="app-form-field">
+                        <label for="profile-email">Email</label>
+                        <InputText id="profile-email" class="app-input" @bind-Value="profileModel.Email" />
+                    </div>
+
+                    <div class="app-form-field">
+                        <label>Rôle actuel</label>
+                        <div class="app-readonly">@currentProfile.RoleName</div>
+                    </div>
+                </div>
+
+                <div class="app-actions app-actions-inline">
+                    <button type="submit" class="app-button" disabled="@isSavingProfile">@(isSavingProfile ? "Enregistrement..." : "Enregistrer")</button>
+                </div>
+            </EditForm>
+        </section>
+
+        <section class="app-panel">
+            <div class="app-section-header">
+                <h2>Changer le mot de passe</h2>
+                <span>Utilisez un mot de passe d'au moins 6 caractères.</span>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(passwordSuccessMessage))
+            {
+                <div class="app-message app-message-success">@passwordSuccessMessage</div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(passwordErrorMessage))
+            {
+                <div class="app-message app-message-error">@passwordErrorMessage</div>
+            }
+
+            <EditForm Model="passwordModel" OnValidSubmit="ChangePasswordAsync" FormName="profile-password" class="app-form-stack">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="app-form-grid app-form-grid-3">
+                    <div class="app-form-field">
+                        <label for="current-password">Mot de passe actuel</label>
+                        <InputText id="current-password" type="password" class="app-input" @bind-Value="passwordModel.CurrentPassword" />
+                    </div>
+
+                    <div class="app-form-field">
+                        <label for="new-password">Nouveau mot de passe</label>
+                        <InputText id="new-password" type="password" class="app-input" @bind-Value="passwordModel.NewPassword" />
+                    </div>
+
+                    <div class="app-form-field">
+                        <label for="confirm-password">Confirmation</label>
+                        <InputText id="confirm-password" type="password" class="app-input" @bind-Value="passwordModel.ConfirmPassword" />
+                    </div>
+                </div>
+
+                <div class="app-actions app-actions-inline">
+                    <button type="submit" class="app-button" disabled="@isChangingPassword">@(isChangingPassword ? "Mise à jour..." : "Changer le mot de passe")</button>
+                </div>
+            </EditForm>
+        </section>
+
+        @if (isAdmin)
+        {
+            <section class="app-panel">
+                <div class="app-section-header">
+                    <h2>Ajouter un utilisateur</h2>
+                    <span>Réservé aux administrateurs.</span>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(adminSuccessMessage))
+                {
+                    <div class="app-message app-message-success">@adminSuccessMessage</div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(adminErrorMessage))
+                {
+                    <div class="app-message app-message-error">@adminErrorMessage</div>
+                }
+
+                <EditForm Model="createUserModel" OnValidSubmit="CreateUserAsync" FormName="profile-admin-create-user" class="app-form-stack">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="app-form-grid app-form-grid-3">
+                        <div class="app-form-field">
+                            <label for="new-user-username">Nom d'utilisateur</label>
+                            <InputText id="new-user-username" class="app-input" @bind-Value="createUserModel.Username" />
+                        </div>
+
+                        <div class="app-form-field">
+                            <label for="new-user-email">Email</label>
+                            <InputText id="new-user-email" class="app-input" @bind-Value="createUserModel.Email" />
+                        </div>
+
+                        <div class="app-form-field">
+                            <label for="new-user-role">Rôle</label>
+                            <InputSelect id="new-user-role" class="app-input" @bind-Value="createUserModel.RoleId">
+                                <option value="0">-- Sélectionner --</option>
+                                @foreach (var role in roles)
+                                {
+                                    <option value="@role.RoleId">@role.Name</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="app-form-field">
+                            <label for="new-user-password">Mot de passe</label>
+                            <InputText id="new-user-password" type="password" class="app-input" @bind-Value="createUserModel.Password" />
+                        </div>
+
+                        <div class="app-form-field">
+                            <label for="new-user-confirm-password">Confirmation</label>
+                            <InputText id="new-user-confirm-password" type="password" class="app-input" @bind-Value="createUserModel.ConfirmPassword" />
+                        </div>
+                    </div>
+
+                    <div class="app-actions app-actions-inline">
+                        <button type="submit" class="app-button" disabled="@isCreatingUser">@(isCreatingUser ? "Création..." : "Créer l'utilisateur")</button>
+                    </div>
+                </EditForm>
+            </section>
+        }
+    }
+</div>
+
+@inject UserManagementService UserManagementService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@code {
+    private UserProfileDto currentProfile = new();
+    private UpdateUserProfileDto profileModel = new();
+    private ChangePasswordDto passwordModel = new();
+    private CreateUserDto createUserModel = new();
+    private List<RoleOptionDto> roles = [];
+    private bool isLoading = true;
+    private bool isAdmin;
+    private bool isSavingProfile;
+    private bool isChangingPassword;
+    private bool isCreatingUser;
+    private int currentUserId;
+    private string? profileSuccessMessage;
+    private string? profileErrorMessage;
+    private string? passwordSuccessMessage;
+    private string? passwordErrorMessage;
+    private string? adminSuccessMessage;
+    private string? adminErrorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authenticationState.User;
+        var userIdValue = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!int.TryParse(userIdValue, out currentUserId))
+        {
+            profileErrorMessage = "Utilisateur introuvable.";
+            isLoading = false;
+            return;
+        }
+
+        isAdmin = user.IsInRole("Admin");
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+
+        try
+        {
+            currentProfile = await UserManagementService.GetProfileAsync(currentUserId);
+            profileModel = new UpdateUserProfileDto
+            {
+                Username = currentProfile.Username,
+                Email = currentProfile.Email
+            };
+
+            if (isAdmin)
+            {
+                roles = await UserManagementService.GetRolesAsync();
+                createUserModel = new CreateUserDto
+                {
+                    RoleId = roles.FirstOrDefault()?.RoleId ?? 0
+                };
+            }
+        }
+        catch (Exception ex)
+        {
+            profileErrorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveProfileAsync()
+    {
+        profileErrorMessage = null;
+        profileSuccessMessage = null;
+        isSavingProfile = true;
+
+        try
+        {
+            await UserManagementService.UpdateProfileAsync(currentUserId, profileModel);
+            currentProfile = await UserManagementService.GetProfileAsync(currentUserId);
+            profileModel = new UpdateUserProfileDto
+            {
+                Username = currentProfile.Username,
+                Email = currentProfile.Email
+            };
+            profileSuccessMessage = "Profil mis à jour avec succès. Reconnectez-vous pour voir le nouveau nom partout dans l'application.";
+        }
+        catch (Exception ex)
+        {
+            profileErrorMessage = ex.Message;
+        }
+        finally
+        {
+            isSavingProfile = false;
+        }
+    }
+
+    private async Task ChangePasswordAsync()
+    {
+        passwordErrorMessage = null;
+        passwordSuccessMessage = null;
+        isChangingPassword = true;
+
+        try
+        {
+            await UserManagementService.ChangePasswordAsync(currentUserId, passwordModel);
+            passwordModel = new ChangePasswordDto();
+            passwordSuccessMessage = "Mot de passe modifié avec succès.";
+        }
+        catch (Exception ex)
+        {
+            passwordErrorMessage = ex.Message;
+        }
+        finally
+        {
+            isChangingPassword = false;
+        }
+    }
+
+    private async Task CreateUserAsync()
+    {
+        adminErrorMessage = null;
+        adminSuccessMessage = null;
+        isCreatingUser = true;
+
+        try
+        {
+            await UserManagementService.CreateUserAsync(createUserModel, currentUserId);
+            createUserModel = new CreateUserDto
+            {
+                RoleId = roles.FirstOrDefault()?.RoleId ?? 0
+            };
+            adminSuccessMessage = "Nouvel utilisateur créé avec succès.";
+        }
+        catch (Exception ex)
+        {
+            adminErrorMessage = ex.Message;
+        }
+        finally
+        {
+            isCreatingUser = false;
+        }
+    }
+}

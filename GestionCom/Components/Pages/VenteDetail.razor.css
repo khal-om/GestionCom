@@ -1,0 +1,474 @@
+.vente-detail-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+
+/* ── Header ── */
+.vente-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.vente-detail-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--gc-muted);
+    text-decoration: none;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: color var(--gc-duration) var(--gc-ease);
+}
+
+.vente-detail-back:hover {
+    color: var(--gc-ink);
+}
+
+.vente-detail-meta a {
+    color: var(--gc-accent);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color var(--gc-duration) var(--gc-ease);
+}
+
+.vente-detail-meta a:hover {
+    color: var(--gc-accent-hover);
+}
+
+/* ── Actions ── */
+.vente-detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.vente-detail-actions button,
+.vente-detail-link-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 0.875rem;
+    border-radius: var(--gc-radius-md);
+    text-decoration: none;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    transition: background-color var(--gc-duration) var(--gc-ease),
+                box-shadow var(--gc-duration) var(--gc-ease);
+}
+
+.vente-detail-link-button:hover {
+    text-decoration: none;
+}
+
+/* ── Summary cards ── */
+.vente-detail-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.vente-detail-card,
+.vente-detail-panel {
+    border: 1.5px solid var(--gc-border);
+    border-radius: var(--gc-radius-xl);
+    background: var(--gc-surface);
+    padding: 1.25rem 1.375rem;
+    box-shadow: var(--gc-shadow-xs);
+}
+
+.vente-detail-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.vente-detail-label {
+    color: var(--gc-muted);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.vente-detail-card strong {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.25;
+}
+
+/* ── Info grid ── */
+.vente-detail-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+    gap: 1rem;
+}
+
+.vente-detail-info-list {
+    display: grid;
+    gap: 0.875rem;
+    margin: 0;
+}
+
+.vente-detail-info-list div {
+    display: grid;
+    gap: 0.125rem;
+}
+
+.vente-detail-info-list dt {
+    color: var(--gc-muted);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.vente-detail-info-list dd {
+    margin: 0;
+    color: var(--gc-ink);
+    font-size: 0.875rem;
+}
+
+/* ── Section header ── */
+.vente-detail-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.vente-detail-section-header span {
+    color: var(--gc-muted);
+    font-size: 0.8125rem;
+}
+
+/* ── Table ── */
+.vente-detail-table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--gc-radius-lg);
+    border: 1.5px solid var(--gc-border);
+}
+
+.vente-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.vente-detail-table th,
+.vente-detail-table td {
+    padding: 0.625rem 0.75rem;
+    border-bottom: 1px solid var(--gc-border);
+    text-align: left;
+    vertical-align: top;
+    font-size: 0.875rem;
+}
+
+.vente-detail-table th {
+    color: var(--gc-muted);
+    background: var(--gc-surface-sunken);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.vente-detail-table tr:last-child td {
+    border-bottom: none;
+}
+
+.vente-detail-table .amount {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.stock-negative {
+    color: var(--gc-danger-text);
+    font-weight: 600;
+}
+
+.stock-positive {
+    color: var(--gc-success-text);
+    font-weight: 600;
+}
+
+/* ── Banners ── */
+.vente-detail-message,
+.vente-detail-state,
+.vente-detail-empty {
+    padding: 0.625rem 0.875rem;
+    border-radius: var(--gc-radius-md);
+    font-size: 0.8125rem;
+}
+
+.vente-detail-state,
+.vente-detail-empty {
+    border: 1.5px dashed var(--gc-border);
+    background: var(--gc-surface-sunken);
+    color: var(--gc-muted);
+}
+
+.vente-detail-state-error,
+.vente-detail-message-error {
+    border: 1.5px solid rgba(220, 38, 38, 0.18);
+    background: var(--gc-danger-bg);
+    color: var(--gc-danger-text);
+}
+
+.vente-detail-message-success {
+    border: 1.5px solid rgba(22, 163, 74, 0.18);
+    background: var(--gc-success-bg);
+    color: var(--gc-success-text);
+}
+
+.vente-detail-message-warning {
+    border: 1.5px solid rgba(217, 119, 6, 0.18);
+    background: var(--gc-warning-bg);
+    color: var(--gc-warning-text);
+}
+
+.vente-detail-message-warning ul {
+    margin: 0.5rem 0 0 1.25rem;
+}
+
+@media (max-width: 900px) {
+    .vente-detail-header {
+        flex-direction: column;
+    }
+
+    .vente-detail-summary,
+    .vente-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .vente-detail-actions,
+    .vente-detail-actions button,
+    .vente-detail-link-button {
+        width: 100%;
+    }
+}
+
+.vente-detail-back {
+    color: var(--gc-muted);
+    text-decoration: none;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: color var(--gc-duration) var(--gc-ease);
+}
+
+.vente-detail-back:hover {
+    color: var(--gc-ink);
+}
+
+.vente-detail-meta a {
+    color: var(--gc-accent);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.vente-detail-meta a:hover,
+.vente-detail-link-button:hover {
+    text-decoration: underline;
+}
+
+.vente-detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.vente-detail-actions button,
+.vente-detail-link-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 0.875rem;
+    border-radius: var(--gc-radius-md);
+    text-decoration: none;
+    font-size: 0.8125rem;
+    font-weight: 500;
+}
+
+.vente-detail-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.vente-detail-card,
+.vente-detail-panel {
+    border: 1px solid var(--gc-border);
+    border-radius: var(--gc-radius-xl);
+    background: var(--gc-surface);
+    padding: 1.25rem;
+    box-shadow: var(--gc-shadow-xs);
+}
+
+.vente-detail-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.vente-detail-label {
+    color: var(--gc-muted);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.vente-detail-card strong {
+    font-size: 1.125rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.vente-detail-grid {
+    display: grid;
+    grid-template-columns: minmax(240px, 320px) minmax(0, 1fr);
+    gap: 1rem;
+}
+
+.vente-detail-info-list {
+    display: grid;
+    gap: 0.875rem;
+    margin: 0;
+}
+
+.vente-detail-info-list div {
+    display: grid;
+    gap: 0.125rem;
+}
+
+.vente-detail-info-list dt {
+    color: var(--gc-muted);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.vente-detail-info-list dd {
+    margin: 0;
+    color: var(--gc-ink);
+    font-size: 0.875rem;
+}
+
+.vente-detail-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.vente-detail-section-header span {
+    color: var(--gc-muted);
+    font-size: 0.8125rem;
+}
+
+.vente-detail-table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--gc-radius-lg);
+}
+
+.vente-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.vente-detail-table th,
+.vente-detail-table td {
+    padding: 0.625rem 0.75rem;
+    border-bottom: 1px solid var(--gc-border);
+    text-align: left;
+    vertical-align: top;
+    font-size: 0.875rem;
+}
+
+.vente-detail-table th {
+    color: var(--gc-muted);
+    background: var(--gc-surface-sunken);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.vente-detail-table .amount {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.stock-negative {
+    color: var(--gc-danger);
+    font-weight: 600;
+}
+
+.stock-positive {
+    color: var(--gc-success);
+    font-weight: 600;
+}
+
+.vente-detail-message,
+.vente-detail-state,
+.vente-detail-empty {
+    padding: 0.625rem 0.875rem;
+    border-radius: var(--gc-radius-md);
+    font-size: 0.8125rem;
+}
+
+.vente-detail-state,
+.vente-detail-empty {
+    border: 1px dashed var(--gc-border);
+    background: var(--gc-surface);
+    color: var(--gc-muted);
+}
+
+.vente-detail-state-error,
+.vente-detail-message-error {
+    border: 1px solid rgba(220, 38, 38, 0.15);
+    background: var(--gc-danger-bg);
+    color: var(--gc-danger);
+}
+
+.vente-detail-message-success {
+    border: 1px solid rgba(22, 163, 74, 0.15);
+    background: var(--gc-success-bg);
+    color: var(--gc-success);
+}
+
+.vente-detail-message-warning {
+    border: 1px solid rgba(217, 119, 6, 0.15);
+    background: var(--gc-warning-bg);
+    color: var(--gc-warning);
+}
+
+.vente-detail-message-warning ul {
+    margin: 0.5rem 0 0 1.25rem;
+}
+
+@media (max-width: 900px) {
+    .vente-detail-header {
+        flex-direction: column;
+    }
+
+    .vente-detail-summary,
+    .vente-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .vente-detail-actions,
+    .vente-detail-actions button,
+    .vente-detail-link-button {
+        width: 100%;
+    }
+}

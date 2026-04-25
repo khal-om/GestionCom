@@ -1,0 +1,132 @@
+.achats-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.35rem;
+    max-width: 1280px;
+}
+
+.achats-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: center;
+}
+
+.achats-toolbar-left {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.achats-search {
+    width: min(440px, 100%);
+    padding: 0.9rem 1rem;
+}
+
+.achats-count {
+    color: var(--gc-muted);
+    font-size: 0.96rem;
+    font-weight: 600;
+}
+
+.achats-new-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 168px;
+}
+
+.achats-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--gc-border);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.98));
+    box-shadow: var(--gc-shadow-md);
+}
+
+.achats-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.achats-table th,
+.achats-table td {
+    padding: 1rem 1.1rem;
+    border-bottom: 1px solid rgba(21, 52, 92, 0.06);
+    text-align: left;
+}
+
+.achats-table th {
+    background: rgba(219, 232, 247, 0.28);
+    color: var(--gc-blue-950);
+    font-size: 0.84rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.achats-row {
+    cursor: pointer;
+    transition: background-color 0.18s ease;
+}
+
+.achats-row:hover {
+    background: rgba(219, 232, 247, 0.2);
+}
+
+.achats-row:focus {
+    outline: 2px solid rgba(47, 107, 170, 0.4);
+    outline-offset: -2px;
+    background: rgba(219, 232, 247, 0.28);
+}
+
+.achats-name {
+    font-weight: 700;
+    color: var(--gc-ink);
+}
+
+.achats-table .amount {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.achats-pending {
+    color: var(--gc-danger-text);
+    font-weight: 700;
+}
+
+.achats-clear {
+    color: var(--gc-success-text);
+    font-weight: 700;
+}
+
+.achats-state {
+    padding: 1rem 1.1rem;
+    border: 1px dashed rgba(20, 54, 95, 0.14);
+    border-radius: 20px;
+    color: var(--gc-muted);
+    background: rgba(255,255,255,0.78);
+}
+
+.achats-state-error {
+    color: var(--gc-danger);
+    border-color: rgba(180, 35, 24, 0.16);
+    background: rgba(254, 243, 242, 0.96);
+}
+
+@media (max-width: 640.98px) {
+    .achats-toolbar {
+        align-items: stretch;
+    }
+
+    .achats-toolbar-left {
+        width: 100%;
+    }
+
+    .achats-search,
+    .achats-new-button {
+        width: 100%;
+    }
+}

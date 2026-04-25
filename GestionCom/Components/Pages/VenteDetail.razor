@@ -1,0 +1,232 @@
+@page "/ventes/{VenteId:int}"
+@using System.Security.Claims
+@using GestionCom.DTOs.Vente
+@using GestionCom.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Détail vente</PageTitle>
+
+@if (isLoading)
+{
+    <div class="vente-detail-state">Chargement de la vente...</div>
+}
+else if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="vente-detail-state vente-detail-state-error">@errorMessage</div>
+}
+else if (vente is not null)
+{
+    <div class="vente-detail-page">
+        <div class="vente-detail-header">
+            <div>
+                <a class="vente-detail-back" href="/ventes">← Retour aux ventes</a>
+                <h1>Vente #@vente.Id</h1>
+                <div class="vente-detail-meta">
+                    <a href="@($"/clients/{vente.ClientId}")">@vente.ClientName</a>
+                </div>
+            </div>
+
+            <div class="vente-detail-actions">
+                @if (vente.Etat == "Commande")
+                {
+                    <a class="vente-detail-link-button" href="@($"/ventes/{vente.Id}/edit")">Modifier</a>
+                    <button type="button" @onclick="DeliverAsync" disabled="@isDelivering">
+                        @(isDelivering ? "Livraison..." : "Marquer comme livrée")
+                    </button>
+                }
+                <a class="vente-detail-link-button" href="/ventes/new">Nouvelle vente</a>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(successMessage))
+        {
+            <div class="vente-detail-message vente-detail-message-success">@successMessage</div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(actionErrorMessage))
+        {
+            <div class="vente-detail-message vente-detail-message-error">@actionErrorMessage</div>
+        }
+
+        @if (warnings.Count > 0)
+        {
+            <div class="vente-detail-message vente-detail-message-warning">
+                <strong>Attention stock :</strong>
+                <ul>
+                    @foreach (var warning in warnings)
+                    {
+                        <li>@warning</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="vente-detail-summary">
+            <div class="vente-detail-card">
+                <span class="vente-detail-label">Client</span>
+                <strong>@vente.ClientName</strong>
+            </div>
+            <div class="vente-detail-card">
+                <span class="vente-detail-label">Date vente</span>
+                <strong>@vente.DateVente.ToString("dd/MM/yyyy")</strong>
+            </div>
+            <div class="vente-detail-card">
+                <span class="vente-detail-label">État</span>
+                <strong>@vente.Etat</strong>
+            </div>
+            <div class="vente-detail-card">
+                <span class="vente-detail-label">Montant</span>
+                <strong>@vente.TotalAmount.ToString("N2")</strong>
+            </div>
+        </div>
+
+        <div class="vente-detail-grid">
+            <section class="vente-detail-panel">
+                <h2>Informations</h2>
+                <dl class="vente-detail-info-list">
+                    <div>
+                        <dt>Date livraison</dt>
+                        <dd>@DisplayDate(vente.DateLivraison)</dd>
+                    </div>
+                    <div>
+                        <dt>Note</dt>
+                        <dd>@DisplayValue(vente.Note)</dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="vente-detail-panel">
+                <div class="vente-detail-section-header">
+                    <h2>Lignes</h2>
+                    <span>@vente.Lignes.Count ligne(s)</span>
+                </div>
+
+                @if (vente.Lignes.Count == 0)
+                {
+                    <div class="vente-detail-empty">Aucune ligne.</div>
+                }
+                else
+                {
+                    <div class="vente-detail-table-wrapper">
+                        <table class="vente-detail-table">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th class="amount">Quantité</th>
+                                    <th class="amount">Stock actuel</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var line in vente.Lignes)
+                                {
+                                    <tr>
+                                        <td>@line.ProduitLabel</td>
+                                        <td class="amount">@line.Quantite</td>
+                                        <td class="amount @(line.CurrentStock < 0 ? "stock-negative" : "stock-positive")">@line.CurrentStock</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </section>
+        </div>
+    </div>
+}
+
+@inject VenteQueryService VenteQueryService
+@inject VenteService VenteService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@code {
+    [Parameter]
+    public int VenteId { get; set; }
+
+    private VenteDetailDto? vente;
+    private bool isLoading = true;
+    private bool isDelivering;
+    private string? errorMessage;
+    private string? actionErrorMessage;
+    private string? successMessage;
+    private List<string> warnings = [];
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadVenteAsync();
+    }
+
+    private async Task LoadVenteAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userIdValue = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdValue, out var userId))
+            {
+                throw new InvalidOperationException("Utilisateur introuvable.");
+            }
+
+            vente = await VenteQueryService.GetVenteDetailAsync(VenteId, userId);
+        }
+        catch (InvalidOperationException ex)
+        {
+            vente = null;
+            errorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            vente = null;
+            errorMessage = "Erreur lors du chargement de la vente.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task DeliverAsync()
+    {
+        actionErrorMessage = null;
+        successMessage = null;
+        warnings = [];
+        isDelivering = true;
+
+        try
+        {
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userIdValue = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdValue, out var userId))
+            {
+                throw new InvalidOperationException("Utilisateur introuvable.");
+            }
+
+            var result = await VenteService.DeliverVenteAsync(VenteId, userId);
+            successMessage = $"Vente #{result.VenteId} livrée avec succès.";
+            warnings = result.Warnings;
+            await LoadVenteAsync();
+        }
+        catch (Exception ex)
+        {
+            actionErrorMessage = ex.Message;
+        }
+        finally
+        {
+            isDelivering = false;
+        }
+    }
+
+    private static string DisplayValue(string? value)
+        => string.IsNullOrWhiteSpace(value) ? "—" : value;
+
+    private static string DisplayDate(DateTime? value)
+        => value.HasValue ? value.Value.ToString("dd/MM/yyyy") : "—";
+}

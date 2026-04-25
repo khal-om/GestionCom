@@ -1,0 +1,337 @@
+.dashboard-page {
+    max-width: 1440px;
+}
+
+.dashboard-hero-panel {
+    background:
+        radial-gradient(circle at top right, rgba(13, 148, 136, 0.12), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(47, 107, 170, 0.1), transparent 30%),
+        var(--gc-surface-raised);
+}
+
+.dashboard-toolbar {
+    align-items: end;
+}
+
+.dashboard-toolbar-main,
+.dashboard-toolbar-side {
+    width: auto;
+}
+
+.dashboard-toolbar-copy {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.dashboard-toolbar-copy span {
+    color: var(--gc-ink-secondary);
+}
+
+.dashboard-year-field {
+    min-width: 180px;
+}
+
+.dashboard-filter-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin-top: 1.1rem;
+}
+
+.dashboard-filter-card {
+    padding: 0.95rem;
+    border: 1px solid var(--gc-border);
+    border-radius: var(--gc-radius-xl);
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: var(--gc-shadow-xs);
+}
+
+.dashboard-metrics-grid {
+    align-items: stretch;
+}
+
+.dashboard-metric-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-metric-card::after {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 4px;
+}
+
+.dashboard-metric-card-user::after {
+    background: linear-gradient(90deg, #0d9488, #2f6baa);
+}
+
+.dashboard-metric-card-sales::after {
+    background: linear-gradient(90deg, #2f6baa, #60a5fa);
+}
+
+.dashboard-metric-card-purchase::after {
+    background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+}
+
+.dashboard-metric-card-expense::after {
+    background: linear-gradient(90deg, #d97706, #f59e0b);
+}
+
+.dashboard-metric-card-client::after {
+    background: linear-gradient(90deg, #0f766e, #14b8a6);
+}
+
+.dashboard-metric-card-supplier::after {
+    background: linear-gradient(90deg, #92400e, #f97316);
+}
+
+.dashboard-metric-card-calendar::after {
+    background: linear-gradient(90deg, #7c3aed, #a855f7);
+}
+
+.dashboard-metric-card-stock::after {
+    background: linear-gradient(90deg, #b91c1c, #ef4444);
+}
+
+.dashboard-charts-grid,
+.dashboard-lists-grid {
+    align-items: start;
+}
+
+.dashboard-chart-panel {
+    min-height: 100%;
+}
+
+.dashboard-chart-panel-highlight {
+    background:
+        radial-gradient(circle at top right, rgba(13, 148, 136, 0.12), transparent 32%),
+        var(--gc-surface-raised);
+}
+
+.dashboard-chart-panel-muted {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.dashboard-chart-total {
+    color: var(--gc-accent-hover);
+    font-size: 1rem;
+}
+
+.dashboard-chart-shell {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.dashboard-chart-svg {
+    display: block;
+    width: 100%;
+    min-width: 640px;
+    height: auto;
+}
+
+.dashboard-axis {
+    stroke: var(--gc-border-strong);
+    stroke-width: 1;
+}
+
+.dashboard-axis-label {
+    fill: var(--gc-ink-secondary);
+    font-size: 11px;
+    font-family: inherit;
+}
+
+.dashboard-line {
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.dashboard-line-point {
+    stroke: #ffffff;
+    stroke-width: 2;
+}
+
+.dashboard-bar {
+    fill: var(--gc-accent);
+}
+
+.dashboard-bar-sales {
+    fill: #2f6baa;
+}
+
+.dashboard-bar-purchase {
+    fill: #2f6baa;
+}
+
+.dashboard-bar-expense {
+    fill: #d97706;
+}
+
+.dashboard-user-color-1 {
+    stroke: #0d9488;
+    fill: #0d9488;
+    background: #0d9488;
+}
+
+.dashboard-user-color-2 {
+    stroke: #2f6baa;
+    fill: #2f6baa;
+    background: #2f6baa;
+}
+
+.dashboard-user-color-3 {
+    stroke: #7c3aed;
+    fill: #7c3aed;
+    background: #7c3aed;
+}
+
+.dashboard-user-color-4 {
+    stroke: #f97316;
+    fill: #f97316;
+    background: #f97316;
+}
+
+.dashboard-user-color-5 {
+    stroke: #dc2626;
+    fill: #dc2626;
+    background: #dc2626;
+}
+
+.dashboard-line-point.dashboard-user-color-1,
+.dashboard-line-point.dashboard-user-color-2,
+.dashboard-line-point.dashboard-user-color-3,
+.dashboard-line-point.dashboard-user-color-4,
+.dashboard-line-point.dashboard-user-color-5 {
+    filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.12));
+}
+
+.dashboard-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 1rem;
+    color: var(--gc-ink-secondary);
+    font-size: 0.9rem;
+}
+
+.dashboard-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.dashboard-legend-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    display: inline-block;
+}
+
+.dashboard-legend-swatch-purchase {
+    background: #2f6baa;
+}
+
+.dashboard-legend-swatch-expense {
+    background: #d97706;
+}
+
+.dashboard-user-bars {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.dashboard-user-bar-card {
+    padding: 1rem 1.05rem;
+    border: 1px solid var(--gc-border);
+    border-radius: var(--gc-radius-xl);
+    background: var(--gc-surface-sunken);
+}
+
+.dashboard-user-label-wrap {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.dashboard-user-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    display: inline-block;
+}
+
+.dashboard-user-bar-track {
+    width: 100%;
+    height: 10px;
+    margin-top: 0.85rem;
+    border-radius: 999px;
+    background: rgba(28, 25, 23, 0.08);
+    overflow: hidden;
+}
+
+.dashboard-user-bar-fill {
+    height: 100%;
+    border-radius: inherit;
+}
+
+.dashboard-list-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.dashboard-event-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.dashboard-list-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.dashboard-value-sales {
+    color: #2f6baa;
+}
+
+.dashboard-negative {
+    color: var(--gc-danger-text);
+}
+
+.dashboard-warning {
+    color: var(--gc-warning-text);
+}
+
+.dashboard-badge {
+    display: inline-flex;
+    margin-left: 0.65rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: var(--gc-accent-subtle);
+    color: var(--gc-accent-hover);
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+@media (max-width: 900px) {
+    .dashboard-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-legend,
+    .dashboard-list-top,
+    .dashboard-toolbar {
+        justify-content: flex-start;
+    }
+
+    .dashboard-list-top,
+    .dashboard-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

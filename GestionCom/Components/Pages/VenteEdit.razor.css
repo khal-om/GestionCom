@@ -1,0 +1,213 @@
+.vente-create-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+    max-width: 1140px;
+}
+
+.vente-create-back {
+    color: var(--gc-muted);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.vente-create-back:hover {
+    text-decoration: underline;
+}
+
+.vente-create-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.vente-create-panel {
+    padding: 1.25rem;
+    border: 1px solid var(--gc-border);
+    border-radius: 26px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.98));
+    box-shadow: var(--gc-shadow-md);
+}
+
+.vente-create-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.vente-create-grid > div,
+.vente-create-line-adder > div {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.vente-create-grid-full {
+    grid-column: 1 / -1;
+}
+
+.vente-create-form label {
+    font-weight: 700;
+    color: var(--gc-blue-950);
+}
+
+.vente-create-form ::deep input,
+.vente-create-form ::deep select,
+.vente-create-form ::deep textarea {
+    width: 100%;
+    padding: 0.9rem 1rem;
+}
+
+.vente-create-form ::deep textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+.vente-create-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.vente-create-line-adder {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(120px, 160px) auto;
+    gap: 1rem;
+    align-items: end;
+    margin-bottom: 1rem;
+}
+
+.vente-create-line-button,
+.vente-create-actions {
+    display: flex;
+}
+
+.vente-create-line-button {
+    align-items: end;
+}
+
+.vente-create-actions {
+    justify-content: flex-end;
+    margin-top: 0.25rem;
+}
+
+.vente-create-line-button button,
+.vente-create-actions button {
+    padding: 0.9rem 1.15rem;
+    border-radius: 16px;
+    font-weight: 700;
+}
+
+.vente-create-message,
+.vente-create-state,
+.vente-create-inline-error {
+    padding: 1rem 1.1rem;
+    border-radius: 20px;
+}
+
+.vente-create-state {
+    border: 1px dashed rgba(20, 54, 95, 0.14);
+    background: rgba(255,255,255,0.78);
+    color: var(--gc-muted);
+}
+
+.vente-create-message-success {
+    border: 1px solid rgba(2, 122, 72, 0.14);
+    background: rgba(236, 253, 243, 0.96);
+    color: var(--gc-success);
+}
+
+.vente-create-message-success a {
+    color: inherit;
+    font-weight: 700;
+}
+
+.vente-create-message-error,
+.vente-create-inline-error {
+    border: 1px solid rgba(180, 35, 24, 0.16);
+    background: rgba(254, 243, 242, 0.96);
+    color: var(--gc-danger);
+}
+
+.vente-create-message-warning {
+    border: 1px solid rgba(180, 83, 9, 0.14);
+    background: rgba(255, 251, 235, 0.96);
+    color: var(--gc-warning);
+}
+
+.vente-create-message-warning ul {
+    margin: 0.5rem 0 0 1.25rem;
+}
+
+.vente-create-table-wrapper {
+    overflow-x: auto;
+    border-radius: 20px;
+}
+
+.vente-create-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.vente-create-table th,
+.vente-create-table td {
+    padding: 0.95rem 0.85rem;
+    border-bottom: 1px solid rgba(21, 52, 92, 0.06);
+    text-align: left;
+    vertical-align: top;
+}
+
+.vente-create-table th {
+    background: rgba(219, 232, 247, 0.28);
+    color: var(--gc-blue-950);
+    font-size: 0.84rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.vente-create-table .amount {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.warning-text {
+    color: var(--gc-warning);
+    font-weight: 700;
+}
+
+.action-cell {
+    text-align: right;
+}
+
+.link-button {
+    border: none;
+    background: transparent;
+    color: var(--gc-danger);
+    cursor: pointer;
+    padding: 0;
+    box-shadow: none;
+}
+
+.link-button:hover {
+    text-decoration: underline;
+    transform: none;
+}
+
+@media (max-width: 900px) {
+    .vente-create-grid,
+    .vente-create-line-adder {
+        grid-template-columns: 1fr;
+    }
+
+    .vente-create-actions,
+    .vente-create-line-button {
+        justify-content: stretch;
+    }
+
+    .vente-create-actions button,
+    .vente-create-line-button button {
+        width: 100%;
+    }
+}

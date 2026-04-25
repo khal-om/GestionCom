@@ -1,0 +1,481 @@
+@page "/clients/{ClientId:int}"
+@using System.Security.Claims
+@using GestionCom.DTOs.Client
+@using GestionCom.DTOs.Payment
+@using GestionCom.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Détail client</PageTitle>
+
+@if (isLoading)
+{
+    <div class="client-detail-state">Chargement du client...</div>
+}
+else if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="client-detail-state client-detail-state-error">@errorMessage</div>
+}
+else if (client is not null)
+{
+    <div class="client-detail-page">
+        <div class="client-detail-header">
+            <div>
+                <a class="client-detail-back" href="/clients">← Retour à la liste</a>
+                <h1>@client.Name</h1>
+                <div class="client-detail-meta">@FormatAddress(client)</div>
+            </div>
+
+            <div class="client-detail-actions">
+                <a class="client-detail-link-button" href="@($"/ventes/new?clientId={client.Id}")">Nouvelle vente</a>
+                <a class="client-detail-link-button client-detail-link-button-secondary" href="/ventes">Voir les ventes</a>
+            </div>
+        </div>
+
+        <div class="client-detail-summary">
+            <div class="client-detail-card">
+                <span class="client-detail-label">Total ventes</span>
+                <strong>@client.TotalSpent.ToString("N2")</strong>
+            </div>
+            <div class="client-detail-card">
+                <span class="client-detail-label">Total paiements</span>
+                <strong>@client.TotalPaid.ToString("N2")</strong>
+            </div>
+            <div class="client-detail-card @(client.Debt > 0 ? "client-detail-card-debt" : "client-detail-card-clear")">
+                <span class="client-detail-label">En cours</span>
+                <strong>@client.Debt.ToString("N2")</strong>
+            </div>
+        </div>
+
+        <div class="client-detail-grid">
+            <section class="client-detail-panel">
+                <h2>Informations</h2>
+                <dl class="client-detail-info-list">
+                    <div>
+                        <dt>Profession</dt>
+                        <dd>@DisplayValue(client.Profession)</dd>
+                    </div>
+                    <div>
+                        <dt>Matricule fiscale</dt>
+                        <dd>@DisplayValue(client.MatriculeFiscale)</dd>
+                    </div>
+                    <div>
+                        <dt>Téléphone</dt>
+                        <dd>@RenderContactLink(client.Telephone, "tel")</dd>
+                    </div>
+                    <div>
+                        <dt>Portable</dt>
+                        <dd>@RenderContactLink(client.Portable, "tel")</dd>
+                    </div>
+                    <div>
+                        <dt>Email</dt>
+                        <dd>@RenderContactLink(client.Email, "mailto")</dd>
+                    </div>
+                    <div>
+                        <dt>Ville</dt>
+                        <dd>@DisplayValue(client.Ville)</dd>
+                    </div>
+                    <div>
+                        <dt>Adresse</dt>
+                        <dd>@FormatFullAddress(client)</dd>
+                    </div>
+                    <div>
+                        <dt>Banque</dt>
+                        <dd>@DisplayValue(client.Banque)</dd>
+                    </div>
+                    <div>
+                        <dt>RIB</dt>
+                        <dd>@DisplayValue(client.RIB)</dd>
+                    </div>
+                    <div>
+                        <dt>Note</dt>
+                        <dd>@DisplayValue(client.Note)</dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="client-detail-panel">
+                <h2>Ajouter un paiement</h2>
+
+                @if (!string.IsNullOrWhiteSpace(paymentSuccessMessage))
+                {
+                    <div class="client-detail-message client-detail-message-success">@paymentSuccessMessage</div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(paymentErrorMessage))
+                {
+                    <div class="client-detail-message client-detail-message-error">@paymentErrorMessage</div>
+                }
+
+                <EditForm Model="paymentModel" OnValidSubmit="SubmitPaymentAsync" FormName="client-payment" class="client-detail-form">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div>
+                        <label for="payment-mode">Mode de paiement</label>
+                        <InputSelect id="payment-mode" @bind-Value="paymentModel.PaymentMode">
+                            @foreach (var paymentMode in PaymentModeOption.All)
+                            {
+                                <option value="@paymentMode">@paymentMode</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    @if (RequiresDeferredFields)
+                    {
+                        <div>
+                            <label for="payment-number">Numéro du règlement</label>
+                            <InputText id="payment-number" @bind-Value="paymentModel.PaymentNumber" />
+                        </div>
+
+                        <div>
+                            <label for="payment-date">Date règlement</label>
+                            <InputDate id="payment-date" @bind-Value="paymentModel.PaymentDate" />
+                        </div>
+
+                        <div>
+                            <label for="payment-due-date">Date d'échéance</label>
+                            <InputDate id="payment-due-date" @bind-Value="paymentModel.DueDate" />
+                        </div>
+
+                        <div>
+                            <label for="payment-label">Libellé (En option)</label>
+                            <InputText id="payment-label" @bind-Value="paymentModel.Label" />
+                        </div>
+
+                        <div>
+                            <label for="payment-amount">Montant du règlement</label>
+                            <InputNumber id="payment-amount" @bind-Value="paymentModel.Amount" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div>
+                            <label for="payment-amount">Montant</label>
+                            <InputNumber id="payment-amount" @bind-Value="paymentModel.Amount" />
+                        </div>
+                    }
+
+                    <div>
+                        <label for="payment-note">Note</label>
+                        <InputTextArea id="payment-note" @bind-Value="paymentModel.Note" />
+                    </div>
+
+                    <button type="submit" disabled="@isSubmittingPayment">
+                        @(isSubmittingPayment ? "Enregistrement..." : "Ajouter le paiement")
+                    </button>
+                </EditForm>
+            </section>
+        </div>
+
+        <section class="client-detail-panel">
+            <div class="client-detail-section-header">
+                <h2>Relevé client</h2>
+                <span>@client.Ledger.Count opération(s)</span>
+            </div>
+
+            @if (client.Ledger.Count == 0)
+            {
+                <div class="client-detail-empty">Aucune opération pour ce client.</div>
+            }
+            else
+            {
+                <div class="client-detail-table-wrapper">
+                    <table class="client-detail-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Objet</th>
+                                <th class="amount">Débit</th>
+                                <th class="amount">Crédit</th>
+                                <th class="amount">Solde</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in client.Ledger)
+                            {
+                                <tr>
+                                    <td>@item.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>
+                                        @if (item.Type == "Vente" && item.ReferenceId.HasValue)
+                                        {
+                                            <a class="client-detail-table-link" href="@($"/ventes/{item.ReferenceId.Value}")">@item.Objet</a>
+                                        }
+                                        else
+                                        {
+                                            @item.Objet
+                                        }
+                                    </td>
+                                    <td class="amount">@FormatAmount(item.Debit)</td>
+                                    <td class="amount">@FormatAmount(item.Credit)</td>
+                                    <td class="amount @(item.Balance > 0 ? "balance-debt" : "balance-clear")">@item.Balance.ToString("N2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+
+        <section class="client-detail-panel">
+            <div class="client-detail-section-header">
+                <h2>Paiements</h2>
+                <span>@client.Payments.Count paiement(s)</span>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(paymentStatusErrorMessage))
+            {
+                <div class="client-detail-message client-detail-message-error">@paymentStatusErrorMessage</div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(paymentStatusSuccessMessage))
+            {
+                <div class="client-detail-message client-detail-message-success">@paymentStatusSuccessMessage</div>
+            }
+
+            @if (client.Payments.Count == 0)
+            {
+                <div class="client-detail-empty">Aucun paiement enregistré.</div>
+            }
+            else
+            {
+                <div class="client-detail-table-wrapper">
+                    <table class="client-detail-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Mode</th>
+                                <th>Référence</th>
+                                <th>Dates</th>
+                                <th>Statut</th>
+                                <th>Note</th>
+                                <th class="amount">Montant</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var payment in client.Payments)
+                            {
+                                <tr>
+                                    <td>@payment.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td>@payment.PaymentMode</td>
+                                    <td>
+                                        <div>@DisplayValue(payment.PaymentNumber)</div>
+                                        @if (!string.IsNullOrWhiteSpace(payment.Label))
+                                        {
+                                            <div class="client-detail-subtext">@payment.Label</div>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (payment.PaymentDate.HasValue || payment.DueDate.HasValue)
+                                        {
+                                            <div>Règlement: @DisplayDate(payment.PaymentDate)</div>
+                                            <div>Échéance: @DisplayDate(payment.DueDate)</div>
+                                        }
+                                        else
+                                        {
+                                            <span>—</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (RequiresReceivedAction(payment))
+                                        {
+                                            <span class="client-payment-status @(payment.IsReceived ? "client-payment-status-received" : "client-payment-status-pending")">
+                                                @(payment.IsReceived ? "Reçu" : "En attente")
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span>Reçu</span>
+                                        }
+                                    </td>
+                                    <td>@DisplayValue(payment.Note)</td>
+                                    <td class="amount">@payment.Amount.ToString("N2")</td>
+                                    <td>
+                                        @if (RequiresReceivedAction(payment) && !payment.IsReceived)
+                                        {
+                                            <button type="button" class="client-detail-inline-action" @onclick="() => MarkPaymentReceivedAsync(payment.Id)" disabled="@isUpdatingPaymentStatus">
+                                                Marquer reçu
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+    </div>
+}
+
+@inject ClientQueryService ClientQueryService
+@inject PaymentService PaymentService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@code {
+    [Parameter]
+    public int ClientId { get; set; }
+
+    private ClientDetailDto? client;
+    private CreatePaymentDto paymentModel = new() { PaymentMode = PaymentModeOption.Especes };
+    private bool isLoading = true;
+    private bool isSubmittingPayment;
+    private bool isUpdatingPaymentStatus;
+    private string? errorMessage;
+    private string? paymentErrorMessage;
+    private string? paymentSuccessMessage;
+    private string? paymentStatusErrorMessage;
+    private string? paymentStatusSuccessMessage;
+
+    private bool RequiresDeferredFields => paymentModel.PaymentMode is PaymentModeOption.Cheque or PaymentModeOption.Traite;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadClientAsync();
+    }
+
+    private async Task LoadClientAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            client = await ClientQueryService.GetClientDetailAsync(ClientId);
+            paymentModel.ClientId = ClientId;
+        }
+        catch (InvalidOperationException ex)
+        {
+            client = null;
+            errorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            client = null;
+            errorMessage = "Erreur lors du chargement du client.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SubmitPaymentAsync()
+    {
+        paymentErrorMessage = null;
+        paymentSuccessMessage = null;
+        isSubmittingPayment = true;
+
+        try
+        {
+            paymentModel.ClientId = ClientId;
+
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userIdValue = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdValue, out var userId))
+            {
+                throw new InvalidOperationException("Utilisateur introuvable.");
+            }
+
+            paymentModel.IsReceived = !RequiresDeferredFields;
+            await PaymentService.AddPaymentAsync(paymentModel, userId);
+            paymentSuccessMessage = "Paiement ajouté avec succès.";
+            paymentModel = new CreatePaymentDto
+            {
+                ClientId = ClientId,
+                PaymentMode = PaymentModeOption.Especes
+            };
+
+            await LoadClientAsync();
+        }
+        catch (Exception ex)
+        {
+            paymentErrorMessage = ex.Message;
+        }
+        finally
+        {
+            isSubmittingPayment = false;
+        }
+    }
+
+    private async Task MarkPaymentReceivedAsync(int paymentId)
+    {
+        paymentStatusErrorMessage = null;
+        paymentStatusSuccessMessage = null;
+        isUpdatingPaymentStatus = true;
+
+        try
+        {
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userIdValue = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdValue, out var userId))
+            {
+                throw new InvalidOperationException("Utilisateur introuvable.");
+            }
+
+            await PaymentService.UpdatePaymentReceivedStatusAsync(paymentId, new UpdatePaymentStatusDto { IsReceived = true }, userId);
+            paymentStatusSuccessMessage = "Le paiement a été marqué comme reçu.";
+            await LoadClientAsync();
+        }
+        catch (Exception ex)
+        {
+            paymentStatusErrorMessage = ex.Message;
+        }
+        finally
+        {
+            isUpdatingPaymentStatus = false;
+        }
+    }
+
+    private static bool RequiresReceivedAction(ClientPaymentItemDto payment)
+        => payment.PaymentMode is PaymentModeOption.Cheque or PaymentModeOption.Traite;
+
+    private static string DisplayValue(string? value)
+        => string.IsNullOrWhiteSpace(value) ? "—" : value;
+
+    private static string DisplayDate(DateTime? value)
+        => value.HasValue ? value.Value.ToString("dd/MM/yyyy") : "—";
+
+    private static RenderFragment RenderContactLink(string? value, string scheme) => builder =>
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            builder.AddContent(0, "—");
+            return;
+        }
+
+        builder.OpenElement(1, "a");
+        builder.AddAttribute(2, "class", "client-detail-inline-link");
+        builder.AddAttribute(3, "href", $"{scheme}:{value}");
+        builder.AddContent(4, value);
+        builder.CloseElement();
+    };
+
+    private static string FormatAddress(ClientDetailDto client)
+    {
+        var parts = new[] { client.Ville, client.Adresse, client.Telephone }
+            .Where(value => !string.IsNullOrWhiteSpace(value));
+
+        var text = string.Join(" • ", parts);
+        return string.IsNullOrWhiteSpace(text) ? "Informations client" : text;
+    }
+
+    private static string FormatFullAddress(ClientDetailDto client)
+    {
+        var parts = new[] { client.Adresse, client.CodePostal, client.Ville, client.Pays }
+            .Where(value => !string.IsNullOrWhiteSpace(value));
+
+        var text = string.Join(", ", parts);
+        return string.IsNullOrWhiteSpace(text) ? "—" : text;
+    }
+
+    private static string FormatAmount(decimal amount)
+        => amount == 0 ? "—" : amount.ToString("N2");
+}

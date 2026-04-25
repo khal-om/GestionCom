@@ -1,0 +1,172 @@
+@page "/clients/new"
+@using System.Security.Claims
+@using GestionCom.DTOs.Client
+@using GestionCom.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Nouveau client</PageTitle>
+
+<h1>Nouveau client</h1>
+
+<div class="client-create-page">
+    <a class="client-create-back" href="/clients">← Retour à la liste</a>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="client-create-message client-create-message-error">@errorMessage</div>
+    }
+
+    <EditForm Model="model" OnValidSubmit="SubmitAsync" FormName="client-create" class="client-create-form">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <section class="client-create-panel">
+            <h2>Informations principales</h2>
+
+            <div class="client-create-grid">
+                <div>
+                    <label for="name">Nom *</label>
+                    <InputText id="name" @bind-Value="model.Name" />
+                </div>
+
+                <div>
+                    <label for="profession">Profession</label>
+                    <InputText id="profession" @bind-Value="model.Profession" />
+                </div>
+
+                <div>
+                    <label for="matricule">Matricule fiscale</label>
+                    <InputText id="matricule" @bind-Value="model.MatriculeFiscale" />
+                </div>
+            </div>
+        </section>
+
+        <section class="client-create-panel">
+            <h2>Coordonnées</h2>
+
+            <div class="client-create-grid">
+                <div>
+                    <label for="telephone">Téléphone</label>
+                    <InputText id="telephone" @bind-Value="model.Telephone" />
+                </div>
+
+                <div>
+                    <label for="portable">Portable</label>
+                    <InputText id="portable" @bind-Value="model.Portable" />
+                </div>
+
+                <div>
+                    <label for="fax">Fax</label>
+                    <InputText id="fax" @bind-Value="model.Fax" />
+                </div>
+
+                <div class="client-create-grid-full">
+                    <label for="email">Email</label>
+                    <InputText id="email" @bind-Value="model.Email" />
+                </div>
+            </div>
+        </section>
+
+        <section class="client-create-panel">
+            <h2>Adresse</h2>
+
+            <div class="client-create-grid">
+                <div class="client-create-grid-full">
+                    <label for="adresse">Adresse</label>
+                    <InputTextArea id="adresse" @bind-Value="model.Adresse" />
+                </div>
+
+                <div>
+                    <label for="codepostal">Code postal</label>
+                    <InputText id="codepostal" @bind-Value="model.CodePostal" />
+                </div>
+
+                <div>
+                    <label for="ville">Ville</label>
+                    <InputText id="ville" @bind-Value="model.Ville" />
+                </div>
+
+                <div>
+                    <label for="pays">Pays</label>
+                    <InputText id="pays" @bind-Value="model.Pays" />
+                </div>
+            </div>
+        </section>
+
+        <section class="client-create-panel">
+            <h2>Coordonnées bancaires</h2>
+
+            <div class="client-create-grid">
+                <div>
+                    <label for="banque">Banque</label>
+                    <InputText id="banque" @bind-Value="model.Banque" />
+                </div>
+
+                <div>
+                    <label for="rib">RIB</label>
+                    <InputText id="rib" @bind-Value="model.RIB" />
+                </div>
+            </div>
+        </section>
+
+        <section class="client-create-panel">
+            <h2>Note</h2>
+
+            <div class="client-create-grid">
+                <div class="client-create-grid-full">
+                    <label for="note">Note</label>
+                    <InputTextArea id="note" @bind-Value="model.Note" />
+                </div>
+            </div>
+        </section>
+
+        <div class="client-create-actions">
+            <button type="submit" disabled="@isSubmitting">
+                @(isSubmitting ? "Enregistrement..." : "Créer le client")
+            </button>
+        </div>
+    </EditForm>
+</div>
+
+@inject ClientService ClientService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+
+@code {
+    private CreateClientDto model = new();
+    private bool isSubmitting;
+    private string? errorMessage;
+
+    private async Task SubmitAsync()
+    {
+        errorMessage = null;
+        isSubmitting = true;
+
+        try
+        {
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userIdValue = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdValue, out var userId))
+            {
+                throw new InvalidOperationException("Utilisateur introuvable.");
+            }
+
+            var clientId = await ClientService.CreateClientAsync(model, userId);
+            Navigation.NavigateTo($"/clients/{clientId}");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+}

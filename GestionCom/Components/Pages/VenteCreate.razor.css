@@ -1,0 +1,459 @@
+.vente-create-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    max-width: 940px;
+}
+
+/* ── Back link ── */
+.vente-create-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--gc-muted);
+    text-decoration: none;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: color var(--gc-duration) var(--gc-ease);
+}
+
+.vente-create-back:hover {
+    color: var(--gc-ink);
+}
+
+/* ── Form ── */
+.vente-create-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.vente-create-panel {
+    padding: 1.75rem;
+    border: 1.5px solid var(--gc-border);
+    border-radius: var(--gc-radius-xl);
+    background: var(--gc-surface);
+    box-shadow: var(--gc-shadow-xs);
+}
+
+.vente-create-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.125rem;
+}
+
+.vente-create-grid > div,
+.vente-create-line-adder > div {
+    display: grid;
+    gap: 0.375rem;
+}
+
+.vente-create-grid-full {
+    grid-column: 1 / -1;
+}
+
+.vente-create-form label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--gc-ink-secondary);
+    letter-spacing: -0.005em;
+}
+
+.vente-create-form ::deep input,
+.vente-create-form ::deep select,
+.vente-create-form ::deep textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.vente-create-form ::deep textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+/* ── Section header ── */
+.vente-create-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* ── Line adder ── */
+.vente-create-line-adder {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(100px, 130px) auto;
+    gap: 0.75rem;
+    align-items: end;
+    margin-bottom: 1rem;
+}
+
+.vente-create-line-button,
+.vente-create-actions {
+    display: flex;
+}
+
+.vente-create-line-button {
+    align-items: end;
+}
+
+.vente-create-actions {
+    justify-content: flex-end;
+    margin-top: 0.25rem;
+    gap: 0.625rem;
+}
+
+/* ── Messages ── */
+.vente-create-message,
+.vente-create-state,
+.vente-create-inline-error {
+    padding: 0.625rem 0.875rem;
+    border-radius: var(--gc-radius-md);
+    font-size: 0.8125rem;
+}
+
+.vente-create-state {
+    border: 1.5px dashed var(--gc-border);
+    background: var(--gc-surface-sunken);
+    color: var(--gc-muted);
+}
+
+.vente-create-message-success {
+    border: 1.5px solid rgba(22, 163, 74, 0.18);
+    background: var(--gc-success-bg);
+    color: var(--gc-success-text);
+}
+
+.vente-create-message-success a {
+    color: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.vente-create-message-error,
+.vente-create-inline-error {
+    border: 1.5px solid rgba(220, 38, 38, 0.18);
+    background: var(--gc-danger-bg);
+    color: var(--gc-danger-text);
+}
+
+.vente-create-message-warning {
+    border: 1.5px solid rgba(217, 119, 6, 0.18);
+    background: var(--gc-warning-bg);
+    color: var(--gc-warning-text);
+}
+
+.vente-create-message-warning ul {
+    margin: 0.5rem 0 0 1.25rem;
+}
+
+/* ── Table ── */
+.vente-create-table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--gc-radius-lg);
+    border: 1.5px solid var(--gc-border);
+}
+
+.vente-create-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.vente-create-table th,
+.vente-create-table td {
+    padding: 0.625rem 0.75rem;
+    border-bottom: 1px solid var(--gc-border);
+    text-align: left;
+    vertical-align: top;
+    font-size: 0.875rem;
+}
+
+.vente-create-table th {
+    background: var(--gc-surface-sunken);
+    color: var(--gc-muted);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.vente-create-table tr:last-child td {
+    border-bottom: none;
+}
+
+.vente-create-table .amount {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.warning-text {
+    color: var(--gc-warning-text);
+    font-weight: 600;
+}
+
+.action-cell {
+    text-align: right;
+}
+
+.link-button {
+    border: none;
+    background: transparent;
+    color: var(--gc-danger-text);
+    cursor: pointer;
+    padding: 0;
+    box-shadow: none;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: opacity var(--gc-duration) var(--gc-ease);
+}
+
+.link-button:hover {
+    opacity: 0.7;
+    transform: none;
+    background: transparent;
+    box-shadow: none;
+}
+
+@media (max-width: 860px) {
+    .vente-create-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 540px) {
+    .vente-create-panel {
+        padding: 1.25rem;
+    }
+
+    .vente-create-grid,
+    .vente-create-line-adder {
+        grid-template-columns: 1fr;
+    }
+
+    .vente-create-actions {
+        flex-direction: column;
+    }
+
+    .vente-create-actions button,
+    .vente-create-line-button button {
+        width: 100%;
+    }
+}
+
+.vente-create-back {
+    color: var(--gc-muted);
+    text-decoration: none;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: color var(--gc-duration) var(--gc-ease);
+}
+
+.vente-create-back:hover {
+    color: var(--gc-ink);
+}
+
+.vente-create-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.vente-create-panel {
+    padding: 1.5rem;
+    border: 1px solid var(--gc-border);
+    border-radius: var(--gc-radius-xl);
+    background: var(--gc-surface);
+    box-shadow: var(--gc-shadow-xs);
+}
+
+.vente-create-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.vente-create-grid > div,
+.vente-create-line-adder > div {
+    display: grid;
+    gap: 0.375rem;
+}
+
+.vente-create-grid-full {
+    grid-column: 1 / -1;
+}
+
+.vente-create-form label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--gc-ink);
+}
+
+.vente-create-form ::deep input,
+.vente-create-form ::deep select,
+.vente-create-form ::deep textarea {
+    width: 100%;
+    padding: 0.5625rem 0.75rem;
+}
+
+.vente-create-form ::deep textarea {
+    min-height: 88px;
+    resize: vertical;
+}
+
+.vente-create-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.vente-create-line-adder {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(100px, 140px) auto;
+    gap: 0.75rem;
+    align-items: end;
+    margin-bottom: 1rem;
+}
+
+.vente-create-line-button,
+.vente-create-actions {
+    display: flex;
+}
+
+.vente-create-line-button {
+    align-items: end;
+}
+
+.vente-create-actions {
+    justify-content: flex-end;
+    margin-top: 0.25rem;
+}
+
+.vente-create-line-button button,
+.vente-create-actions button {
+    padding: 0.5rem 1rem;
+    border-radius: var(--gc-radius-md);
+    font-weight: 500;
+}
+
+.vente-create-message,
+.vente-create-state,
+.vente-create-inline-error {
+    padding: 0.625rem 0.875rem;
+    border-radius: var(--gc-radius-md);
+    font-size: 0.8125rem;
+}
+
+.vente-create-state {
+    border: 1px dashed var(--gc-border);
+    background: var(--gc-surface);
+    color: var(--gc-muted);
+}
+
+.vente-create-message-success {
+    border: 1px solid rgba(22, 163, 74, 0.15);
+    background: var(--gc-success-bg);
+    color: var(--gc-success);
+}
+
+.vente-create-message-success a {
+    color: inherit;
+    font-weight: 600;
+}
+
+.vente-create-message-error,
+.vente-create-inline-error {
+    border: 1px solid rgba(220, 38, 38, 0.15);
+    background: var(--gc-danger-bg);
+    color: var(--gc-danger);
+}
+
+.vente-create-message-warning {
+    border: 1px solid rgba(217, 119, 6, 0.15);
+    background: var(--gc-warning-bg);
+    color: var(--gc-warning);
+}
+
+.vente-create-message-warning ul {
+    margin: 0.5rem 0 0 1.25rem;
+}
+
+.vente-create-table-wrapper {
+    overflow-x: auto;
+    border-radius: var(--gc-radius-lg);
+}
+
+.vente-create-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.vente-create-table th,
+.vente-create-table td {
+    padding: 0.625rem 0.75rem;
+    border-bottom: 1px solid var(--gc-border);
+    text-align: left;
+    vertical-align: top;
+    font-size: 0.875rem;
+}
+
+.vente-create-table th {
+    background: var(--gc-surface-sunken);
+    color: var(--gc-muted);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.vente-create-table .amount {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.warning-text {
+    color: var(--gc-warning);
+    font-weight: 600;
+}
+
+.action-cell {
+    text-align: right;
+}
+
+.link-button {
+    border: none;
+    background: transparent;
+    color: var(--gc-danger);
+    cursor: pointer;
+    padding: 0;
+    box-shadow: none;
+    font-size: 0.8125rem;
+}
+
+.link-button:hover {
+    text-decoration: underline;
+    transform: none;
+    background: transparent;
+}
+
+@media (max-width: 900px) {
+    .vente-create-grid,
+    .vente-create-line-adder {
+        grid-template-columns: 1fr;
+    }
+
+    .vente-create-actions,
+    .vente-create-line-button {
+        justify-content: stretch;
+    }
+
+    .vente-create-actions button,
+    .vente-create-line-button button {
+        width: 100%;
+    }
+}

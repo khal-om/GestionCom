@@ -1,0 +1,21 @@
+﻿@inherits LayoutComponentBase
+
+<div class="app-shell">
+    <NavMenu />
+
+    <main class="app-main-shell" tabindex="-1">
+        <section class="app-page-container">
+            @Body
+
+            <footer class="app-footer">
+                FedNad Holding © 2026
+            </footer>
+        </section>
+    </main>
+</div>
+
+<div id="blazor-error-ui">
+    Une erreur non gérée s'est produite.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>

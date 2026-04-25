@@ -1,0 +1,166 @@
+﻿@page "/clients"
+@using GestionCom.DTOs.Client
+@using GestionCom.Services
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Clients</PageTitle>
+
+<h1>Clients</h1>
+
+<div class="clients-page">
+    <div class="clients-toolbar">
+        <div class="clients-toolbar-left">
+            <input class="clients-search"
+                   @bind="searchTerm"
+                   @bind:event="oninput"
+                   placeholder="Rechercher par nom, ville ou téléphone" />
+
+            <div class="clients-count">@FilteredClients.Count client(s)</div>
+        </div>
+
+        <a class="clients-new-button" href="/clients/new">Nouveau client</a>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="clients-state">Chargement des clients...</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="clients-state clients-state-error">@errorMessage</div>
+    }
+    else if (FilteredClients.Count == 0)
+    {
+        <div class="clients-state">Aucun client trouvé.</div>
+    }
+    else
+    {
+        <div class="clients-table-wrapper">
+            <table class="clients-table">
+                <thead>
+                    <tr>
+                        <th class="sortable-th @(sortColumn == "Name" ? "sorted-th" : "")" @onclick='() => SortBy("Name")'>
+                            Nom <span class="sort-icon">@SortIcon("Name")</span>
+                        </th>
+                        <th class="sortable-th @(sortColumn == "Ville" ? "sorted-th" : "")" @onclick='() => SortBy("Ville")'>
+                            Ville <span class="sort-icon">@SortIcon("Ville")</span>
+                        </th>
+                        <th class="sortable-th @(sortColumn == "Telephone" ? "sorted-th" : "")" @onclick='() => SortBy("Telephone")'>
+                            Téléphone <span class="sort-icon">@SortIcon("Telephone")</span>
+                        </th>
+                        <th class="clients-amount sortable-th @(sortColumn == "Debt" ? "sorted-th" : "")" @onclick='() => SortBy("Debt")'>
+                            En cours <span class="sort-icon">@SortIcon("Debt")</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var client in FilteredClients)
+                    {
+                        <tr @onclick="() => GoToDetail(client.Id)"
+                            @onkeydown="(args) => HandleRowKeyDown(args, client.Id)"
+                            tabindex="0"
+                            role="button"
+                            class="clients-row">
+                            <td>
+                                <div class="clients-name">@client.Name</div>
+                            </td>
+                            <td>@DisplayValue(client.Ville)</td>
+                            <td>@DisplayValue(client.Telephone)</td>
+                            <td class="clients-amount @(client.Debt > 0 ? "clients-debt" : "clients-clear")">
+                                @client.Debt.ToString("N2")
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@inject ClientQueryService ClientQueryService
+@inject NavigationManager Navigation
+
+@code {
+    private List<ClientListDto> clients = [];
+    private string searchTerm = string.Empty;
+    private bool isLoading = true;
+    private string? errorMessage;
+    private string sortColumn = "Id";
+    private bool sortDesc = true;
+
+    private List<ClientListDto> FilteredClients
+    {
+        get
+        {
+            var q = clients.Where(client => MatchesSearch(client, searchTerm));
+            return (sortColumn switch
+            {
+                "Name"      => sortDesc ? q.OrderByDescending(c => c.Name)      : q.OrderBy(c => c.Name),
+                "Ville"     => sortDesc ? q.OrderByDescending(c => c.Ville)     : q.OrderBy(c => c.Ville),
+                "Telephone" => sortDesc ? q.OrderByDescending(c => c.Telephone) : q.OrderBy(c => c.Telephone),
+                "Debt"      => sortDesc ? q.OrderByDescending(c => c.Debt)      : q.OrderBy(c => c.Debt),
+                _           => sortDesc ? q.OrderByDescending(c => c.Id)        : q.OrderBy(c => c.Id),
+            }).ToList();
+        }
+    }
+
+    private void SortBy(string column)
+    {
+        if (sortColumn == column) sortDesc = !sortDesc;
+        else { sortColumn = column; sortDesc = false; }
+    }
+
+    private string SortIcon(string column)
+        => sortColumn != column ? "↕" : sortDesc ? "↓" : "↑";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            clients = await ClientQueryService.GetClientsAsync();
+        }
+        catch (Exception)
+        {
+            errorMessage = "Erreur lors du chargement des clients.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void GoToDetail(int clientId)
+    {
+        Navigation.NavigateTo($"/clients/{clientId}");
+    }
+
+    private static bool MatchesSearch(ClientListDto client, string search)
+    {
+        if (string.IsNullOrWhiteSpace(search))
+        {
+            return true;
+        }
+
+        return Contains(client.Name, search)
+            || Contains(client.Ville, search)
+            || Contains(client.Telephone, search);
+    }
+
+    private static bool Contains(string? value, string search)
+        => !string.IsNullOrWhiteSpace(value)
+        && value.Contains(search, StringComparison.OrdinalIgnoreCase);
+
+    private static string DisplayValue(string? value)
+        => string.IsNullOrWhiteSpace(value) ? "—" : value;
+
+    private void HandleRowKeyDown(KeyboardEventArgs args, int clientId)
+    {
+        if (args.Key is "Enter" or " ")
+        {
+            GoToDetail(clientId);
+        }
+    }
+}

@@ -1,0 +1,167 @@
+@page "/parametres"
+@using System.Security.Claims
+@using GestionCom.DTOs.Settings
+@using GestionCom.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+
+@attribute [Authorize(Roles = "Admin")]
+@rendermode InteractiveServer
+
+<PageTitle>Paramètres</PageTitle>
+
+<h1>Paramètres</h1>
+
+<div class="settings-page app-page-stack">
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="app-message app-message-error">@errorMessage</div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="app-message app-message-success">@successMessage</div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="app-state">Chargement des paramètres...</div>
+    }
+    else
+    {
+        <div class="app-split-grid">
+            <section class="app-panel">
+                <div class="app-section-header">
+                    <h2>Réglages de l'application</h2>
+                    <span>Configuration métier et informations de l'organisation.</span>
+                </div>
+
+                <EditForm Model="model" OnValidSubmit="SaveAsync" FormName="app-settings" class="app-form-stack">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="app-form-grid app-form-grid-3">
+                        <div class="app-form-field">
+                            <label for="company-name">Nom de la société</label>
+                            <InputText id="company-name" class="app-input" @bind-Value="model.CompanyName" />
+                        </div>
+
+                        <div class="app-form-field">
+                            <label for="company-tagline">Sous-titre</label>
+                            <InputText id="company-tagline" class="app-input" @bind-Value="model.CompanyTagline" />
+                        </div>
+
+                        <div class="app-form-field">
+                            <label for="support-email">Email support</label>
+                            <InputText id="support-email" class="app-input" @bind-Value="model.SupportEmail" />
+                        </div>
+
+                        <div class="app-form-field">
+                            <label for="low-stock-threshold">Seuil stock faible</label>
+                            <InputNumber id="low-stock-threshold" class="app-input" @bind-Value="model.LowStockThreshold" />
+                        </div>
+                    </div>
+
+                    <div class="app-actions app-actions-inline">
+                        <button type="submit" class="app-button" disabled="@isSaving">@(isSaving ? "Enregistrement..." : "Enregistrer les paramètres")</button>
+                    </div>
+                </EditForm>
+            </section>
+
+            <section class="app-panel">
+                <div class="app-section-header">
+                    <h2>Suggestions utiles</h2>
+                    <span>Paramètres déjà exploitables dans l'application.</span>
+                </div>
+
+                <div class="app-item-list">
+                    <article class="app-item-card settings-card-accent">
+                        <strong>Seuil stock faible</strong>
+                        <p>Utilisé par le dashboard pour afficher les alertes stock avec une valeur métier configurable.</p>
+                    </article>
+
+                    <article class="app-item-card settings-card-accent">
+                        <strong>Identité de l'organisation</strong>
+                        <p>Le nom, le sous-titre et l'email support centralisent les informations de base pour les futurs modules et impressions.</p>
+                    </article>
+
+                    <article class="app-item-card settings-card-preview">
+                        <span class="app-card-label">Aperçu actuel</span>
+                        <strong>@model.CompanyName</strong>
+                        <p>@(string.IsNullOrWhiteSpace(model.CompanyTagline) ? "Gestion commerciale" : model.CompanyTagline)</p>
+                        <p>@(string.IsNullOrWhiteSpace(model.SupportEmail) ? "Aucun email support défini." : model.SupportEmail)</p>
+                    </article>
+                </div>
+            </section>
+        </div>
+    }
+</div>
+
+@inject AppSettingsService AppSettingsService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@code {
+    private AppSettingsDto model = new();
+    private bool isLoading = true;
+    private bool isSaving;
+    private string? successMessage;
+    private string? errorMessage;
+    private int currentUserId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userIdValue = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!int.TryParse(userIdValue, out currentUserId))
+        {
+            errorMessage = "Utilisateur introuvable.";
+            isLoading = false;
+            return;
+        }
+
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            model = await AppSettingsService.GetAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        successMessage = null;
+        errorMessage = null;
+        isSaving = true;
+
+        try
+        {
+            await AppSettingsService.SaveAsync(model, currentUserId);
+            model = await AppSettingsService.GetAsync();
+            successMessage = "Paramètres enregistrés avec succès.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}

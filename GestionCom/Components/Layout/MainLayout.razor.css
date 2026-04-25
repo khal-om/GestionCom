@@ -1,0 +1,77 @@
+﻿.app-shell {
+    min-height: 100vh;
+    display: flex;
+    background: var(--gc-bg);
+}
+
+.app-main-shell {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.app-main-shell:focus {
+    outline: none;
+}
+
+.app-page-container {
+    flex: 1;
+    padding: 2.5rem 3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    max-width: 1200px;
+    width: 100%;
+}
+
+.app-footer {
+    padding: 1.5rem 3rem 1.25rem;
+    color: var(--gc-muted);
+    font-size: 0.725rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    border-top: 1px solid var(--gc-border);
+    margin-top: auto;
+}
+
+#blazor-error-ui {
+    background: var(--gc-danger);
+    color: #fff;
+    bottom: 1.25rem;
+    right: 1.25rem;
+    left: auto;
+    width: min(380px, calc(100vw - 2.5rem));
+    border-radius: var(--gc-radius-lg);
+    box-shadow: var(--gc-shadow-lg);
+    display: none;
+    padding: 0.875rem 1.125rem;
+    position: fixed;
+    z-index: 1000;
+    font-size: 0.875rem;
+}
+
+#blazor-error-ui .reload {
+    color: #fff;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.875rem;
+    top: 0.625rem;
+    opacity: 0.75;
+}
+
+@media (max-width: 900px) {
+    .app-page-container {
+        padding: 4.5rem 1.25rem 1.5rem;
+        gap: 1.5rem;
+    }
+
+    .app-footer {
+        padding: 1rem 1.25rem 1.25rem;
+    }
+}

@@ -1,0 +1,229 @@
+@page "/depenses"
+@using System.Security.Claims
+@using GestionCom.DTOs.Depense
+@using GestionCom.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Dépenses</PageTitle>
+
+<h1>Dépenses</h1>
+
+<div class="app-page-stack">
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="app-message app-message-error">@errorMessage</div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="app-message app-message-success">@successMessage</div>
+    }
+
+    <div class="app-summary-grid app-summary-grid-2">
+        <div class="app-summary-card">
+            <span class="app-card-label">Nombre de dépenses</span>
+            <strong>@overview.Items.Count</strong>
+        </div>
+        <div class="app-summary-card">
+            <span class="app-card-label">Montant total</span>
+            <strong>@overview.TotalAmount.ToString("N2")</strong>
+        </div>
+    </div>
+
+    <div class="app-split-grid">
+        <section class="app-panel">
+            <div class="app-section-header">
+                <h2>@(editingDepenseId.HasValue ? "Corriger la dépense" : "Nouvelle dépense")</h2>
+                <span>Visible pour tous les utilisateurs</span>
+            </div>
+
+            @if (editingDepenseId.HasValue)
+            {
+                <div class="app-actions app-actions-inline">
+                    <button type="button" class="btn-secondary" @onclick="CancelEditAsync">Annuler</button>
+                </div>
+            }
+
+            <EditForm Model="model" OnValidSubmit="SubmitAsync" FormName="depense-create" class="app-form-stack">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="app-form-field">
+                    <label for="depense-date">Date</label>
+                    <InputDate id="depense-date" class="app-input" @bind-Value="model.DateDepense" />
+                </div>
+
+                <div class="app-form-field">
+                    <label for="depense-libelle">Libellé</label>
+                    <InputText id="depense-libelle" class="app-input" @bind-Value="model.Libelle" />
+                </div>
+
+                <div class="app-form-field">
+                    <label for="depense-montant">Montant</label>
+                    <InputNumber id="depense-montant" class="app-input" @bind-Value="model.Montant" />
+                </div>
+
+                <div class="app-form-field">
+                    <label for="depense-description">Description</label>
+                    <InputTextArea id="depense-description" class="app-input" @bind-Value="model.Description" />
+                </div>
+
+                <div class="app-actions app-actions-inline">
+                    <button type="submit" class="app-button" disabled="@isSubmitting">@(isSubmitting ? "Enregistrement..." : editingDepenseId.HasValue ? "Enregistrer les corrections" : "Créer la dépense")</button>
+                </div>
+            </EditForm>
+        </section>
+
+        <section class="app-panel">
+            <div class="app-section-header">
+                <h2>Liste des dépenses</h2>
+                <span>@overview.Items.Count élément(s)</span>
+            </div>
+
+            @if (isLoading)
+            {
+                <div class="app-state">Chargement...</div>
+            }
+            else if (overview.Items.Count == 0)
+            {
+                <div class="app-state">Aucune dépense trouvée.</div>
+            }
+            else
+            {
+                <div class="app-table-shell">
+                    <table class="app-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Libellé</th>
+                                <th class="amount">Montant</th>
+                                <th>Créé par</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in overview.Items)
+                            {
+                                <tr @onclick="() => StartEdit(item)"
+                                    class="app-row-interactive"
+                                    tabindex="0"
+                                    role="button">
+                                    <td>@item.DateDepense.ToString("dd/MM/yyyy")</td>
+                                    <td>@item.Libelle</td>
+                                    <td class="amount">@item.Montant.ToString("N2")</td>
+                                    <td>@item.CreatedByName</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+    </div>
+</div>
+
+@inject DepenseService DepenseService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@code {
+    private CreateDepenseDto model = new() { DateDepense = DateTime.Today };
+    private DepenseOverviewDto overview = new();
+    private bool isLoading = true;
+    private bool isSubmitting;
+    private int? editingDepenseId;
+    private string? errorMessage;
+    private string? successMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOverviewAsync();
+    }
+
+    private async Task LoadOverviewAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            overview = await DepenseService.GetOverviewAsync();
+        }
+        catch (Exception)
+        {
+            errorMessage = "Erreur lors du chargement des dépenses.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SubmitAsync()
+    {
+        errorMessage = null;
+        successMessage = null;
+        isSubmitting = true;
+
+        try
+        {
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userIdValue = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdValue, out var userId))
+            {
+                throw new InvalidOperationException("Utilisateur introuvable.");
+            }
+
+            if (editingDepenseId.HasValue)
+            {
+                await DepenseService.UpdateDepenseAsync(editingDepenseId.Value, model, userId);
+                successMessage = "Dépense corrigée avec succès.";
+            }
+            else
+            {
+                await DepenseService.CreateDepenseAsync(model, userId);
+                successMessage = "Dépense créée avec succès.";
+            }
+
+            model = new CreateDepenseDto { DateDepense = DateTime.Today };
+            editingDepenseId = null;
+            await LoadOverviewAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void StartEdit(DepenseListItemDto item)
+    {
+        editingDepenseId = item.Id;
+        model = new CreateDepenseDto
+        {
+            DateDepense = item.DateDepense,
+            Libelle = item.Libelle,
+            Montant = item.Montant,
+            Description = item.Description
+        };
+
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private Task CancelEditAsync()
+    {
+        editingDepenseId = null;
+        model = new CreateDepenseDto { DateDepense = DateTime.Today };
+        errorMessage = null;
+        successMessage = null;
+        return Task.CompletedTask;
+    }
+}

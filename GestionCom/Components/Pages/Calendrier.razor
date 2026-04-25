@@ -1,0 +1,253 @@
+@page "/calendrier"
+@using System.Security.Claims
+@using GestionCom.DTOs.Calendrier
+@using GestionCom.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Calendrier</PageTitle>
+
+<h1>Calendrier</h1>
+
+<div class="calendar-page app-page-stack">
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="calendar-message calendar-message-error app-message app-message-error">@errorMessage</div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="calendar-message calendar-message-success app-message app-message-success">@successMessage</div>
+    }
+
+    <div class="calendar-grid">
+        <section class="calendar-panel app-panel">
+            <div class="calendar-section-header app-section-header">
+                <h2>@(editingEventId.HasValue ? "Corriger l'événement" : "Ajouter un événement")</h2>
+                <span>Visible pour tous les utilisateurs</span>
+            </div>
+
+            @if (editingEventId.HasValue)
+            {
+                <div class="calendar-actions app-actions app-actions-inline">
+                    <button type="button" class="btn-secondary" @onclick="CancelEdit">Annuler</button>
+                </div>
+            }
+
+            <EditForm Model="model" OnValidSubmit="SubmitAsync" FormName="calendar-create" class="calendar-form app-form-stack">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="app-form-field">
+                    <label for="event-date">Date</label>
+                    <InputDate id="event-date" class="app-input" @bind-Value="model.EventDate" />
+                </div>
+
+                <div class="app-form-field">
+                    <label for="event-description">Description</label>
+                    <InputTextArea id="event-description" class="app-input" @bind-Value="model.Description" />
+                </div>
+
+                <div class="calendar-actions app-actions app-actions-inline">
+                    <button type="submit" class="app-button" disabled="@isSubmitting">@(isSubmitting ? "Enregistrement..." : editingEventId.HasValue ? "Enregistrer les corrections" : "Ajouter l'événement")</button>
+                </div>
+            </EditForm>
+        </section>
+
+        <section class="calendar-panel app-panel">
+            <div class="calendar-section-header app-section-header">
+                <h2>Événements à venir</h2>
+                <span>@overview.UpcomingEvents.Count événement(s)</span>
+            </div>
+
+            @if (isLoading)
+            {
+                <div class="calendar-state app-state">Chargement...</div>
+            }
+            else if (overview.UpcomingEvents.Count == 0)
+            {
+                <div class="calendar-state app-state">Aucun événement à venir.</div>
+            }
+            else
+            {
+                <div class="calendar-event-list app-item-list">
+                    @foreach (var item in overview.UpcomingEvents)
+                    {
+                        <article class="calendar-event-card app-item-card calendar-item-clickable @(item.IsPaymentReminder ? "calendar-event-card-reminder" : string.Empty)" @onclick="() => StartEdit(item)">
+                            <div class="calendar-event-top">
+                                <div>
+                                    <strong>@item.EventDate.ToString("dd/MM/yyyy")</strong>
+                                    @if (item.IsToday)
+                                    {
+                                        <span class="calendar-badge">Aujourd'hui</span>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(item.ReminderBadge))
+                                    {
+                                        <span class="calendar-badge calendar-badge-reminder">@item.ReminderBadge</span>
+                                    }
+                                </div>
+                                <span class="calendar-created-by">@item.CreatedByName</span>
+                            </div>
+                            @if (item.IsPaymentReminder)
+                            {
+                                <div class="calendar-reminder-label">Rappel automatique</div>
+                            }
+                            <p>@item.Description</p>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
+    </div>
+
+        <section class="calendar-panel app-panel">
+            <div class="calendar-section-header app-section-header">
+            <h2>Événements passés</h2>
+            <span>@overview.PastEvents.Count événement(s)</span>
+        </div>
+
+        @if (isLoading)
+        {
+            <div class="calendar-state app-state">Chargement...</div>
+        }
+        else if (overview.PastEvents.Count == 0)
+        {
+            <div class="calendar-state app-state">Aucun événement passé.</div>
+        }
+        else
+        {
+            <div class="calendar-event-list calendar-event-list-past app-item-list">
+                @foreach (var item in overview.PastEvents)
+                {
+                    <article class="calendar-event-card calendar-event-card-past app-item-card calendar-item-clickable @(item.IsPaymentReminder ? "calendar-event-card-reminder" : string.Empty)" @onclick="() => StartEdit(item)">
+                        <div class="calendar-event-top">
+                            <div>
+                                <strong>@item.EventDate.ToString("dd/MM/yyyy")</strong>
+                                @if (!string.IsNullOrWhiteSpace(item.ReminderBadge))
+                                {
+                                    <span class="calendar-badge calendar-badge-reminder">@item.ReminderBadge</span>
+                                }
+                            </div>
+                            <span class="calendar-created-by">@item.CreatedByName</span>
+                        </div>
+                        @if (item.IsPaymentReminder)
+                        {
+                            <div class="calendar-reminder-label">Rappel automatique</div>
+                        }
+                        <p>@item.Description</p>
+                    </article>
+                }
+            </div>
+        }
+    </section>
+</div>
+
+@inject CalendrierService CalendrierService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@code {
+    private CreateCalendarEventDto model = new() { EventDate = DateTime.Today };
+    private CalendarOverviewDto overview = new();
+    private bool isLoading = true;
+    private bool isSubmitting;
+    private int? editingEventId;
+    private string? errorMessage;
+    private string? successMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOverviewAsync();
+    }
+
+    private async Task LoadOverviewAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            overview = await CalendrierService.GetOverviewAsync();
+        }
+        catch (Exception)
+        {
+            errorMessage = "Erreur lors du chargement du calendrier.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task SubmitAsync()
+    {
+        errorMessage = null;
+        successMessage = null;
+        isSubmitting = true;
+
+        try
+        {
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userIdValue = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdValue, out var userId))
+            {
+                throw new InvalidOperationException("Utilisateur introuvable.");
+            }
+
+            if (editingEventId.HasValue)
+            {
+                await CalendrierService.UpdateEventAsync(editingEventId.Value, model, userId);
+                successMessage = "Événement corrigé avec succès.";
+            }
+            else
+            {
+                await CalendrierService.CreateEventAsync(model, userId);
+                successMessage = "Événement ajouté avec succès.";
+            }
+
+            model = new CreateCalendarEventDto { EventDate = DateTime.Today };
+            editingEventId = null;
+            await LoadOverviewAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void StartEdit(CalendarEventItemDto item)
+    {
+        if (item.IsPaymentReminder)
+        {
+            errorMessage = "Les rappels automatiques de paiement se gèrent depuis la fiche client et le paiement associé.";
+            successMessage = null;
+            return;
+        }
+
+        editingEventId = item.Id;
+        model = new CreateCalendarEventDto
+        {
+            EventDate = item.EventDate,
+            Description = item.Description
+        };
+
+        errorMessage = null;
+        successMessage = null;
+    }
+
+    private void CancelEdit()
+    {
+        editingEventId = null;
+        model = new CreateCalendarEventDto { EventDate = DateTime.Today };
+        errorMessage = null;
+        successMessage = null;
+    }
+}

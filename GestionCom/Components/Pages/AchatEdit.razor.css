@@ -1,0 +1,36 @@
+.achat-create-page {
+    max-width: 1140px;
+}
+
+.achat-create-panel-auxiliary {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.achat-create-readonly {
+    min-height: 52px;
+}
+
+.achat-create-actions button,
+.achat-create-line-button button {
+    min-width: 168px;
+}
+
+.action-cell {
+    text-align: right;
+}
+
+.link-button {
+    border: none;
+    background: transparent;
+    color: var(--gc-danger-text);
+    cursor: pointer;
+    padding: 0;
+    box-shadow: none;
+}
+
+.link-button:hover {
+    text-decoration: underline;
+    transform: none;
+}

@@ -1,0 +1,431 @@
+@page "/achats/{AchatId:int}/edit"
+@using System.Security.Claims
+@using GestionCom.DTOs.Achat
+@using GestionCom.DTOs.Produit
+@using GestionCom.DTOs.Vente
+@using GestionCom.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Modifier achat</PageTitle>
+
+<h1>Modifier l'achat</h1>
+
+<div class="achat-create-page app-page-stack">
+    <a class="achat-create-back app-back-link" href="@($"/achats/{AchatId}")">← Retour au détail</a>
+
+    @if (!string.IsNullOrWhiteSpace(loadErrorMessage))
+    {
+        <div class="achat-create-message achat-create-message-error app-message app-message-error">@loadErrorMessage</div>
+    }
+    else if (isLoading)
+    {
+        <div class="achat-create-state app-state">Chargement...</div>
+    }
+    else
+    {
+        @if (!string.IsNullOrWhiteSpace(successMessage))
+        {
+            <div class="achat-create-message achat-create-message-success app-message app-message-success">@successMessage</div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(submitErrorMessage))
+        {
+            <div class="achat-create-message achat-create-message-error app-message app-message-error">@submitErrorMessage</div>
+        }
+
+        <section class="achat-create-panel achat-create-panel-auxiliary app-panel">
+            <div class="achat-create-section-header app-section-header">
+                <h2>Créer un produit rapidement</h2>
+                <span>Ajout direct sans quitter la page</span>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(productSuccessMessage))
+            {
+                <div class="achat-create-message achat-create-message-success app-message app-message-success">@productSuccessMessage</div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(productErrorMessage))
+            {
+                <div class="achat-create-message achat-create-message-error app-message app-message-error">@productErrorMessage</div>
+            }
+
+            <div class="achat-create-grid app-form-grid app-form-grid-3">
+                <div class="app-form-field">
+                    <label for="quick-designation">Désignation</label>
+                    <input id="quick-designation" class="app-input" @bind="quickProductModel.Designation" />
+                </div>
+
+                <div class="app-form-field">
+                    <label for="quick-marque">Marque</label>
+                    <input id="quick-marque" class="app-input" @bind="quickProductModel.Marque" />
+                </div>
+
+                <div class="app-form-field">
+                    <label for="quick-famille">Famille</label>
+                    <input id="quick-famille" class="app-input" @bind="quickProductModel.Famille" />
+                </div>
+            </div>
+
+            <div class="achat-create-actions achat-create-actions-inline app-actions app-actions-inline">
+                <button type="button" class="app-button" @onclick="CreateProductAsync" disabled="@isCreatingProduct">
+                    @(isCreatingProduct ? "Création..." : "Créer le produit")
+                </button>
+            </div>
+        </section>
+
+        <EditForm Model="model" OnValidSubmit="SubmitAsync" FormName="achat-edit" class="achat-create-form app-form-stack">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <section class="achat-create-panel app-panel">
+                <h2>Informations</h2>
+                <div class="achat-create-grid app-form-grid app-form-grid-3">
+                    <div class="app-form-field">
+                        <label for="fournisseur">Fournisseur</label>
+                        <InputText id="fournisseur" class="app-input" @bind-Value="model.Fournisseur" />
+                    </div>
+
+                    <div class="app-form-field">
+                        <label for="dateachat">Date achat</label>
+                        <InputDate id="dateachat" class="app-input" @bind-Value="model.DateAchat" />
+                    </div>
+
+                    <div class="app-form-field">
+                        <label for="total">Montant total</label>
+                        <InputNumber id="total" class="app-input" @bind-Value="model.TotalAmount" />
+                    </div>
+
+                    <div class="app-form-field">
+                        <label for="paid">Montant payé</label>
+                        <InputNumber id="paid" class="app-input" @bind-Value="model.PaidAmount" />
+                    </div>
+
+                    <div class="app-form-field">
+                        <label>Montant resté</label>
+                        <div class="achat-create-readonly app-readonly">@RemainingAmount.ToString("N2")</div>
+                    </div>
+
+                    <div class="achat-create-grid-full app-form-field app-form-grid-full">
+                        <label for="note">Note</label>
+                        <InputTextArea id="note" class="app-input" @bind-Value="model.Note" />
+                    </div>
+                </div>
+            </section>
+
+            <section class="achat-create-panel app-panel">
+                <div class="achat-create-section-header app-section-header">
+                    <h2>Produits</h2>
+                    <span>@selectedLines.Count ligne(s)</span>
+                </div>
+
+                @if (productOptions.Count == 0)
+                {
+                    <div class="achat-create-state app-state">Aucun produit disponible. Créez-en un avec le bloc ci-dessus.</div>
+                }
+                else
+                {
+                    <div class="achat-create-line-adder app-line-adder">
+                        <div class="app-form-field">
+                            <label for="produit">Produit</label>
+                            <InputSelect id="produit" class="app-input" @bind-Value="selectedProduitId">
+                                <option value="0">-- Sélectionner --</option>
+                                @foreach (var produit in productOptions)
+                                {
+                                    <option value="@produit.Id">@produit.Label (stock: @produit.Stock)</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        <div class="app-form-field">
+                            <label for="quantite">Quantité</label>
+                            <InputNumber id="quantite" class="app-input" @bind-Value="selectedQuantite" />
+                        </div>
+
+                        <div class="achat-create-line-button">
+                        <button type="button" class="app-button" @onclick="AddLine" @onclick:preventDefault="true">Ajouter</button>
+                        </div>
+                    </div>
+                }
+
+                @if (!string.IsNullOrWhiteSpace(lineErrorMessage))
+                {
+                    <div class="achat-create-inline-error app-inline-error">@lineErrorMessage</div>
+                }
+
+                @if (selectedLines.Count == 0)
+                {
+                    <div class="achat-create-state app-state">Aucun produit ajouté.</div>
+                }
+                else
+                {
+                    <div class="achat-create-table-wrapper app-table-shell">
+                        <table class="achat-create-table app-table">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th class="amount">Stock actuel</th>
+                                    <th class="amount">Quantité</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var line in selectedLines)
+                                {
+                                    <tr>
+                                        <td>@line.Label</td>
+                                        <td class="amount">@line.Stock</td>
+                                        <td class="amount">@line.Quantite</td>
+                                        <td class="action-cell">
+                                            <button type="button" class="link-button" @onclick="() => RemoveLine(line.ProduitId)" @onclick:preventDefault="true">Retirer</button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </section>
+
+            <div class="achat-create-actions app-actions">
+                <button type="submit" class="app-button" disabled="@isSubmitting">@(isSubmitting ? "Enregistrement..." : "Enregistrer les modifications")</button>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@inject AchatQueryService AchatQueryService
+@inject AchatService AchatService
+@inject ProduitQueryService ProduitQueryService
+@inject ProduitService ProduitService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+
+@code {
+    [Parameter]
+    public int AchatId { get; set; }
+
+    private UpdateAchatDto model = CreateDefaultModel();
+    private CreateProduitDto quickProductModel = new();
+    private List<VenteProductOptionDto> productOptions = [];
+    private List<SelectedAchatLine> selectedLines = [];
+    private bool isLoading = true;
+    private bool isSubmitting;
+    private bool isCreatingProduct;
+    private string? loadErrorMessage;
+    private string? submitErrorMessage;
+    private string? successMessage;
+    private string? lineErrorMessage;
+    private string? productSuccessMessage;
+    private string? productErrorMessage;
+    private int selectedProduitId;
+    private int selectedQuantite = 1;
+
+    private decimal RemainingAmount => Math.Max(model.TotalAmount - model.PaidAmount, 0);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        loadErrorMessage = null;
+
+        try
+        {
+            productOptions = await ProduitQueryService.GetProductOptionsAsync();
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userIdValue = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdValue, out var userId))
+            {
+                throw new InvalidOperationException("Utilisateur introuvable.");
+            }
+
+            var achat = await AchatQueryService.GetAchatDetailAsync(AchatId, userId);
+
+            model = new UpdateAchatDto
+            {
+                Fournisseur = achat.Fournisseur,
+                TotalAmount = achat.TotalAmount,
+                PaidAmount = achat.PaidAmount,
+                DateAchat = achat.DateAchat,
+                Note = achat.Note
+            };
+
+            selectedLines = achat.Lignes
+                .Select(line => new SelectedAchatLine
+                {
+                    ProduitId = line.ProduitId,
+                    Label = line.ProduitLabel,
+                    Stock = line.CurrentStock,
+                    Quantite = line.Quantite
+                })
+                .ToList();
+
+            SyncLines();
+        }
+        catch (InvalidOperationException ex)
+        {
+            loadErrorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            loadErrorMessage = "Erreur lors du chargement de l'achat.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void AddLine()
+    {
+        lineErrorMessage = null;
+
+        if (selectedProduitId <= 0)
+        {
+            lineErrorMessage = "Sélectionnez un produit.";
+            return;
+        }
+
+        if (selectedQuantite <= 0)
+        {
+            lineErrorMessage = "La quantité doit être supérieure à 0.";
+            return;
+        }
+
+        var produit = productOptions.FirstOrDefault(p => p.Id == selectedProduitId);
+
+        if (produit is null)
+        {
+            lineErrorMessage = "Produit introuvable.";
+            return;
+        }
+
+        var existingLine = selectedLines.FirstOrDefault(l => l.ProduitId == selectedProduitId);
+
+        if (existingLine is null)
+        {
+            selectedLines.Add(new SelectedAchatLine
+            {
+                ProduitId = produit.Id,
+                Label = produit.Label,
+                Stock = produit.Stock,
+                Quantite = selectedQuantite
+            });
+        }
+        else
+        {
+            existingLine.Quantite += selectedQuantite;
+            existingLine.Stock = produit.Stock;
+            existingLine.Label = produit.Label;
+        }
+
+        selectedProduitId = 0;
+        selectedQuantite = 1;
+        SyncLines();
+    }
+
+    private void RemoveLine(int produitId)
+    {
+        selectedLines.RemoveAll(l => l.ProduitId == produitId);
+        SyncLines();
+    }
+
+    private void SyncLines()
+    {
+        model.Lignes = selectedLines
+            .Select(l => new CreateAchatLigneDto
+            {
+                ProduitId = l.ProduitId,
+                Quantite = l.Quantite
+            })
+            .ToList();
+    }
+
+    private async Task CreateProductAsync()
+    {
+        productErrorMessage = null;
+        productSuccessMessage = null;
+        isCreatingProduct = true;
+
+        try
+        {
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userIdValue = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdValue, out var userId))
+            {
+                throw new InvalidOperationException("Utilisateur introuvable.");
+            }
+
+            var produitId = await ProduitService.CreateProduitAsync(quickProductModel, userId);
+            quickProductModel = new CreateProduitDto();
+            productSuccessMessage = "Produit créé avec succès.";
+
+            productOptions = await ProduitQueryService.GetProductOptionsAsync();
+            selectedProduitId = produitId;
+        }
+        catch (Exception ex)
+        {
+            productErrorMessage = ex.Message;
+        }
+        finally
+        {
+            isCreatingProduct = false;
+        }
+    }
+
+    private async Task SubmitAsync()
+    {
+        submitErrorMessage = null;
+        successMessage = null;
+        isSubmitting = true;
+
+        try
+        {
+            SyncLines();
+
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userIdValue = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdValue, out var userId))
+            {
+                throw new InvalidOperationException("Utilisateur introuvable.");
+            }
+
+            var result = await AchatService.UpdateAchatAsync(AchatId, model, userId);
+            successMessage = $"Achat #{result.AchatId} mis à jour avec succès. Resté: {result.RemainingAmount:N2}.";
+            Navigation.NavigateTo($"/achats/{AchatId}");
+        }
+        catch (Exception ex)
+        {
+            submitErrorMessage = ex.Message;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private static UpdateAchatDto CreateDefaultModel()
+        => new()
+        {
+            DateAchat = DateTime.Today
+        };
+
+    private sealed class SelectedAchatLine
+    {
+        public int ProduitId { get; set; }
+        public string Label { get; set; } = null!;
+        public int Stock { get; set; }
+        public int Quantite { get; set; }
+    }
+}

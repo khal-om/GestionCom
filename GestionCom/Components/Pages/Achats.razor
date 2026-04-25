@@ -1,0 +1,180 @@
+@page "/achats"
+@using GestionCom.DTOs.Achat
+@using GestionCom.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Web
+@using System.Security.Claims
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Achats</PageTitle>
+
+<h1>Achats</h1>
+
+<div class="achats-page app-page-stack">
+    <div class="achats-toolbar app-toolbar">
+        <div class="achats-toolbar-left app-toolbar-left">
+            <input class="achats-search app-search app-input"
+                   @bind="searchTerm"
+                   @bind:event="oninput"
+                   placeholder="Rechercher par fournisseur ou numéro" />
+
+            <div class="achats-count app-count">@FilteredAchats.Count achat(s)</div>
+        </div>
+
+        <a class="app-button achats-new-button" href="/achats/new">Nouvel achat</a>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="achats-state app-state">Chargement des achats...</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="achats-state achats-state-error app-message app-message-error">@errorMessage</div>
+    }
+    else if (FilteredAchats.Count == 0)
+    {
+        <div class="achats-state app-state">Aucun achat trouvé.</div>
+    }
+    else
+    {
+        <div class="achats-table-wrapper app-table-shell">
+            <table class="achats-table app-table">
+                <thead>
+                    <tr>
+                        <th class="sortable-th @(sortColumn == "Id" ? "sorted-th" : "")" @onclick='() => SortBy("Id")'>
+                            N° <span class="sort-icon">@SortIcon("Id")</span>
+                        </th>
+                        <th class="sortable-th @(sortColumn == "Fournisseur" ? "sorted-th" : "")" @onclick='() => SortBy("Fournisseur")'>
+                            Fournisseur <span class="sort-icon">@SortIcon("Fournisseur")</span>
+                        </th>
+                        <th class="sortable-th @(sortColumn == "DateAchat" ? "sorted-th" : "")" @onclick='() => SortBy("DateAchat")'>
+                            Date <span class="sort-icon">@SortIcon("DateAchat")</span>
+                        </th>
+                        <th class="amount sortable-th @(sortColumn == "TotalAmount" ? "sorted-th" : "")" @onclick='() => SortBy("TotalAmount")'>
+                            Montant <span class="sort-icon">@SortIcon("TotalAmount")</span>
+                        </th>
+                        <th class="amount sortable-th @(sortColumn == "PaidAmount" ? "sorted-th" : "")" @onclick='() => SortBy("PaidAmount")'>
+                            Payé <span class="sort-icon">@SortIcon("PaidAmount")</span>
+                        </th>
+                        <th class="amount sortable-th @(sortColumn == "RemainingAmount" ? "sorted-th" : "")" @onclick='() => SortBy("RemainingAmount")'>
+                            Resté <span class="sort-icon">@SortIcon("RemainingAmount")</span>
+                        </th>
+                        <th class="amount sortable-th @(sortColumn == "LineCount" ? "sorted-th" : "")" @onclick='() => SortBy("LineCount")'>
+                            Lignes <span class="sort-icon">@SortIcon("LineCount")</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var achat in FilteredAchats)
+                    {
+                        <tr @onclick="() => GoToDetail(achat.Id)"
+                            @onkeydown="(args) => HandleRowKeyDown(args, achat.Id)"
+                            tabindex="0"
+                            role="button"
+                            class="achats-row app-row-interactive">
+                            <td>#@achat.Id</td>
+                            <td><div class="achats-name">@achat.Fournisseur</div></td>
+                            <td>@achat.DateAchat.ToString("dd/MM/yyyy")</td>
+                            <td class="amount">@achat.TotalAmount.ToString("N2")</td>
+                            <td class="amount">@achat.PaidAmount.ToString("N2")</td>
+                            <td class="amount @(achat.RemainingAmount > 0 ? "achats-pending" : "achats-clear")">@achat.RemainingAmount.ToString("N2")</td>
+                            <td class="amount">@achat.LineCount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@inject AchatQueryService AchatQueryService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@code {
+    private List<AchatListItemDto> achats = [];
+    private string searchTerm = string.Empty;
+    private bool isLoading = true;
+    private string? errorMessage;
+    private string sortColumn = "DateAchat";
+    private bool sortDesc = true;
+
+    private List<AchatListItemDto> FilteredAchats
+    {
+        get
+        {
+            var q = achats.Where(a => MatchesSearch(a, searchTerm));
+            return (sortColumn switch
+            {
+                "Id"              => sortDesc ? q.OrderByDescending(a => a.Id)              : q.OrderBy(a => a.Id),
+                "Fournisseur"     => sortDesc ? q.OrderByDescending(a => a.Fournisseur)     : q.OrderBy(a => a.Fournisseur),
+                "TotalAmount"     => sortDesc ? q.OrderByDescending(a => a.TotalAmount)     : q.OrderBy(a => a.TotalAmount),
+                "PaidAmount"      => sortDesc ? q.OrderByDescending(a => a.PaidAmount)      : q.OrderBy(a => a.PaidAmount),
+                "RemainingAmount" => sortDesc ? q.OrderByDescending(a => a.RemainingAmount) : q.OrderBy(a => a.RemainingAmount),
+                "LineCount"       => sortDesc ? q.OrderByDescending(a => a.LineCount)       : q.OrderBy(a => a.LineCount),
+                _                 => sortDesc ? q.OrderByDescending(a => a.DateAchat)       : q.OrderBy(a => a.DateAchat),
+            }).ToList();
+        }
+    }
+
+    private void SortBy(string column)
+    {
+        if (sortColumn == column) sortDesc = !sortDesc;
+        else { sortColumn = column; sortDesc = false; }
+    }
+
+    private string SortIcon(string column)
+        => sortColumn != column ? "↕" : sortDesc ? "↓" : "↑";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userIdValue = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdValue, out var userId))
+            {
+                throw new InvalidOperationException("Utilisateur introuvable.");
+            }
+
+            achats = await AchatQueryService.GetAchatsAsync(userId);
+        }
+        catch (Exception)
+        {
+            errorMessage = "Erreur lors du chargement des achats.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void GoToDetail(int achatId)
+    {
+        Navigation.NavigateTo($"/achats/{achatId}");
+    }
+
+    private static bool MatchesSearch(AchatListItemDto achat, string search)
+    {
+        if (string.IsNullOrWhiteSpace(search))
+        {
+            return true;
+        }
+
+        return achat.Id.ToString().Contains(search, StringComparison.OrdinalIgnoreCase)
+            || achat.Fournisseur.Contains(search, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void HandleRowKeyDown(KeyboardEventArgs args, int achatId)
+    {
+        if (args.Key is "Enter" or " ")
+        {
+            GoToDetail(achatId);
+        }
+    }
+}

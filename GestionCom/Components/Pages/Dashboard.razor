@@ -1,0 +1,737 @@
+@page "/dashboard"
+@using System.Globalization
+@using System.Security.Claims
+@using GestionCom.DTOs.Dashboard
+@using GestionCom.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Dashboard</PageTitle>
+
+<h1>Dashboard</h1>
+
+<div class="dashboard-page app-page-stack">
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="app-message app-message-error">@errorMessage</div>
+    }
+
+    <section class="app-panel dashboard-hero-panel">
+        <div class="app-toolbar dashboard-toolbar">
+            <div class="app-toolbar-left dashboard-toolbar-main">
+                <div class="dashboard-toolbar-copy">
+                    <h2>Vue d'ensemble</h2>
+                    <span>Analyse annuelle des ventes, comparaison des performances et indicateurs opérationnels.</span>
+                </div>
+            </div>
+
+            <div class="dashboard-toolbar-side">
+                <div class="app-form-field dashboard-year-field">
+                    <label for="dashboard-year">Année</label>
+                    <select id="dashboard-year" class="app-input" value="@selectedYear" @onchange="OnYearChangedAsync">
+                        @foreach (var year in overview.AvailableYears)
+                        {
+                            <option value="@year">@year</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        @if (isAdmin)
+        {
+            <div class="dashboard-filter-grid app-form-grid">
+                <div class="app-form-field dashboard-filter-card">
+                    <label for="dashboard-user">Utilisateur</label>
+                    <select id="dashboard-user" class="app-input" value="@selectedAdminUserId" @onchange="OnUserChangedAsync">
+                        <option value="">Moi (@GetCurrentUserLabel())</option>
+                        @foreach (var user in overview.AvailableUsers)
+                        {
+                            <option value="@user.UserId">@user.Username</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="app-form-field dashboard-filter-card">
+                    <label for="dashboard-month-from">Mois début</label>
+                    <select id="dashboard-month-from" class="app-input" value="@selectedMonthFrom" @onchange="OnMonthFromChangedAsync">
+                        @foreach (var month in MonthOptions)
+                        {
+                            <option value="@month.Value">@month.Label</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="app-form-field dashboard-filter-card">
+                    <label for="dashboard-month-to">Mois fin</label>
+                    <select id="dashboard-month-to" class="app-input" value="@selectedMonthTo" @onchange="OnMonthToChangedAsync">
+                        @foreach (var month in MonthOptions)
+                        {
+                            <option value="@month.Value">@month.Label</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="app-form-field dashboard-filter-card">
+                    <label for="dashboard-sales-state">État des ventes</label>
+                    <select id="dashboard-sales-state" class="app-input" value="@selectedSaleState" @onchange="OnSaleStateChangedAsync">
+                        <option value="All">Toutes</option>
+                        <option value="Delivered">Livrées</option>
+                        <option value="Ordered">Commandes</option>
+                    </select>
+                </div>
+            </div>
+        }
+    </section>
+
+    @if (isLoading)
+    {
+        <div class="app-state">Chargement du dashboard...</div>
+    }
+    else
+    {
+        <div class="app-summary-grid app-summary-grid-4 dashboard-metrics-grid">
+            <div class="app-summary-card dashboard-metric-card dashboard-metric-card-user">
+                <span class="app-card-label">Ventes de @overview.SelectedUserDisplayName</span>
+                <strong>@overview.CurrentUserYearSales.ToString("N2")</strong>
+            </div>
+            <div class="app-summary-card dashboard-metric-card dashboard-metric-card-sales">
+                <span class="app-card-label">@(isAdmin ? "Ventes globales" : "Mes ventes filtrées")</span>
+                <strong>@overview.CompanyYearSales.ToString("N2")</strong>
+            </div>
+            <div class="app-summary-card dashboard-metric-card dashboard-metric-card-purchase">
+                <span class="app-card-label">Achats</span>
+                <strong>@overview.CompanyYearPurchases.ToString("N2")</strong>
+            </div>
+            <div class="app-summary-card dashboard-metric-card dashboard-metric-card-expense">
+                <span class="app-card-label">Dépenses</span>
+                <strong>@overview.CompanyYearExpenses.ToString("N2")</strong>
+            </div>
+        </div>
+
+        <div class="app-summary-grid app-summary-grid-4 dashboard-metrics-grid">
+            <div class="app-summary-card dashboard-metric-card dashboard-metric-card-client">
+                <span class="app-card-label">@(isAdmin ? "Solde clients" : "Mon solde clients")</span>
+                <strong>@overview.OutstandingClientBalance.ToString("N2")</strong>
+            </div>
+            <div class="app-summary-card dashboard-metric-card dashboard-metric-card-supplier">
+                <span class="app-card-label">Solde fournisseurs</span>
+                <strong>@overview.OutstandingSupplierBalance.ToString("N2")</strong>
+            </div>
+            <div class="app-summary-card dashboard-metric-card dashboard-metric-card-calendar">
+                <span class="app-card-label">Événements à venir</span>
+                <strong>@overview.UpcomingEventCount</strong>
+            </div>
+            <div class="app-summary-card dashboard-metric-card dashboard-metric-card-stock">
+                <span class="app-card-label">Stocks faibles</span>
+                <strong>@overview.LowStockProductCount</strong>
+            </div>
+        </div>
+
+        <div class="app-split-grid dashboard-charts-grid">
+            <section class="app-panel dashboard-chart-panel dashboard-chart-panel-highlight">
+                <div class="app-section-header">
+                    <div>
+                        <h2>Ventes mensuelles de @overview.SelectedUserDisplayName</h2>
+                        <span>@GetFilterSummary()</span>
+                    </div>
+                    <strong class="dashboard-chart-total">@overview.CurrentUserYearSales.ToString("N2")</strong>
+                </div>
+
+                <div class="dashboard-chart-shell">
+                    @RenderLineChart(overview.CurrentUserSalesByMonth, "Ventes utilisateur", GetUserLineClass())
+                </div>
+            </section>
+
+            @if (isAdmin)
+            {
+                <section class="app-panel dashboard-chart-panel">
+                    <div class="app-section-header">
+                        <div>
+                            <h2>Ventes globales par mois</h2>
+                            <span>Comparaison globale après filtres administrateur.</span>
+                        </div>
+                        <strong class="dashboard-chart-total">@overview.CompanyYearSales.ToString("N2")</strong>
+                    </div>
+
+                    <div class="dashboard-chart-shell">
+                        @RenderBarChart(overview.CompanySalesByMonth, "Toutes les ventes", "dashboard-bar dashboard-bar-sales")
+                    </div>
+                </section>
+            }
+            else
+            {
+                <section class="app-panel dashboard-chart-panel dashboard-chart-panel-muted">
+                    <div class="app-section-header">
+                        <div>
+                            <h2>Ventes globales par mois</h2>
+                            <span>Réservé aux administrateurs.</span>
+                        </div>
+                    </div>
+                    <div class="app-state">Ce graphique n'est visible que pour les administrateurs.</div>
+                </section>
+            }
+        </div>
+
+        <div class="app-split-grid dashboard-charts-grid">
+            <section class="app-panel dashboard-chart-panel">
+                <div class="app-section-header">
+                    <div>
+                        <h2>Achats vs dépenses</h2>
+                        <span>Comparaison mensuelle des sorties sur la période choisie.</span>
+                    </div>
+                    <div class="dashboard-legend">
+                        <span><i class="dashboard-legend-swatch dashboard-legend-swatch-purchase"></i>Achats</span>
+                        <span><i class="dashboard-legend-swatch dashboard-legend-swatch-expense"></i>Dépenses</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-chart-shell">
+                    @RenderComparisonChart(overview.CompanyPurchasesByMonth, overview.CompanyExpensesByMonth)
+                </div>
+            </section>
+
+            @if (isAdmin)
+            {
+                <section class="app-panel dashboard-chart-panel">
+                    <div class="app-section-header">
+                        <div>
+                            <h2>Top vendeurs</h2>
+                            <span>Couleurs distinctes par utilisateur.</span>
+                        </div>
+                    </div>
+
+                    @if (overview.TopUsers.Count == 0)
+                    {
+                        <div class="app-state">Aucune vente utilisateur pour ces filtres.</div>
+                    }
+                    else
+                    {
+                        <div class="dashboard-user-bars">
+                            @foreach (var entry in overview.TopUsers.Select((value, index) => (value, index)))
+                            {
+                                var width = GetUserBarWidth(entry.value.TotalAmount);
+                                <article class="dashboard-user-bar-card">
+                                    <div class="dashboard-list-top">
+                                        <div class="dashboard-user-label-wrap">
+                                            <span class="dashboard-user-dot @GetUserColorClass(entry.index)" aria-hidden="true"></span>
+                                            <strong>@entry.value.Username</strong>
+                                        </div>
+                                        <span>@entry.value.TotalAmount.ToString("N2")</span>
+                                    </div>
+                                    <div class="dashboard-user-bar-track">
+                                        <div class="dashboard-user-bar-fill @GetUserColorClass(entry.index)" style="width:@width"></div>
+                                    </div>
+                                </article>
+                            }
+                        </div>
+                    }
+                </section>
+            }
+        </div>
+
+        <div class="app-split-grid dashboard-lists-grid">
+            <section class="app-panel">
+                <div class="app-section-header">
+                    <h2>Top clients</h2>
+                    <span>Sur @selectedYear</span>
+                </div>
+
+                @if (overview.TopClients.Count == 0)
+                {
+                    <div class="app-state">Aucune donnée client pour cette année.</div>
+                }
+                else
+                {
+                    <div class="app-item-list">
+                        @foreach (var entry in overview.TopClients.Select((c, i) => (c, i)))
+                        {
+                            var rankClass = entry.i switch { 0 => "dashboard-rank dashboard-rank-1", 1 => "dashboard-rank dashboard-rank-2", 2 => "dashboard-rank dashboard-rank-3", _ => "dashboard-rank dashboard-rank-n" };
+                            <article class="app-item-card dashboard-list-card">
+                                <div class="dashboard-list-top">
+                                    <div style="display:flex;align-items:center;gap:0.6rem;min-width:0">
+                                        <span class="@rankClass" aria-hidden="true">@(entry.i + 1)</span>
+                                        <a href="@($"/clients/{entry.c.ClientId}")">@entry.c.ClientName</a>
+                                    </div>
+                                    <strong class="dashboard-value-sales">@entry.c.TotalAmount.ToString("N2")</strong>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+            </section>
+
+            <section class="app-panel">
+                <div class="app-section-header">
+                    <h2>Alertes stock</h2>
+                    <span>Produits à surveiller</span>
+                </div>
+
+                @if (overview.LowStockProducts.Count == 0)
+                {
+                    <div class="app-state">Aucun stock faible détecté.</div>
+                }
+                else
+                {
+                    <div class="app-item-list">
+                        @foreach (var produit in overview.LowStockProducts)
+                        {
+                            <article class="app-item-card dashboard-list-card">
+                                <div class="dashboard-list-top">
+                                    <a href="/produits">@produit.ProduitLabel</a>
+                                    <span class="@(produit.Stock <= 0 ? "dashboard-negative" : "dashboard-warning")">@produit.Stock</span>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+            </section>
+        </div>
+
+        <section class="app-panel">
+            <div class="app-section-header">
+                <h2>Prochains événements</h2>
+                <span>Calendrier partagé</span>
+            </div>
+
+            @if (overview.UpcomingEvents.Count == 0)
+            {
+                <div class="app-state">Aucun événement à venir.</div>
+            }
+            else
+            {
+                <div class="app-item-list">
+                    @foreach (var item in overview.UpcomingEvents)
+                    {
+                        <article class="app-item-card dashboard-event-card">
+                            <div class="dashboard-list-top">
+                                <div>
+                                    <strong>@item.EventDate.ToString("dd/MM/yyyy")</strong>
+                                    @if (item.IsToday)
+                                    {
+                                        <span class="dashboard-badge">Aujourd'hui</span>
+                                    }
+                                </div>
+                                <span class="app-created-by">@item.CreatedByName</span>
+                            </div>
+                            <p>@item.Description</p>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
+    }
+</div>
+
+@inject DashboardService DashboardService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@code {
+    private static readonly IReadOnlyList<MonthOption> MonthOptions = Enumerable.Range(1, 12)
+        .Select(month => new MonthOption(month, CultureInfo.GetCultureInfo("fr-FR").DateTimeFormat.GetMonthName(month)))
+        .ToList();
+
+    private static readonly string[] UserColorClasses =
+    [
+        "dashboard-user-color-1",
+        "dashboard-user-color-2",
+        "dashboard-user-color-3",
+        "dashboard-user-color-4",
+        "dashboard-user-color-5"
+    ];
+
+    private DashboardOverviewDto overview = new();
+    private bool isLoading = true;
+    private bool isAdmin;
+    private int currentUserId;
+    private string currentUsername = "Moi";
+    private int selectedYear = DateTime.UtcNow.Year;
+    private int? selectedAdminUserId;
+    private int selectedMonthFrom = 1;
+    private int selectedMonthTo = 12;
+    private string selectedSaleState = "All";
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authenticationState.User;
+        var userIdValue = user.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!int.TryParse(userIdValue, out currentUserId))
+        {
+            errorMessage = "Utilisateur introuvable.";
+            isLoading = false;
+            return;
+        }
+
+        currentUsername = user.Identity?.Name ?? currentUsername;
+        isAdmin = user.IsInRole("Admin");
+        await LoadOverviewAsync();
+    }
+
+    private async Task LoadOverviewAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            overview = await DashboardService.GetOverviewAsync(
+                currentUserId,
+                isAdmin,
+                selectedYear,
+                selectedAdminUserId,
+                selectedMonthFrom,
+                selectedMonthTo,
+                selectedSaleState);
+
+            selectedYear = overview.SelectedYear;
+            selectedAdminUserId = overview.SelectedUserId;
+            selectedMonthFrom = overview.SelectedMonthFrom;
+            selectedMonthTo = overview.SelectedMonthTo;
+            selectedSaleState = overview.SelectedSaleState;
+        }
+        catch (Exception)
+        {
+            errorMessage = "Erreur lors du chargement du dashboard.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task OnYearChangedAsync(ChangeEventArgs args)
+    {
+        if (int.TryParse(args.Value?.ToString(), out var year))
+        {
+            selectedYear = year;
+            await LoadOverviewAsync();
+        }
+    }
+
+    private async Task OnUserChangedAsync(ChangeEventArgs args)
+    {
+        selectedAdminUserId = int.TryParse(args.Value?.ToString(), out var userId) ? userId : null;
+        await LoadOverviewAsync();
+    }
+
+    private async Task OnMonthFromChangedAsync(ChangeEventArgs args)
+    {
+        if (int.TryParse(args.Value?.ToString(), out var month))
+        {
+            selectedMonthFrom = month;
+            await LoadOverviewAsync();
+        }
+    }
+
+    private async Task OnMonthToChangedAsync(ChangeEventArgs args)
+    {
+        if (int.TryParse(args.Value?.ToString(), out var month))
+        {
+            selectedMonthTo = month;
+            await LoadOverviewAsync();
+        }
+    }
+
+    private async Task OnSaleStateChangedAsync(ChangeEventArgs args)
+    {
+        selectedSaleState = args.Value?.ToString() ?? "All";
+        await LoadOverviewAsync();
+    }
+
+    private string GetCurrentUserLabel() => currentUsername;
+
+    private string GetFilterSummary()
+        => $"{MonthOptions[selectedMonthFrom - 1].Label} → {MonthOptions[selectedMonthTo - 1].Label} · {GetSaleStateLabel(selectedSaleState)}";
+
+    private static string GetSaleStateLabel(string saleState)
+        => saleState switch
+        {
+            "Delivered" => "Livrées",
+            "Ordered" => "Commandes",
+            _ => "Toutes les ventes"
+        };
+
+    private string GetUserLineClass()
+    {
+        if (selectedAdminUserId.HasValue)
+        {
+            var index = overview.AvailableUsers.FindIndex(u => u.UserId == selectedAdminUserId.Value);
+            return $"dashboard-line {GetUserColorClass(index)}";
+        }
+
+        return "dashboard-line dashboard-user-color-1";
+    }
+
+    private string GetUserColorClass(int index)
+    {
+        var safeIndex = index < 0 ? 0 : index % UserColorClasses.Length;
+        return UserColorClasses[safeIndex];
+    }
+
+    private string GetUserBarWidth(decimal value)
+    {
+        var max = Math.Max(overview.TopUsers.DefaultIfEmpty(new DashboardUserSalesDto { TotalAmount = 0m }).Max(x => x.TotalAmount), 1m);
+        var width = (value / max) * 100m;
+        return $"{width.ToString("0.##", CultureInfo.InvariantCulture)}%";
+    }
+
+    private RenderFragment RenderLineChart(IReadOnlyList<DashboardMonthlyValueDto> values, string ariaLabel, string lineClass) => builder =>
+    {
+        var points = values?.Count > 0 ? values : EmptySeries();
+        var maxValue = Math.Max(points.Max(p => p.Value), 1m);
+        const decimal width = 720m;
+        const decimal height = 240m;
+        const decimal paddingX = 36m;
+        const decimal top = 20m;
+        const decimal bottom = 32m;
+        var plotHeight = height - top - bottom;
+        var step = (width - (paddingX * 2)) / Math.Max(points.Count - 1, 1);
+        var polylinePoints = string.Join(" ", points.Select((point, index) =>
+        {
+            var x = paddingX + (step * index);
+            var y = top + (plotHeight - ((point.Value / maxValue) * plotHeight));
+            return $"{x.ToString(CultureInfo.InvariantCulture)},{y.ToString(CultureInfo.InvariantCulture)}";
+        }));
+
+        var seq = 0;
+        builder.OpenElement(seq++, "svg");
+        builder.AddAttribute(seq++, "class", "dashboard-chart-svg");
+        builder.AddAttribute(seq++, "viewBox", "0 0 720 240");
+        builder.AddAttribute(seq++, "role", "img");
+        builder.AddAttribute(seq++, "aria-label", ariaLabel);
+
+        builder.OpenElement(seq++, "line");
+        builder.AddAttribute(seq++, "x1", "36");
+        builder.AddAttribute(seq++, "y1", "208");
+        builder.AddAttribute(seq++, "x2", "684");
+        builder.AddAttribute(seq++, "y2", "208");
+        builder.AddAttribute(seq++, "class", "dashboard-axis");
+        builder.CloseElement();
+
+        // Horizontal grid lines at 25%, 50%, 75%
+        foreach (var pct in new[] { 0.25m, 0.5m, 0.75m })
+        {
+            var gy = top + (plotHeight * (1m - pct));
+            builder.OpenElement(seq++, "line");
+            builder.AddAttribute(seq++, "x1", "36");
+            builder.AddAttribute(seq++, "y1", gy.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "x2", "684");
+            builder.AddAttribute(seq++, "y2", gy.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "class", "dashboard-grid-line");
+            builder.CloseElement();
+        }
+
+        builder.OpenElement(seq++, "polyline");
+        builder.AddAttribute(seq++, "fill", "none");
+        builder.AddAttribute(seq++, "points", polylinePoints);
+        builder.AddAttribute(seq++, "class", lineClass);
+        builder.CloseElement();
+
+        foreach (var item in points.Select((value, index) => (value, index)))
+        {
+            var x = paddingX + (step * item.index);
+            var y = top + (plotHeight - ((item.value.Value / maxValue) * plotHeight));
+
+            builder.OpenElement(seq++, "circle");
+            builder.AddAttribute(seq++, "cx", x.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "cy", y.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "r", "5");
+            builder.AddAttribute(seq++, "class", $"dashboard-line-point {lineClass.Split(' ').Last()}");
+            builder.OpenElement(seq++, "title");
+            builder.AddContent(seq++, $"{item.value.Label} : {item.value.Value.ToString("N2", CultureInfo.InvariantCulture)}");
+            builder.CloseElement();
+            builder.CloseElement();
+
+            builder.OpenElement(seq++, "text");
+            builder.AddAttribute(seq++, "x", x.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "y", "228");
+            builder.AddAttribute(seq++, "text-anchor", "middle");
+            builder.AddAttribute(seq++, "class", "dashboard-axis-label");
+            builder.AddContent(seq++, item.value.Label);
+            builder.CloseElement();
+        }
+
+        builder.CloseElement();
+    };
+
+    private RenderFragment RenderBarChart(IReadOnlyList<DashboardMonthlyValueDto> values, string ariaLabel, string barClass) => builder =>
+    {
+        var points = values?.Count > 0 ? values : EmptySeries();
+        var maxValue = Math.Max(points.Max(p => p.Value), 1m);
+        const decimal width = 720m;
+        const decimal height = 240m;
+        const decimal paddingX = 30m;
+        const decimal top = 18m;
+        const decimal bottom = 32m;
+        var plotHeight = height - top - bottom;
+        var slotWidth = (width - (paddingX * 2)) / points.Count;
+        var barWidth = Math.Max(slotWidth - 10m, 10m);
+        var seq = 0;
+
+        builder.OpenElement(seq++, "svg");
+        builder.AddAttribute(seq++, "class", "dashboard-chart-svg");
+        builder.AddAttribute(seq++, "viewBox", "0 0 720 240");
+        builder.AddAttribute(seq++, "role", "img");
+        builder.AddAttribute(seq++, "aria-label", ariaLabel);
+
+        builder.OpenElement(seq++, "line");
+        builder.AddAttribute(seq++, "x1", "30");
+        builder.AddAttribute(seq++, "y1", "208");
+        builder.AddAttribute(seq++, "x2", "690");
+        builder.AddAttribute(seq++, "y2", "208");
+        builder.AddAttribute(seq++, "class", "dashboard-axis");
+        builder.CloseElement();
+
+        // Horizontal grid lines at 25%, 50%, 75%
+        foreach (var pct in new[] { 0.25m, 0.5m, 0.75m })
+        {
+            var gy = top + (plotHeight * (1m - pct));
+            builder.OpenElement(seq++, "line");
+            builder.AddAttribute(seq++, "x1", "30");
+            builder.AddAttribute(seq++, "y1", gy.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "x2", "690");
+            builder.AddAttribute(seq++, "y2", gy.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "class", "dashboard-grid-line");
+            builder.CloseElement();
+        }
+
+        foreach (var item in points.Select((value, index) => (value, index)))
+        {
+            var x = paddingX + (slotWidth * item.index) + ((slotWidth - barWidth) / 2m);
+            var barHeight = (item.value.Value / maxValue) * plotHeight;
+            var y = top + (plotHeight - barHeight);
+            var labelX = paddingX + (slotWidth * item.index) + (slotWidth / 2m);
+
+            builder.OpenElement(seq++, "rect");
+            builder.AddAttribute(seq++, "x", x.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "y", y.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "width", barWidth.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "height", barHeight.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "rx", "8");
+            builder.AddAttribute(seq++, "class", barClass);
+            builder.OpenElement(seq++, "title");
+            builder.AddContent(seq++, $"{item.value.Label} : {item.value.Value.ToString("N2", CultureInfo.InvariantCulture)}");
+            builder.CloseElement();
+            builder.CloseElement();
+
+            builder.OpenElement(seq++, "text");
+            builder.AddAttribute(seq++, "x", labelX.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "y", "228");
+            builder.AddAttribute(seq++, "text-anchor", "middle");
+            builder.AddAttribute(seq++, "class", "dashboard-axis-label");
+            builder.AddContent(seq++, item.value.Label);
+            builder.CloseElement();
+        }
+
+        builder.CloseElement();
+    };
+
+    private RenderFragment RenderComparisonChart(IReadOnlyList<DashboardMonthlyValueDto> purchases, IReadOnlyList<DashboardMonthlyValueDto> expenses) => builder =>
+    {
+        var purchasePoints = purchases?.Count > 0 ? purchases : EmptySeries();
+        var expensePoints = expenses?.Count > 0 ? expenses : EmptySeries();
+        var maxValue = Math.Max(Math.Max(purchasePoints.Max(p => p.Value), expensePoints.Max(e => e.Value)), 1m);
+        const decimal width = 720m;
+        const decimal height = 240m;
+        const decimal paddingX = 30m;
+        const decimal top = 18m;
+        const decimal bottom = 32m;
+        var plotHeight = height - top - bottom;
+        var slotWidth = (width - (paddingX * 2)) / purchasePoints.Count;
+        var barWidth = Math.Max((slotWidth - 14m) / 2m, 8m);
+        var seq = 0;
+
+        builder.OpenElement(seq++, "svg");
+        builder.AddAttribute(seq++, "class", "dashboard-chart-svg");
+        builder.AddAttribute(seq++, "viewBox", "0 0 720 240");
+        builder.AddAttribute(seq++, "role", "img");
+        builder.AddAttribute(seq++, "aria-label", "Comparaison achats et dépenses");
+
+        builder.OpenElement(seq++, "line");
+        builder.AddAttribute(seq++, "x1", "30");
+        builder.AddAttribute(seq++, "y1", "208");
+        builder.AddAttribute(seq++, "x2", "690");
+        builder.AddAttribute(seq++, "y2", "208");
+        builder.AddAttribute(seq++, "class", "dashboard-axis");
+        builder.CloseElement();
+
+        // Horizontal grid lines at 25%, 50%, 75%
+        foreach (var pct in new[] { 0.25m, 0.5m, 0.75m })
+        {
+            var gy = top + (plotHeight * (1m - pct));
+            builder.OpenElement(seq++, "line");
+            builder.AddAttribute(seq++, "x1", "30");
+            builder.AddAttribute(seq++, "y1", gy.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "x2", "690");
+            builder.AddAttribute(seq++, "y2", gy.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "class", "dashboard-grid-line");
+            builder.CloseElement();
+        }
+
+        for (var index = 0; index < purchasePoints.Count; index++)
+        {
+            var purchase = purchasePoints[index];
+            var expense = expensePoints[index];
+            var slotStart = paddingX + (slotWidth * index);
+            var purchaseHeight = (purchase.Value / maxValue) * plotHeight;
+            var expenseHeight = (expense.Value / maxValue) * plotHeight;
+            var purchaseX = slotStart + 4m;
+            var expenseX = purchaseX + barWidth + 6m;
+            var purchaseY = top + (plotHeight - purchaseHeight);
+            var expenseY = top + (plotHeight - expenseHeight);
+            var labelX = slotStart + (slotWidth / 2m);
+
+            builder.OpenElement(seq++, "rect");
+            builder.AddAttribute(seq++, "x", purchaseX.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "y", purchaseY.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "width", barWidth.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "height", purchaseHeight.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "rx", "6");
+            builder.AddAttribute(seq++, "class", "dashboard-bar dashboard-bar-purchase");
+            builder.OpenElement(seq++, "title");
+            builder.AddContent(seq++, $"Achats {purchase.Label} : {purchase.Value.ToString("N2", CultureInfo.InvariantCulture)}");
+            builder.CloseElement();
+            builder.CloseElement();
+
+            builder.OpenElement(seq++, "rect");
+            builder.AddAttribute(seq++, "x", expenseX.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "y", expenseY.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "width", barWidth.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "height", expenseHeight.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "rx", "6");
+            builder.AddAttribute(seq++, "class", "dashboard-bar dashboard-bar-expense");
+            builder.OpenElement(seq++, "title");
+            builder.AddContent(seq++, $"Depenses {expense.Label} : {expense.Value.ToString("N2", CultureInfo.InvariantCulture)}");
+            builder.CloseElement();
+            builder.CloseElement();
+
+            builder.OpenElement(seq++, "text");
+            builder.AddAttribute(seq++, "x", labelX.ToString(CultureInfo.InvariantCulture));
+            builder.AddAttribute(seq++, "y", "228");
+            builder.AddAttribute(seq++, "text-anchor", "middle");
+            builder.AddAttribute(seq++, "class", "dashboard-axis-label");
+            builder.AddContent(seq++, purchase.Label);
+            builder.CloseElement();
+        }
+
+        builder.CloseElement();
+    };
+
+    private static IReadOnlyList<DashboardMonthlyValueDto> EmptySeries()
+        => Enumerable.Range(1, 12)
+            .Select(month => new DashboardMonthlyValueDto
+            {
+                Month = month,
+                Label = CultureInfo.GetCultureInfo("fr-FR").DateTimeFormat.GetAbbreviatedMonthName(month),
+                Value = 0m
+            })
+            .ToList();
+
+    private sealed record MonthOption(int Value, string Label);
+}

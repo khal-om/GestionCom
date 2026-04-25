@@ -1,0 +1,423 @@
+@page "/ventes/{VenteId:int}/edit"
+@using System.Security.Claims
+@using GestionCom.DTOs.Client
+@using GestionCom.DTOs.Vente
+@using GestionCom.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Modifier vente</PageTitle>
+
+<h1>Modifier la vente</h1>
+
+<div class="vente-create-page">
+    <a class="vente-create-back" href="@($"/ventes/{VenteId}")">← Retour au détail</a>
+
+    @if (!string.IsNullOrWhiteSpace(loadErrorMessage))
+    {
+        <div class="vente-create-message vente-create-message-error">@loadErrorMessage</div>
+    }
+    else if (isLoading)
+    {
+        <div class="vente-create-state">Chargement...</div>
+    }
+    else if (clientOptions.Count == 0)
+    {
+        <div class="vente-create-state">Aucun client disponible.</div>
+    }
+    else if (productOptions.Count == 0)
+    {
+        <div class="vente-create-state">Aucun produit disponible.</div>
+    }
+    else
+    {
+        @if (!string.IsNullOrWhiteSpace(successMessage))
+        {
+            <div class="vente-create-message vente-create-message-success">@successMessage</div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(submitErrorMessage))
+        {
+            <div class="vente-create-message vente-create-message-error">@submitErrorMessage</div>
+        }
+
+        @if (stockWarnings.Count > 0)
+        {
+            <div class="vente-create-message vente-create-message-warning">
+                <strong>Attention stock :</strong>
+                <ul>
+                    @foreach (var warning in stockWarnings)
+                    {
+                        <li>@warning</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        @if (serviceWarnings.Count > 0)
+        {
+            <div class="vente-create-message vente-create-message-warning">
+                <strong>Avertissements lors de l'enregistrement :</strong>
+                <ul>
+                    @foreach (var warning in serviceWarnings)
+                    {
+                        <li>@warning</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <EditForm Model="model" OnValidSubmit="SubmitAsync" FormName="vente-edit" class="vente-create-form">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <section class="vente-create-panel">
+                <h2>Informations</h2>
+                <div class="vente-create-grid">
+                    <div>
+                        <label for="client">Client</label>
+                        <InputSelect id="client" @bind-Value="model.ClientId">
+                            <option value="0">-- Sélectionner --</option>
+                            @foreach (var client in clientOptions)
+                            {
+                                <option value="@client.Id">@GetClientLabel(client)</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <div>
+                        <label for="datevente">Date vente</label>
+                        <InputDate id="datevente" @bind-Value="model.DateVente" />
+                    </div>
+
+                    <div>
+                        <label for="total">Montant total</label>
+                        <InputNumber id="total" @bind-Value="model.TotalAmount" />
+                    </div>
+
+                    <div>
+                        <label for="datelivraison">Date livraison prévue</label>
+                        <InputDate id="datelivraison" @bind-Value="model.DateLivraison" />
+                    </div>
+
+                    <div class="vente-create-grid-full">
+                        <label for="note">Note</label>
+                        <InputTextArea id="note" @bind-Value="model.Note" />
+                    </div>
+                </div>
+            </section>
+
+            <section class="vente-create-panel">
+                <div class="vente-create-section-header">
+                    <h2>Produits</h2>
+                    <span>@selectedLines.Count ligne(s)</span>
+                </div>
+
+                <div class="vente-create-line-adder">
+                    <div>
+                        <label for="produit">Produit</label>
+                        <InputSelect id="produit" @bind-Value="selectedProduitId">
+                            <option value="0">-- Sélectionner --</option>
+                            @foreach (var produit in productOptions)
+                            {
+                                <option value="@produit.Id">@produit.Label (stock: @produit.Stock)</option>
+                            }
+                        </InputSelect>
+                    </div>
+
+                    <div>
+                        <label for="quantite">Quantité</label>
+                        <InputNumber id="quantite" @bind-Value="selectedQuantite" />
+                    </div>
+
+                    <div class="vente-create-line-button">
+                        <button type="button" @onclick="AddLine" @onclick:preventDefault="true">Ajouter</button>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(lineErrorMessage))
+                {
+                    <div class="vente-create-inline-error">@lineErrorMessage</div>
+                }
+
+                @if (selectedLines.Count == 0)
+                {
+                    <div class="vente-create-state">Aucun produit ajouté.</div>
+                }
+                else
+                {
+                    <div class="vente-create-table-wrapper">
+                        <table class="vente-create-table">
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th class="amount">Stock</th>
+                                    <th class="amount">Quantité</th>
+                                    <th>Avertissement</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var line in selectedLines)
+                                {
+                                    <tr>
+                                        <td>@line.Label</td>
+                                        <td class="amount">@line.Stock</td>
+                                        <td class="amount">@line.Quantite</td>
+                                        <td class="@(line.HasWarning ? "warning-text" : string.Empty)">@line.Warning</td>
+                                        <td class="action-cell">
+                                            <button type="button" class="link-button" @onclick="() => RemoveLine(line.ProduitId)" @onclick:preventDefault="true">Retirer</button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </section>
+
+            <div class="vente-create-actions">
+                <button type="submit" disabled="@isSubmitting">@(isSubmitting ? "Enregistrement..." : "Enregistrer les modifications")</button>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@inject ClientQueryService ClientQueryService
+@inject ProduitQueryService ProduitQueryService
+@inject VenteQueryService VenteQueryService
+@inject VenteService VenteService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+
+@code {
+    [Parameter]
+    public int VenteId { get; set; }
+
+    private UpdateVenteDto model = CreateDefaultModel();
+    private List<ClientListDto> clientOptions = [];
+    private List<VenteProductOptionDto> productOptions = [];
+    private List<SelectedVenteLine> selectedLines = [];
+    private List<string> stockWarnings = [];
+    private List<string> serviceWarnings = [];
+    private bool isLoading = true;
+    private bool isSubmitting;
+    private string? loadErrorMessage;
+    private string? submitErrorMessage;
+    private string? successMessage;
+    private string? lineErrorMessage;
+    private int selectedProduitId;
+    private int selectedQuantite = 1;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        loadErrorMessage = null;
+        submitErrorMessage = null;
+        successMessage = null;
+        serviceWarnings = [];
+
+        try
+        {
+            clientOptions = await ClientQueryService.GetClientsAsync();
+            productOptions = await ProduitQueryService.GetProductOptionsAsync();
+
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userIdValue = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdValue, out var userId))
+            {
+                throw new InvalidOperationException("Utilisateur introuvable.");
+            }
+
+            var vente = await VenteQueryService.GetVenteDetailAsync(VenteId, userId);
+
+            if (vente.Etat != "Commande")
+            {
+                throw new InvalidOperationException("Seules les ventes en commande peuvent être modifiées.");
+            }
+
+            model = new UpdateVenteDto
+            {
+                ClientId = vente.ClientId,
+                TotalAmount = vente.TotalAmount,
+                DateVente = vente.DateVente,
+                DateLivraison = vente.DateLivraison,
+                Note = vente.Note
+            };
+
+            selectedLines = vente.Lignes
+                .Select(line => new SelectedVenteLine
+                {
+                    ProduitId = line.ProduitId,
+                    Label = line.ProduitLabel,
+                    Stock = line.CurrentStock,
+                    Quantite = line.Quantite
+                })
+                .ToList();
+
+            SyncLines();
+        }
+        catch (InvalidOperationException ex)
+        {
+            loadErrorMessage = ex.Message;
+        }
+        catch (Exception)
+        {
+            loadErrorMessage = "Erreur lors du chargement de la vente.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void AddLine()
+    {
+        lineErrorMessage = null;
+
+        if (selectedProduitId <= 0)
+        {
+            lineErrorMessage = "Sélectionnez un produit.";
+            return;
+        }
+
+        if (selectedQuantite <= 0)
+        {
+            lineErrorMessage = "La quantité doit être supérieure à 0.";
+            return;
+        }
+
+        var produit = productOptions.FirstOrDefault(p => p.Id == selectedProduitId);
+
+        if (produit is null)
+        {
+            lineErrorMessage = "Produit introuvable.";
+            return;
+        }
+
+        var existingLine = selectedLines.FirstOrDefault(l => l.ProduitId == selectedProduitId);
+
+        if (existingLine is null)
+        {
+            selectedLines.Add(new SelectedVenteLine
+            {
+                ProduitId = produit.Id,
+                Label = produit.Label,
+                Stock = produit.Stock,
+                Quantite = selectedQuantite
+            });
+        }
+        else
+        {
+            existingLine.Quantite += selectedQuantite;
+            existingLine.Stock = produit.Stock;
+            existingLine.Label = produit.Label;
+        }
+
+        selectedProduitId = 0;
+        selectedQuantite = 1;
+        SyncLines();
+    }
+
+    private void RemoveLine(int produitId)
+    {
+        selectedLines.RemoveAll(l => l.ProduitId == produitId);
+        SyncLines();
+    }
+
+    private void SyncLines()
+    {
+        foreach (var line in selectedLines)
+        {
+            var latestStock = productOptions.FirstOrDefault(p => p.Id == line.ProduitId);
+            if (latestStock is not null)
+            {
+                line.Stock = latestStock.Stock;
+                line.Label = latestStock.Label;
+            }
+
+            var missing = line.Quantite - line.Stock;
+            line.Warning = missing > 0 ? $"Stock insuffisant (manque {missing})" : string.Empty;
+        }
+
+        model.Lignes = selectedLines
+            .Select(l => new CreateVenteLigneDto
+            {
+                ProduitId = l.ProduitId,
+                Quantite = l.Quantite
+            })
+            .ToList();
+
+        stockWarnings = selectedLines
+            .Where(l => l.HasWarning)
+            .Select(l => $"{l.Label}: {l.Warning}")
+            .ToList();
+    }
+
+    private async Task SubmitAsync()
+    {
+        submitErrorMessage = null;
+        successMessage = null;
+        serviceWarnings = [];
+        isSubmitting = true;
+
+        try
+        {
+            SyncLines();
+
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userIdValue = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdValue, out var userId))
+            {
+                throw new InvalidOperationException("Utilisateur introuvable.");
+            }
+
+            var result = await VenteService.UpdateVenteAsync(VenteId, model, userId);
+            serviceWarnings = result.Warnings;
+            successMessage = $"Vente #{result.VenteId} mise à jour avec succès.";
+
+            Navigation.NavigateTo($"/ventes/{VenteId}", forceLoad: false);
+        }
+        catch (Exception ex)
+        {
+            submitErrorMessage = ex.Message;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private static UpdateVenteDto CreateDefaultModel()
+        => new()
+        {
+            DateVente = DateTime.Today,
+            DateLivraison = DateTime.Today
+        };
+
+    private static string GetClientLabel(ClientListDto client)
+        => string.IsNullOrWhiteSpace(client.Ville)
+            ? client.Name
+            : $"{client.Name} - {client.Ville}";
+
+    private sealed class SelectedVenteLine
+    {
+        public int ProduitId { get; set; }
+        public string Label { get; set; } = null!;
+        public int Stock { get; set; }
+        public int Quantite { get; set; }
+        public string Warning { get; set; } = string.Empty;
+        public bool HasWarning => !string.IsNullOrWhiteSpace(Warning);
+    }
+}

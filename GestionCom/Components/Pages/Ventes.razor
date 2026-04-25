@@ -1,0 +1,180 @@
+@page "/ventes"
+@using GestionCom.DTOs.Vente
+@using GestionCom.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Web
+@using System.Security.Claims
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Ventes</PageTitle>
+
+<h1>Ventes</h1>
+
+<div class="ventes-page">
+    <div class="ventes-toolbar">
+        <div class="ventes-toolbar-left">
+            <input class="ventes-search"
+                   @bind="searchTerm"
+                   @bind:event="oninput"
+                   placeholder="Rechercher par client, état ou numéro" />
+
+            <div class="ventes-count">@FilteredVentes.Count vente(s)</div>
+        </div>
+
+        <a class="ventes-new-button" href="/ventes/new">Nouvelle vente</a>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="ventes-state">Chargement des ventes...</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="ventes-state ventes-state-error">@errorMessage</div>
+    }
+    else if (FilteredVentes.Count == 0)
+    {
+        <div class="ventes-state">Aucune vente trouvée.</div>
+    }
+    else
+    {
+        <div class="ventes-table-wrapper">
+            <table class="ventes-table">
+                <thead>
+                    <tr>
+                        <th class="sortable-th @(sortColumn == "Id" ? "sorted-th" : "")" @onclick='() => SortBy("Id")'>
+                            N° <span class="sort-icon">@SortIcon("Id")</span>
+                        </th>
+                        <th class="sortable-th @(sortColumn == "ClientName" ? "sorted-th" : "")" @onclick='() => SortBy("ClientName")'>
+                            Client <span class="sort-icon">@SortIcon("ClientName")</span>
+                        </th>
+                        <th class="sortable-th @(sortColumn == "DateVente" ? "sorted-th" : "")" @onclick='() => SortBy("DateVente")'>
+                            Date <span class="sort-icon">@SortIcon("DateVente")</span>
+                        </th>
+                        <th class="sortable-th @(sortColumn == "Etat" ? "sorted-th" : "")" @onclick='() => SortBy("Etat")'>
+                            État <span class="sort-icon">@SortIcon("Etat")</span>
+                        </th>
+                        <th class="amount sortable-th @(sortColumn == "TotalAmount" ? "sorted-th" : "")" @onclick='() => SortBy("TotalAmount")'>
+                            Montant <span class="sort-icon">@SortIcon("TotalAmount")</span>
+                        </th>
+                        <th class="amount sortable-th @(sortColumn == "LineCount" ? "sorted-th" : "")" @onclick='() => SortBy("LineCount")'>
+                            Lignes <span class="sort-icon">@SortIcon("LineCount")</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var vente in FilteredVentes)
+                    {
+                        <tr @onclick="() => GoToDetail(vente.Id)"
+                            @onkeydown="(args) => HandleRowKeyDown(args, vente.Id)"
+                            tabindex="0"
+                            role="button"
+                            class="ventes-row">
+                            <td>#@vente.Id</td>
+                            <td>
+                                <div class="ventes-name">@vente.ClientName</div>
+                            </td>
+                            <td>@vente.DateVente.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <span class="vente-etat @(vente.Etat == "Livrée" ? "vente-etat-livre" : "vente-etat-commande")">@vente.Etat</span>
+                            </td>
+                            <td class="amount">@vente.TotalAmount.ToString("N2")</td>
+                            <td class="amount">@vente.LineCount</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@inject VenteQueryService VenteQueryService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@code {
+    private List<VenteListItemDto> ventes = [];
+    private string searchTerm = string.Empty;
+    private bool isLoading = true;
+    private string? errorMessage;
+    private string sortColumn = "DateVente";
+    private bool sortDesc = true;
+
+    private List<VenteListItemDto> FilteredVentes
+    {
+        get
+        {
+            var q = ventes.Where(v => MatchesSearch(v, searchTerm));
+            return (sortColumn switch
+            {
+                "Id"          => sortDesc ? q.OrderByDescending(v => v.Id)          : q.OrderBy(v => v.Id),
+                "ClientName"  => sortDesc ? q.OrderByDescending(v => v.ClientName)  : q.OrderBy(v => v.ClientName),
+                "Etat"        => sortDesc ? q.OrderByDescending(v => v.Etat)        : q.OrderBy(v => v.Etat),
+                "TotalAmount" => sortDesc ? q.OrderByDescending(v => v.TotalAmount) : q.OrderBy(v => v.TotalAmount),
+                "LineCount"   => sortDesc ? q.OrderByDescending(v => v.LineCount)   : q.OrderBy(v => v.LineCount),
+                _             => sortDesc ? q.OrderByDescending(v => v.DateVente)   : q.OrderBy(v => v.DateVente),
+            }).ToList();
+        }
+    }
+
+    private void SortBy(string column)
+    {
+        if (sortColumn == column) sortDesc = !sortDesc;
+        else { sortColumn = column; sortDesc = false; }
+    }
+
+    private string SortIcon(string column)
+        => sortColumn != column ? "↕" : sortDesc ? "↓" : "↑";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userIdValue = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdValue, out var userId))
+            {
+                throw new InvalidOperationException("Utilisateur introuvable.");
+            }
+
+            ventes = await VenteQueryService.GetVentesAsync(userId);
+        }
+        catch (Exception)
+        {
+            errorMessage = "Erreur lors du chargement des ventes.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void GoToDetail(int venteId)
+    {
+        Navigation.NavigateTo($"/ventes/{venteId}");
+    }
+
+    private static bool MatchesSearch(VenteListItemDto vente, string search)
+    {
+        if (string.IsNullOrWhiteSpace(search))
+        {
+            return true;
+        }
+
+        return vente.Id.ToString().Contains(search, StringComparison.OrdinalIgnoreCase)
+            || vente.ClientName.Contains(search, StringComparison.OrdinalIgnoreCase)
+            || vente.Etat.Contains(search, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void HandleRowKeyDown(KeyboardEventArgs args, int venteId)
+    {
+        if (args.Key is "Enter" or " ")
+        {
+            GoToDetail(venteId);
+        }
+    }
+}
