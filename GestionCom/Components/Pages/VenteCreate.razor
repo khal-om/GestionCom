@@ -106,8 +106,15 @@
                     </div>
 
                     <div>
+                        <label for="facturenumber">Numéro de facture</label>
+                        <InputText id="facturenumber" @bind-Value="model.FactureNumber" />
+@*                         <div class="vente-create-field-help">Par défaut: numéro de vente. Format facture: REV@DateTime.Today.ToString("yy")/&lt;numéro de vente&gt;</div>
+ *@                    </div>
+
+                    <div>
                         <label for="total">Montant total</label>
-                        <InputNumber id="total" @bind-Value="model.TotalAmount" />
+                        <InputNumber TValue="decimal" id="total" Value="model.TotalAmount" ValueChanged="@(EventCallback.Factory.Create<decimal>(this, OnTotalAmountChanged))" ValueExpression="() => model.TotalAmount" />
+                        @* <div class="vente-create-field-help">Calculé automatiquement à partir des lignes, puis modifiable.</div> *@
                     </div>
 
                     <div>
@@ -139,9 +146,10 @@
                 <div class="vente-create-line-adder">
                     <div>
                         <label for="produit">Produit</label>
+                        <InputText id="product-search" placeholder="Rechercher un produit..." @bind-Value="productFilter" @bind:event="oninput" />
                         <InputSelect id="produit" @bind-Value="selectedProduitId">
                             <option value="0">-- Sélectionner --</option>
-                            @foreach (var produit in productOptions)
+                            @foreach (var produit in FilteredProductOptions)
                             {
                                 <option value="@produit.Id">@produit.Label (stock: @produit.Stock)</option>
                             }
@@ -151,6 +159,11 @@
                     <div>
                         <label for="quantite">Quantité</label>
                         <InputNumber id="quantite" @bind-Value="selectedQuantite" />
+                    </div>
+
+                    <div>
+                        <label for="remise">Remise %</label>
+                        <InputNumber id="remise" @bind-Value="selectedRemisePercent" />
                     </div>
 
                     <div class="vente-create-line-button">
@@ -174,8 +187,12 @@
                             <thead>
                                 <tr>
                                     <th>Produit</th>
+                                    <th class="amount">Prix unitaire</th>
+                                    <th class="amount">Remise</th>
+                                    <th class="amount">Prix net</th>
                                     <th class="amount">Stock</th>
                                     <th class="amount">Quantité</th>
+                                    <th class="amount">Total ligne</th>
                                     <th>Avertissement</th>
                                     <th></th>
                                 </tr>
@@ -185,8 +202,16 @@
                                 {
                                     <tr>
                                         <td>@line.Label</td>
+                                        <td class="amount">@FormatAmount(line.PrixUnitaire)</td>
+                                        <td class="amount">
+                                            <InputNumber TValue="decimal" class="vente-create-inline-input" Value="line.RemisePercent" ValueChanged="@(EventCallback.Factory.Create<decimal>(this, value => UpdateRemise(line.ProduitId, value)))" ValueExpression="() => line.RemisePercent" />
+                                        </td>
+                                        <td class="amount">@FormatAmount(line.PrixUnitaireApresRemise)</td>
                                         <td class="amount">@line.Stock</td>
-                                        <td class="amount">@line.Quantite</td>
+                                        <td class="amount">
+                                            <InputNumber TValue="int" class="vente-create-inline-input" Value="line.Quantite" ValueChanged="@(EventCallback.Factory.Create<int>(this, value => UpdateQuantite(line.ProduitId, value)))" ValueExpression="() => line.Quantite" />
+                                        </td>
+                                        <td class="amount">@FormatAmount(line.TotalLigne)</td>
                                         <td class="@(line.HasWarning ? "warning-text" : string.Empty)">@line.Warning</td>
                                         <td class="action-cell">
                                             <button type="button" class="link-button" @onclick="() => RemoveLine(line.ProduitId)" @onclick:preventDefault="true">Retirer</button>
@@ -208,6 +233,7 @@
 
 @inject ClientQueryService ClientQueryService
 @inject ProduitQueryService ProduitQueryService
+@inject VenteQueryService VenteQueryService
 @inject VenteService VenteService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
@@ -230,6 +256,14 @@
     private int lastClientId;
     private int selectedProduitId;
     private int selectedQuantite = 1;
+    private decimal selectedRemisePercent;
+    private bool isTotalAmountManuallyEdited;
+    private string productFilter = string.Empty;
+
+    private IEnumerable<VenteProductOptionDto> FilteredProductOptions
+        => string.IsNullOrWhiteSpace(productFilter)
+            ? productOptions
+            : productOptions.Where(p => p.Label != null && p.Label.Contains(productFilter, StringComparison.OrdinalIgnoreCase));
 
     protected override async Task OnInitializedAsync()
     {
@@ -237,6 +271,7 @@
         {
             clientOptions = await ClientQueryService.GetClientsAsync();
             productOptions = await ProduitQueryService.GetProductOptionsAsync();
+            model.FactureNumber = await VenteQueryService.GetNextFactureNumberAsync();
 
             if (PrefilledClientId.HasValue && clientOptions.Any(c => c.Id == PrefilledClientId.Value))
             {
@@ -269,6 +304,12 @@
             return;
         }
 
+        if (selectedRemisePercent < 0 || selectedRemisePercent > 100)
+        {
+            lineErrorMessage = "La remise doit être comprise entre 0 et 100 %.";
+            return;
+        }
+
         var produit = productOptions.FirstOrDefault(p => p.Id == selectedProduitId);
 
         if (produit is null)
@@ -286,16 +327,21 @@
                 ProduitId = produit.Id,
                 Label = produit.Label,
                 Stock = produit.Stock,
-                Quantite = selectedQuantite
+                Quantite = selectedQuantite,
+                PrixUnitaire = produit.PrixUnitaire,
+                RemisePercent = selectedRemisePercent
             });
         }
         else
         {
             existingLine.Quantite += selectedQuantite;
+            existingLine.PrixUnitaire = produit.PrixUnitaire;
+            existingLine.RemisePercent = selectedRemisePercent;
         }
 
         selectedProduitId = 0;
         selectedQuantite = 1;
+        selectedRemisePercent = 0;
         SyncLines();
     }
 
@@ -305,21 +351,88 @@
         SyncLines();
     }
 
+    private void UpdateQuantite(int produitId, int value)
+    {
+        var line = selectedLines.FirstOrDefault(l => l.ProduitId == produitId);
+        if (line is null)
+        {
+            return;
+        }
+
+        line.Quantite = Math.Max(1, value);
+        SyncLines();
+    }
+
+    private void UpdateRemise(int produitId, decimal value)
+    {
+        var line = selectedLines.FirstOrDefault(l => l.ProduitId == produitId);
+        if (line is null)
+        {
+            return;
+        }
+
+        line.RemisePercent = Math.Clamp(value, 0m, 100m);
+        SyncLines();
+    }
+
     private void SyncLines()
     {
+        decimal calculatedTotal = 0;
+
         foreach (var line in selectedLines)
         {
+            var latestProduct = productOptions.FirstOrDefault(p => p.Id == line.ProduitId);
+            if (latestProduct is not null)
+            {
+                line.Stock = latestProduct.Stock;
+                line.Label = latestProduct.Label;
+                line.PrixUnitaire = latestProduct.PrixUnitaire;
+            }
+
+            line.Quantite = Math.Max(1, line.Quantite);
+            line.RemisePercent = Math.Clamp(line.RemisePercent, 0m, 100m);
+
             var missing = line.Quantite - line.Stock;
-            line.Warning = missing > 0 ? $"Stock insuffisant (manque {missing})" : "";
+            line.PrixUnitaireApresRemise = line.PrixUnitaire.HasValue
+                ? decimal.Round(line.PrixUnitaire.Value * (1 - (line.RemisePercent / 100m)), 2, MidpointRounding.AwayFromZero)
+                : null;
+            line.TotalLigne = line.PrixUnitaireApresRemise.HasValue
+                ? decimal.Round(line.PrixUnitaireApresRemise.Value * line.Quantite, 2, MidpointRounding.AwayFromZero)
+                : null;
+
+            if (line.TotalLigne.HasValue)
+            {
+                calculatedTotal += line.TotalLigne.Value;
+            }
+
+            var warnings = new List<string>();
+            if (!line.PrixUnitaire.HasValue)
+            {
+                warnings.Add("Prix unitaire non défini");
+            }
+
+            if (missing > 0)
+            {
+                warnings.Add($"Stock insuffisant (manque {missing})");
+            }
+
+            line.Warning = string.Join(" • ", warnings);
         }
 
         model.Lignes = selectedLines
             .Select(l => new CreateVenteLigneDto
             {
                 ProduitId = l.ProduitId,
-                Quantite = l.Quantite
+                Quantite = l.Quantite,
+                PrixUnitaire = l.PrixUnitaire,
+                RemisePercent = l.RemisePercent
             })
             .ToList();
+
+        if (!isTotalAmountManuallyEdited)
+        {
+            model.TotalAmount = decimal.Round(calculatedTotal, 2, MidpointRounding.AwayFromZero);
+        }
 
         stockWarnings = selectedLines
             .Where(l => l.HasWarning)
@@ -356,6 +469,8 @@
             selectedLines = [];
             selectedProduitId = 0;
             selectedQuantite = 1;
+            selectedRemisePercent = 0;
+            isTotalAmountManuallyEdited = false;
             stockWarnings = [];
             await ReloadProductsAsync();
         }
@@ -374,6 +489,12 @@
         productOptions = await ProduitQueryService.GetProductOptionsAsync();
     }
 
+    private void OnTotalAmountChanged(decimal value)
+    {
+        model.TotalAmount = decimal.Round(value, 2, MidpointRounding.AwayFromZero);
+        isTotalAmountManuallyEdited = true;
+    }
+
     private static CreateVenteDto CreateDefaultModel()
         => new()
         {
@@ -387,12 +508,19 @@
             ? client.Name
             : $"{client.Name} - {client.Ville}";
 
+    private static string FormatAmount(decimal? value)
+        => value.HasValue ? value.Value.ToString("N3") : "—";
+
     private sealed class SelectedVenteLine
     {
         public int ProduitId { get; set; }
         public string Label { get; set; } = null!;
         public int Stock { get; set; }
         public int Quantite { get; set; }
+        public decimal? PrixUnitaire { get; set; }
+        public decimal RemisePercent { get; set; }
+        public decimal? PrixUnitaireApresRemise { get; set; }
+        public decimal? TotalLigne { get; set; }
         public string Warning { get; set; } = string.Empty;
         public bool HasWarning => !string.IsNullOrWhiteSpace(Warning);
     }

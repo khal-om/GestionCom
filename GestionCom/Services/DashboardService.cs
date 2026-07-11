@@ -92,7 +92,7 @@ namespace GestionCom.Services
             var totalSalesAllTime = await _context.Ventes
                 .AsNoTracking()
                 .Where(v => !accessibleUserId.HasValue || v.CreatedBy == accessibleUserId.Value)
-                .SumAsync(v => (decimal?)v.TotalAmount) ?? 0m;
+                .SumAsync(v => (decimal?)(v.TotalAmount * 1.19m)) ?? 0m;
 
             var totalPaymentsAllTime = await _context.Payments
                 .AsNoTracking()
@@ -110,7 +110,7 @@ namespace GestionCom.Services
                 {
                     ClientId = g.Key.ClientId,
                     ClientName = g.Key.Name,
-                    TotalAmount = g.Sum(v => v.TotalAmount)
+                    TotalAmount = g.Sum(v => v.TotalAmount * 1.19m)
                 })
                 .OrderByDescending(x => x.TotalAmount)
                 .Take(5)
@@ -123,7 +123,7 @@ namespace GestionCom.Services
                     .Select(g => new
                     {
                         g.Key.UserId,
-                        TotalAmount = g.Sum(v => v.TotalAmount)
+                        TotalAmount = g.Sum(v => v.TotalAmount * 1.19m)
                     })
                     .OrderByDescending(x => x.TotalAmount)
                     .Take(5)
@@ -202,16 +202,16 @@ namespace GestionCom.Services
                 SelectedMonthTo = normalizedMonthTo,
                 SelectedSaleState = normalizedSaleState,
                 SelectedUserDisplayName = focusUserName,
-                CurrentUserYearSales = currentUserSales.Sum(v => v.TotalAmount),
-                CompanyYearSales = companySales.Sum(v => v.TotalAmount),
+                CurrentUserYearSales = currentUserSales.Sum(v => v.TotalAmount * 1.19m),
+                CompanyYearSales = companySales.Sum(v => v.TotalAmount * 1.19m),
                 CompanyYearPurchases = companyPurchases.Sum(a => a.TotalAmount),
                 CompanyYearExpenses = companyExpenses.Sum(d => d.Montant),
                 OutstandingClientBalance = totalSalesAllTime - totalPaymentsAllTime,
                 OutstandingSupplierBalance = totalPurchasesRemaining,
                 UpcomingEventCount = upcomingEvents.Count,
                 LowStockProductCount = lowStockProducts.Count,
-                CurrentUserSalesByMonth = BuildMonthlySeries(currentUserSales.Select(v => (v.DateVente.Month, v.TotalAmount))),
-                CompanySalesByMonth = BuildMonthlySeries(companySales.Select(v => (v.DateVente.Month, v.TotalAmount))),
+                CurrentUserSalesByMonth = BuildMonthlySeries(currentUserSales.Select(v => (v.DateVente.Month, v.TotalAmount * 1.19m))),
+                CompanySalesByMonth = BuildMonthlySeries(companySales.Select(v => (v.DateVente.Month, v.TotalAmount * 1.19m))),
                 CompanyPurchasesByMonth = BuildMonthlySeries(companyPurchases.Select(a => (a.DateAchat.Month, a.TotalAmount))),
                 CompanyExpensesByMonth = BuildMonthlySeries(companyExpenses.Select(d => (d.DateDepense.Month, d.Montant))),
                 TopClients = topClients,

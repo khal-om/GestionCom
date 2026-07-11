@@ -31,7 +31,7 @@
         </div>
         <div class="app-summary-card">
             <span class="app-card-label">Montant total</span>
-            <strong>@overview.TotalAmount.ToString("N2")</strong>
+                <strong>@overview.TotalAmount.ToString("N3")</strong>
         </div>
     </div>
 
@@ -114,7 +114,7 @@
                                     role="button">
                                     <td>@item.DateDepense.ToString("dd/MM/yyyy")</td>
                                     <td>@item.Libelle</td>
-                                    <td class="amount">@item.Montant.ToString("N2")</td>
+                                    <td class="amount">@item.Montant.ToString("N3")</td>
                                     <td>@item.CreatedByName</td>
                                 </tr>
                             }

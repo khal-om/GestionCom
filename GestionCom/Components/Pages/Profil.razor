@@ -183,13 +183,14 @@
 
 @inject UserManagementService UserManagementService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ILogger<Profil> Logger
 
 @code {
     private UserProfileDto currentProfile = new();
     private UpdateUserProfileDto profileModel = new();
     private ChangePasswordDto passwordModel = new();
     private CreateUserDto createUserModel = new();
-    private List<RoleOptionDto> roles = [];
+    private List<RoleOptionDto> roles = new();
     private bool isLoading = true;
     private bool isAdmin;
     private bool isSavingProfile;
@@ -236,6 +237,7 @@
             if (isAdmin)
             {
                 roles = await UserManagementService.GetRolesAsync();
+                Logger.LogInformation("Profil.LoadAsync loaded {Count} roles", roles?.Count ?? 0);
                 createUserModel = new CreateUserDto
                 {
                     RoleId = roles.FirstOrDefault()?.RoleId ?? 0

@@ -6,6 +6,9 @@ namespace GestionCom.DTOs.Payment
     {
         public int ClientId { get; set; }
 
+        // Optional: apply this payment to a specific vente of the client
+        public int? VenteId { get; set; }
+
         public decimal Amount { get; set; }
 
         [Required(ErrorMessage = "Le mode de paiement est requis.")]

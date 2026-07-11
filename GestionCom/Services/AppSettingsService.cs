@@ -9,6 +9,8 @@ namespace GestionCom.Services
     {
         public const string CompanyNameKey = "CompanyName";
         public const string CompanyTaglineKey = "CompanyTagline";
+        public const string CompanyAddressKey = "CompanyAddress";
+        public const string CompanyPhoneKey = "CompanyPhone";
         public const string SupportEmailKey = "SupportEmail";
         public const string LowStockThresholdKey = "LowStockThreshold";
 
@@ -29,6 +31,8 @@ namespace GestionCom.Services
             {
                 CompanyName = GetValue(settings, CompanyNameKey, "FedNad Holding"),
                 CompanyTagline = GetNullableValue(settings, CompanyTaglineKey, "Gestion commerciale"),
+                CompanyAddress = GetNullableValue(settings, CompanyAddressKey, null),
+                CompanyPhone = GetNullableValue(settings, CompanyPhoneKey, null),
                 SupportEmail = GetNullableValue(settings, SupportEmailKey, null),
                 LowStockThreshold = int.TryParse(GetValue(settings, LowStockThresholdKey, "5"), out var threshold) ? threshold : 5
             };
@@ -41,6 +45,8 @@ namespace GestionCom.Services
 
             await UpsertAsync(CompanyNameKey, dto.CompanyName.Trim(), userId);
             await UpsertAsync(CompanyTaglineKey, dto.CompanyTagline?.Trim(), userId);
+            await UpsertAsync(CompanyAddressKey, dto.CompanyAddress?.Trim(), userId);
+            await UpsertAsync(CompanyPhoneKey, dto.CompanyPhone?.Trim(), userId);
             await UpsertAsync(SupportEmailKey, dto.SupportEmail?.Trim(), userId);
             await UpsertAsync(LowStockThresholdKey, dto.LowStockThreshold.ToString(), userId);
             await _context.SaveChangesAsync();

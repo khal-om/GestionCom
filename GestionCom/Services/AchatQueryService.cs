@@ -13,11 +13,10 @@ namespace GestionCom.Services
             _context = context;
         }
 
-        public async Task<List<AchatListItemDto>> GetAchatsAsync(int userId)
+        public async Task<List<AchatListItemDto>> GetAchatsAsync()
         {
             return await _context.Achats
                 .AsNoTracking()
-                .Where(a => a.CreatedBy == userId)
                 .OrderByDescending(a => a.DateAchat)
                 .ThenByDescending(a => a.Id)
                 .Select(a => new AchatListItemDto
@@ -33,11 +32,11 @@ namespace GestionCom.Services
                 .ToListAsync();
         }
 
-        public async Task<AchatDetailDto> GetAchatDetailAsync(int achatId, int userId)
+        public async Task<AchatDetailDto> GetAchatDetailAsync(int achatId)
         {
             var achat = await _context.Achats
                 .AsNoTracking()
-                .Where(a => a.Id == achatId && a.CreatedBy == userId)
+                .Where(a => a.Id == achatId)
                 .Select(a => new AchatDetailDto
                 {
                     Id = a.Id,

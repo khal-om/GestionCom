@@ -72,6 +72,11 @@
     resize: vertical;
 }
 
+.vente-create-field-help {
+    color: var(--gc-muted);
+    font-size: 0.75rem;
+}
+
 /* ── Section header ── */
 .vente-create-section-header {
     display: flex;
@@ -84,7 +89,7 @@
 /* ── Line adder ── */
 .vente-create-line-adder {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(100px, 130px) auto;
+    grid-template-columns: 1fr 80px 100px auto;
     gap: 0.75rem;
     align-items: end;
     margin-bottom: 1rem;
@@ -187,6 +192,27 @@
     text-align: right;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
+}
+
+.vente-create-table .column-pu {
+    width: 7rem;
+}
+
+.vente-create-table th:nth-child(3),
+.vente-create-table td:nth-child(3),
+.vente-create-table th:nth-child(6),
+.vente-create-table td:nth-child(6) {
+    width: 5.5rem;
+}
+
+.vente-create-form ::deep .vente-create-inline-input {
+    width: 100%;
+    min-width: 0;
+    max-width: 4.5rem;
+    padding: 0.375rem 0.5rem;
+    margin-left: auto;
+    box-sizing: border-box;
+    text-align: right;
 }
 
 .warning-text {
@@ -313,10 +339,15 @@
 
 .vente-create-line-adder {
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(100px, 140px) auto;
+    grid-template-columns: 1fr 80px 100px auto;
     gap: 0.75rem;
     align-items: end;
     margin-bottom: 1rem;
+}
+
+.vente-create-line-adder input#product-search {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
 }
 
 .vente-create-line-button,

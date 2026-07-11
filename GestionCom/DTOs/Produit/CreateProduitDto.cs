@@ -13,5 +13,8 @@ namespace GestionCom.DTOs.Produit
         [Required(ErrorMessage = "La désignation est requise.")]
         [StringLength(200)]
         public string Designation { get; set; } = null!;
+
+        [Range(typeof(decimal), "0", "79228162514264337593543950335", ErrorMessage = "Le prix unitaire doit être supérieur ou égal à 0.")]
+        public decimal? PrixUnitaire { get; set; }
     }
 }

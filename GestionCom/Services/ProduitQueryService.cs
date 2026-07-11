@@ -26,7 +26,8 @@ namespace GestionCom.Services
                     Label = string.IsNullOrWhiteSpace(p.Marque)
                         ? p.Designation
                         : p.Marque + " - " + p.Designation,
-                    Stock = p.StockMovements.Sum(m => (int?)m.Quantity) ?? 0
+                    Stock = p.StockMovements.Sum(m => (int?)m.Quantity) ?? 0,
+                    PrixUnitaire = p.PrixUnitaire
                 })
                 .ToListAsync();
         }
@@ -43,6 +44,7 @@ namespace GestionCom.Services
                     Marque = p.Marque,
                     Famille = p.Famille,
                     Designation = p.Designation,
+                    PrixUnitaire = p.PrixUnitaire,
                     Stock = p.StockMovements.Sum(m => (int?)m.Quantity) ?? 0
                 })
                 .ToListAsync();

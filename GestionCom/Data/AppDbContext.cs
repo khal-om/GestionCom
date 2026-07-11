@@ -51,6 +51,10 @@ namespace GestionCom.Data
             modelBuilder.Entity<Vente>()
                 .HasQueryFilter(v => !v.Client.IsDeleted);
 
+            modelBuilder.Entity<Vente>()
+                .HasIndex(v => v.DocumentNumber)
+                .IsUnique();
+
             modelBuilder.Entity<VenteLigne>()
                 .HasQueryFilter(l => !l.Produit.IsDeleted);
 
@@ -96,6 +100,18 @@ namespace GestionCom.Data
                 .HasOne(l => l.Produit)
                 .WithMany(p => p.VenteLignes)
                 .HasForeignKey(l => l.ProduitId);
+
+            modelBuilder.Entity<Produit>()
+                .Property(p => p.PrixUnitaire)
+                .HasColumnType("numeric(18,2)");
+
+            modelBuilder.Entity<VenteLigne>()
+                .Property(l => l.PrixUnitaire)
+                .HasColumnType("numeric(18,2)");
+
+            modelBuilder.Entity<VenteLigne>()
+                .Property(l => l.RemisePercent)
+                .HasColumnType("numeric(5,2)");
 
             // Client → Vente
             modelBuilder.Entity<Vente>()

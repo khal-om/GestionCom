@@ -72,6 +72,51 @@
     --gc-accent-dark: var(--gc-accent-hover);
 }
 
+/* Vente payment status badges */
+.vente-payment-status {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: white;
+}
+
+.vente-payment-status-paid {
+    background: linear-gradient(180deg, var(--gc-success) 0%, #0f9a4a 100%);
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.12);
+}
+
+.vente-payment-status-partial {
+    background: linear-gradient(180deg, var(--gc-warning) 0%, #d18b11 100%);
+    color: var(--gc-warning-text);
+    box-shadow: 0 2px 6px rgba(217, 119, 6, 0.08);
+}
+
+.vente-payment-status-unpaid {
+    background: linear-gradient(180deg, #e6e6e6 0%, #dcdcdc 100%);
+    color: var(--gc-ink);
+    box-shadow: none;
+    border: 1px solid rgba(0,0,0,0.04);
+}
+
+.vente-payment-subtext {
+    font-size: 0.78rem;
+    color: var(--gc-ink-secondary);
+}
+
+/* Client detail small badges */
+.client-vente-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.client-vente-subtext {
+    font-size: 0.78rem;
+    color: var(--gc-ink-secondary);
+}
+
 /* ── Reset ── */
 *, *::before, *::after {
     box-sizing: border-box;

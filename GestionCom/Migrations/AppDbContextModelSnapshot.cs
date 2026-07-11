@@ -17,7 +17,7 @@ namespace GestionCom.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.6")
+                .HasAnnotation("ProductVersion", "10.0.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -334,12 +334,17 @@ namespace GestionCom.Migrations
                     b.Property<int?>("UpdatedBy")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("VenteId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CalendarEventId")
                         .IsUnique();
 
                     b.HasIndex("ClientId");
+
+                    b.HasIndex("VenteId");
 
                     b.ToTable("Payments");
                 });
@@ -370,6 +375,9 @@ namespace GestionCom.Migrations
 
                     b.Property<string>("Marque")
                         .HasColumnType("text");
+
+                    b.Property<decimal?>("PrixUnitaire")
+                        .HasColumnType("numeric(18,2)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -524,11 +532,21 @@ namespace GestionCom.Migrations
                     b.Property<DateTime>("DateVente")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("DocumentNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int>("Etat")
                         .HasColumnType("integer");
 
                     b.Property<string>("Note")
                         .HasColumnType("text");
+
+                    b.Property<decimal>("PaidAmount")
+                        .HasColumnType("numeric");
+
+                    b.Property<int>("PaiementEtat")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("numeric");
@@ -542,6 +560,9 @@ namespace GestionCom.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");
+
+                    b.HasIndex("DocumentNumber")
+                        .IsUnique();
 
                     b.ToTable("Ventes");
                 });
@@ -560,11 +581,17 @@ namespace GestionCom.Migrations
                     b.Property<int?>("CreatedBy")
                         .HasColumnType("integer");
 
+                    b.Property<decimal?>("PrixUnitaire")
+                        .HasColumnType("numeric(18,2)");
+
                     b.Property<int>("ProduitId")
                         .HasColumnType("integer");
 
                     b.Property<int>("Quantite")
                         .HasColumnType("integer");
+
+                    b.Property<decimal>("RemisePercent")
+                        .HasColumnType("numeric(5,2)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -611,7 +638,13 @@ namespace GestionCom.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("GestionCom.Entities.Vente", "Vente")
+                        .WithMany()
+                        .HasForeignKey("VenteId");
+
                     b.Navigation("Client");
+
+                    b.Navigation("Vente");
                 });
 
             modelBuilder.Entity("GestionCom.Entities.StockMovement", b =>

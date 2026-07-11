@@ -52,6 +52,16 @@
                             <InputText id="company-tagline" class="app-input" @bind-Value="model.CompanyTagline" />
                         </div>
 
+                            <div class="app-form-field">
+                                <label for="company-address">Adresse</label>
+                                <InputText id="company-address" class="app-input" @bind-Value="model.CompanyAddress" />
+                            </div>
+
+                            <div class="app-form-field">
+                                <label for="company-phone">Téléphone</label>
+                                <InputText id="company-phone" class="app-input" @bind-Value="model.CompanyPhone" />
+                            </div>
+
                         <div class="app-form-field">
                             <label for="support-email">Email support</label>
                             <InputText id="support-email" class="app-input" @bind-Value="model.SupportEmail" />
@@ -72,7 +82,7 @@
             <section class="app-panel">
                 <div class="app-section-header">
                     <h2>Suggestions utiles</h2>
-                    <span>Paramètres déjà exploitables dans l'application.</span>
+                    
                 </div>
 
                 <div class="app-item-list">
@@ -90,6 +100,8 @@
                         <span class="app-card-label">Aperçu actuel</span>
                         <strong>@model.CompanyName</strong>
                         <p>@(string.IsNullOrWhiteSpace(model.CompanyTagline) ? "Gestion commerciale" : model.CompanyTagline)</p>
+                        <p>@(string.IsNullOrWhiteSpace(model.CompanyAddress) ? "Aucune adresse définie." : model.CompanyAddress)</p>
+                        <p>@(string.IsNullOrWhiteSpace(model.CompanyPhone) ? "Aucun téléphone défini." : model.CompanyPhone)</p>
                         <p>@(string.IsNullOrWhiteSpace(model.SupportEmail) ? "Aucun email support défini." : model.SupportEmail)</p>
                     </article>
                 </div>

@@ -24,6 +24,7 @@ namespace GestionCom.Services
                 Marque = Normalize(dto.Marque),
                 Famille = Normalize(dto.Famille),
                 Designation = dto.Designation.Trim(),
+                PrixUnitaire = NormalizePrice(dto.PrixUnitaire),
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = userId
             };
@@ -47,6 +48,7 @@ namespace GestionCom.Services
             produit.Marque = Normalize(dto.Marque);
             produit.Famille = Normalize(dto.Famille);
             produit.Designation = dto.Designation.Trim();
+            produit.PrixUnitaire = NormalizePrice(dto.PrixUnitaire);
             produit.UpdatedAt = DateTime.UtcNow;
             produit.UpdatedBy = userId;
 
@@ -61,6 +63,16 @@ namespace GestionCom.Services
             }
 
             return value.Trim();
+        }
+
+        private static decimal? NormalizePrice(decimal? value)
+        {
+            if (!value.HasValue)
+            {
+                return null;
+            }
+
+            return decimal.Round(value.Value, 2, MidpointRounding.AwayFromZero);
         }
     }
 }

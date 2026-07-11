@@ -16,6 +16,7 @@
 {
     <div class="client-detail-state">Chargement du client...</div>
 }
+
 else if (!string.IsNullOrWhiteSpace(errorMessage))
 {
     <div class="client-detail-state client-detail-state-error">@errorMessage</div>
@@ -31,6 +32,11 @@ else if (client is not null)
             </div>
 
             <div class="client-detail-actions">
+                <AuthorizeView Roles="Admin">
+                    <Authorized>
+                        <a class="client-detail-link-button" href="@($"/clients/{client.Id}/edit")">Modifier</a>
+                    </Authorized>
+                </AuthorizeView>
                 <a class="client-detail-link-button" href="@($"/ventes/new?clientId={client.Id}")">Nouvelle vente</a>
                 <a class="client-detail-link-button client-detail-link-button-secondary" href="/ventes">Voir les ventes</a>
             </div>
@@ -39,15 +45,15 @@ else if (client is not null)
         <div class="client-detail-summary">
             <div class="client-detail-card">
                 <span class="client-detail-label">Total ventes</span>
-                <strong>@client.TotalSpent.ToString("N2")</strong>
+                <strong>@client.TotalSpent.ToString("N3")</strong>
             </div>
             <div class="client-detail-card">
                 <span class="client-detail-label">Total paiements</span>
-                <strong>@client.TotalPaid.ToString("N2")</strong>
+                <strong>@client.TotalPaid.ToString("N3")</strong>
             </div>
             <div class="client-detail-card @(client.Debt > 0 ? "client-detail-card-debt" : "client-detail-card-clear")">
                 <span class="client-detail-label">En cours</span>
-                <strong>@client.Debt.ToString("N2")</strong>
+                <strong>@client.Debt.ToString("N3")</strong>
             </div>
         </div>
 
@@ -161,6 +167,22 @@ else if (client is not null)
                     }
 
                     <div>
+                        <label for="payment-vente">Affecter à la vente (optionnel)</label>
+                        @if (client?.Ventes != null && client.Ventes.Count > 0)
+                        {
+                            <InputSelect id="payment-vente" @bind-Value="paymentModel.VenteId">
+                                <option value="">—</option>
+                                @foreach (var v in client.Ventes)
+                                {
+                                <option value="@v.Id" title="@v.DocumentNumber">@FormatVenteOption(v)</option>
+                                }
+                            </InputSelect>
+                        }
+                        else
+                        {
+                            <div>Pas de ventes pour ce client.</div>
+                        }
+
                         <label for="payment-note">Note</label>
                         <InputTextArea id="payment-note" @bind-Value="paymentModel.Note" />
                     </div>
@@ -186,24 +208,30 @@ else if (client is not null)
             {
                 <div class="client-detail-table-wrapper">
                     <table class="client-detail-table">
+                        @* Ledger header kept for clarity *@
                         <thead>
                             <tr>
-                                <th>Date</th>
-                                <th>Objet</th>
-                                <th class="amount">Débit</th>
-                                <th class="amount">Crédit</th>
-                                <th class="amount">Solde</th>
+                        <th>Date</th>
+                        <th>Objet</th>
+                        <th class="amount">Débit</th>
+                        <th class="amount">Crédit</th>
+                        <th class="amount">Reste</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in client.Ledger)
+                                @foreach (var item in client.Ledger)
                             {
+                                var venteMatch = (item.Type == "Vente" && item.ReferenceId.HasValue) ? client.Ventes.FirstOrDefault(v => v.Id == item.ReferenceId.Value) : null;
                                 <tr>
                                     <td>@item.Date.ToString("dd/MM/yyyy HH:mm")</td>
                                     <td>
-                                        @if (item.Type == "Vente" && item.ReferenceId.HasValue)
+                                        @if (venteMatch != null)
                                         {
                                             <a class="client-detail-table-link" href="@($"/ventes/{item.ReferenceId.Value}")">@item.Objet</a>
+                                            <span class="client-vente-badge" style="margin-left:0.5rem">
+                                                <span class="vente-payment-status @GetVentePaymentClass(venteMatch.PaymentStatus)">@venteMatch.PaymentStatus</span>
+                                                <span class="client-vente-subtext">@($"{venteMatch.Remaining.ToString("N3")} restant")</span>
+                                            </span>
                                         }
                                         else
                                         {
@@ -211,8 +239,15 @@ else if (client is not null)
                                         }
                                     </td>
                                     <td class="amount">@FormatAmount(item.Debit)</td>
-                                    <td class="amount">@FormatAmount(item.Credit)</td>
-                                    <td class="amount @(item.Balance > 0 ? "balance-debt" : "balance-clear")">@item.Balance.ToString("N2")</td>
+                                    <td class="amount">@FormatAmount(item.Credit)</td><!-- credit -->
+                                    @if (venteMatch != null)
+                                    {
+                                        <td class="amount @(venteMatch.Remaining > 0 ? "balance-debt" : "balance-clear")">@venteMatch.Remaining.ToString("N3")</td>
+                                    }
+                                    else
+                                    {
+                                        <td class="amount @(item.Balance > 0 ? "balance-debt" : "balance-clear")">@item.Balance.ToString("N3")</td>
+                                    }
                                 </tr>
                             }
                         </tbody>
@@ -250,6 +285,7 @@ else if (client is not null)
                                 <th>Date</th>
                                 <th>Mode</th>
                                 <th>Référence</th>
+                                <th>Vente</th>
                                 <th>Dates</th>
                                 <th>Statut</th>
                                 <th>Note</th>
@@ -268,6 +304,16 @@ else if (client is not null)
                                         @if (!string.IsNullOrWhiteSpace(payment.Label))
                                         {
                                             <div class="client-detail-subtext">@payment.Label</div>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (payment.VenteId.HasValue)
+                                        {
+                                            <a class="client-detail-table-link" href="@($"/ventes/{payment.VenteId.Value}")">@DisplayValue(payment.VenteRef)</a>
+                                        }
+                                        else
+                                        {
+                                            <span>—</span>
                                         }
                                     </td>
                                     <td>
@@ -294,7 +340,7 @@ else if (client is not null)
                                         }
                                     </td>
                                     <td>@DisplayValue(payment.Note)</td>
-                                    <td class="amount">@payment.Amount.ToString("N2")</td>
+                                    <td class="amount">@payment.Amount.ToString("N3")</td>
                                     <td>
                                         @if (RequiresReceivedAction(payment) && !payment.IsReceived)
                                         {
@@ -477,5 +523,24 @@ else if (client is not null)
     }
 
     private static string FormatAmount(decimal amount)
-        => amount == 0 ? "—" : amount.ToString("N2");
+    {
+        return amount == 0 ? "—" : amount.ToString("N3");
+    }
+
+    private static string FormatVenteOption(GestionCom.DTOs.Client.ClientVenteItemDto v)
+    {
+        // Show vente Id first (user requested numeric id instead of confusing suffix), then date, amounts and status
+        var date = v.DateVente.ToString("dd/MM/yyyy");
+        var total = v.TotalAmount.ToString("N3");
+        var reste = (v.TotalAmount - v.PaidAmount).ToString("N3");
+        return $"#{v.Id} / {date} — TTC {total} — Reste {reste} — {v.PaymentStatus}";
+    }
+
+    private static string GetVentePaymentClass(string status)
+        => status switch
+        {
+            "Payée" => "vente-payment-status-paid",
+            "En cours" => "vente-payment-status-partial",
+            _ => "vente-payment-status-unpaid",
+        };
 }

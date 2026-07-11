@@ -8,7 +8,7 @@
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 @rendermode InteractiveServer
 
 <PageTitle>Nouvel achat</PageTitle>
@@ -79,6 +79,11 @@
                     <label for="quick-famille">Famille</label>
                     <input id="quick-famille" class="app-input" @bind="quickProductModel.Famille" />
                 </div>
+
+                <div class="app-form-field">
+                    <label for="quick-prix-unitaire">Prix unitaire</label>
+                    <InputNumber id="quick-prix-unitaire" class="app-input" @bind-Value="quickProductModel.PrixUnitaire" />
+                </div>
             </div>
 
             <div class="achat-create-actions achat-create-actions-inline app-actions app-actions-inline">
@@ -117,7 +122,7 @@
 
                     <div class="app-form-field">
                         <label>Montant resté</label>
-                        <div class="achat-create-readonly app-readonly">@RemainingAmount.ToString("N2")</div>
+                        <div class="achat-create-readonly app-readonly">@RemainingAmount.ToString("N3")</div>
                     </div>
 
                     <div class="achat-create-grid-full app-form-field app-form-grid-full">
@@ -365,7 +370,7 @@
 
             var result = await AchatService.CreateAchatAsync(model, userId);
             lastAchatId = result.AchatId;
-            successMessage = $"Achat #{result.AchatId} créé avec succès. Resté: {result.RemainingAmount:N2}.";
+            successMessage = $"Achat #{result.AchatId} créé avec succès. Resté: {result.RemainingAmount:N3}.";
 
             model = CreateDefaultModel();
             selectedLines = [];

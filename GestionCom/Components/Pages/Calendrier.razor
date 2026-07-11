@@ -60,24 +60,24 @@
 
         <section class="calendar-panel app-panel">
             <div class="calendar-section-header app-section-header">
-                <h2>Événements à venir</h2>
-                <span>@overview.UpcomingEvents.Count événement(s)</span>
+                <h2>Paiements en attente</h2>
+                <span>@overview.UpcomingPaymentReminders.Count rappel(s)</span>
             </div>
 
             @if (isLoading)
             {
                 <div class="calendar-state app-state">Chargement...</div>
             }
-            else if (overview.UpcomingEvents.Count == 0)
+            else if (overview.UpcomingPaymentReminders.Count == 0)
             {
-                <div class="calendar-state app-state">Aucun événement à venir.</div>
+                <div class="calendar-state app-state">Aucun paiement en attente.</div>
             }
             else
             {
                 <div class="calendar-event-list app-item-list">
-                    @foreach (var item in overview.UpcomingEvents)
+                    @foreach (var item in overview.UpcomingPaymentReminders)
                     {
-                        <article class="calendar-event-card app-item-card calendar-item-clickable @(item.IsPaymentReminder ? "calendar-event-card-reminder" : string.Empty)" @onclick="() => StartEdit(item)">
+                        <article class="calendar-event-card app-item-card calendar-item-clickable calendar-event-card-reminder" @onclick="() => StartEdit(item)">
                             <div class="calendar-event-top">
                                 <div>
                                     <strong>@item.EventDate.ToString("dd/MM/yyyy")</strong>
@@ -103,6 +103,43 @@
             }
         </section>
     </div>
+
+        <section class="calendar-panel app-panel">
+            <div class="calendar-section-header app-section-header">
+                <h2>Événements à venir</h2>
+                <span>@overview.UpcomingManualEvents.Count événement(s)</span>
+            </div>
+
+            @if (isLoading)
+            {
+                <div class="calendar-state app-state">Chargement...</div>
+            }
+            else if (overview.UpcomingManualEvents.Count == 0)
+            {
+                <div class="calendar-state app-state">Aucun événement à venir.</div>
+            }
+            else
+            {
+                <div class="calendar-event-list app-item-list">
+                    @foreach (var item in overview.UpcomingManualEvents)
+                    {
+                        <article class="calendar-event-card app-item-card calendar-item-clickable" @onclick="() => StartEdit(item)">
+                            <div class="calendar-event-top">
+                                <div>
+                                    <strong>@item.EventDate.ToString("dd/MM/yyyy")</strong>
+                                    @if (item.IsToday)
+                                    {
+                                        <span class="calendar-badge">Aujourd'hui</span>
+                                    }
+                                </div>
+                                <span class="calendar-created-by">@item.CreatedByName</span>
+                            </div>
+                            <p>@item.Description</p>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
 
         <section class="calendar-panel app-panel">
             <div class="calendar-section-header app-section-header">

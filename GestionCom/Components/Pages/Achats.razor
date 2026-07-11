@@ -6,7 +6,7 @@
 @using Microsoft.AspNetCore.Components.Web
 @using System.Security.Claims
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 @rendermode InteractiveServer
 
 <PageTitle>Achats</PageTitle>
@@ -79,9 +79,9 @@
                             <td>#@achat.Id</td>
                             <td><div class="achats-name">@achat.Fournisseur</div></td>
                             <td>@achat.DateAchat.ToString("dd/MM/yyyy")</td>
-                            <td class="amount">@achat.TotalAmount.ToString("N2")</td>
-                            <td class="amount">@achat.PaidAmount.ToString("N2")</td>
-                            <td class="amount @(achat.RemainingAmount > 0 ? "achats-pending" : "achats-clear")">@achat.RemainingAmount.ToString("N2")</td>
+                            <td class="amount">@achat.TotalAmount.ToString("N3")</td>
+                            <td class="amount">@achat.PaidAmount.ToString("N3")</td>
+                            <td class="amount @(achat.RemainingAmount > 0 ? "achats-pending" : "achats-clear")">@achat.RemainingAmount.ToString("N3")</td>
                             <td class="amount">@achat.LineCount</td>
                         </tr>
                     }
@@ -134,15 +134,7 @@
     {
         try
         {
-            var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-            var userIdValue = authenticationState.User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (!int.TryParse(userIdValue, out var userId))
-            {
-                throw new InvalidOperationException("Utilisateur introuvable.");
-            }
-
-            achats = await AchatQueryService.GetAchatsAsync(userId);
+            achats = await AchatQueryService.GetAchatsAsync();
         }
         catch (Exception)
         {

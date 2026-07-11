@@ -10,11 +10,13 @@ namespace GestionCom.Services
     {
         private readonly AppDbContext _context;
         private readonly PasswordService _passwordService;
+        private readonly ILogger<UserManagementService> _logger;
 
-        public UserManagementService(AppDbContext context, PasswordService passwordService)
+        public UserManagementService(AppDbContext context, PasswordService passwordService, ILogger<UserManagementService> logger)
         {
             _context = context;
             _passwordService = passwordService;
+            _logger = logger;
         }
 
         public async Task<UserProfileDto> GetProfileAsync(int userId)
@@ -85,7 +87,9 @@ namespace GestionCom.Services
 
         public async Task<List<RoleOptionDto>> GetRolesAsync()
         {
-            return await _context.Roles
+            // Include roles even if global soft-delete query filters are in place
+            var roles = await _context.Roles
+                .IgnoreQueryFilters()
                 .AsNoTracking()
                 .OrderBy(r => r.Name)
                 .Select(r => new RoleOptionDto
@@ -94,6 +98,10 @@ namespace GestionCom.Services
                     Name = r.Name
                 })
                 .ToListAsync();
+
+            _logger.LogInformation("GetRolesAsync returned {Count} roles", roles.Count);
+
+            return roles;
         }
 
         public async Task<int> CreateUserAsync(CreateUserDto dto, int adminUserId)

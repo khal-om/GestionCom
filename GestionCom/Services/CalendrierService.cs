@@ -77,6 +77,14 @@ namespace GestionCom.Services
 
             return new CalendarOverviewDto
             {
+                UpcomingPaymentReminders = events
+                    .Where(e => e.EventDate.Date >= today && e.IsPaymentReminder)
+                    .OrderBy(e => e.EventDate)
+                    .ToList(),
+                UpcomingManualEvents = events
+                    .Where(e => e.EventDate.Date >= today && !e.IsPaymentReminder)
+                    .OrderBy(e => e.EventDate)
+                    .ToList(),
                 UpcomingEvents = events
                     .Where(e => e.EventDate.Date >= today)
                     .OrderBy(e => e.EventDate)

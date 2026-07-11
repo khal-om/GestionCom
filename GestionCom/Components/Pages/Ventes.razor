@@ -57,8 +57,11 @@
                         <th class="sortable-th @(sortColumn == "Etat" ? "sorted-th" : "")" @onclick='() => SortBy("Etat")'>
                             État <span class="sort-icon">@SortIcon("Etat")</span>
                         </th>
+                        <th class="sortable-th @(sortColumn == "PaymentStatus" ? "sorted-th" : "")" @onclick='() => SortBy("PaymentStatus")'>
+                            Paiement <span class="sort-icon">@SortIcon("PaymentStatus")</span>
+                        </th>
                         <th class="amount sortable-th @(sortColumn == "TotalAmount" ? "sorted-th" : "")" @onclick='() => SortBy("TotalAmount")'>
-                            Montant <span class="sort-icon">@SortIcon("TotalAmount")</span>
+                            Reste <span class="sort-icon">@SortIcon("TotalAmount")</span>
                         </th>
                         <th class="amount sortable-th @(sortColumn == "LineCount" ? "sorted-th" : "")" @onclick='() => SortBy("LineCount")'>
                             Lignes <span class="sort-icon">@SortIcon("LineCount")</span>
@@ -81,7 +84,11 @@
                             <td>
                                 <span class="vente-etat @(vente.Etat == "Livrée" ? "vente-etat-livre" : "vente-etat-commande")">@vente.Etat</span>
                             </td>
-                            <td class="amount">@vente.TotalAmount.ToString("N2")</td>
+                            <td>
+                                <div class="vente-payment-status @GetPaymentStatusClass(vente.PaymentStatus)">@vente.PaymentStatus</div>
+                                <div class="vente-payment-subtext">@($"{vente.PaidAmount.ToString("N3")} / {vente.TotalAmount.ToString("N3")}")</div>
+                            </td>
+                            <td class="amount">@((vente.Remaining).ToString("N3"))</td>
                             <td class="amount">@vente.LineCount</td>
                         </tr>
                     }
@@ -141,7 +148,7 @@
                 throw new InvalidOperationException("Utilisateur introuvable.");
             }
 
-            ventes = await VenteQueryService.GetVentesAsync(userId);
+            ventes = await VenteQueryService.GetVentesAsync(userId, authenticationState.User.IsInRole("Admin"));
         }
         catch (Exception)
         {
@@ -177,4 +184,12 @@
             GoToDetail(venteId);
         }
     }
+
+    private static string GetPaymentStatusClass(string status)
+        => status switch
+        {
+            "Payée" => "vente-payment-status-paid",
+            "En cours" => "vente-payment-status-partial",
+            _ => "vente-payment-status-unpaid",
+        };
 }

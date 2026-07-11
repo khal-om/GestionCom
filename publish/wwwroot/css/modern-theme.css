@@ -1,0 +1,1501 @@
+﻿/*
+ * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+ * MODERN THEME â€” added 2026-01-01
+ * Design language: clean, modern, professional SaaS (Linear / Vercel style)
+ * Palette: Indigo accent Â· Deep navy sidebar Â· Near-white canvas
+ * â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+ * To revert: remove the <link> tag for this file in Components/App.razor
+ * Original CSS files (app.css, *.razor.css) are 100% untouched.
+ * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+ */
+
+/* â”€â”€ Google Fonts: Inter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   1. DESIGN TOKENS â€” override app.css variables
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+:root {
+    /* â”€â”€ Accent â€” indigo â”€â”€ */
+    --gc-accent:         #6366F1;
+    --gc-accent-hover:   #4F46E5;
+    --gc-accent-light:   #EEF2FF;
+    --gc-accent-subtle:  rgba(99, 102, 241, 0.08);
+    --gc-accent-ring:    rgba(99, 102, 241, 0.25);
+    --gc-accent-dark:    #4F46E5;
+
+    /* â”€â”€ Surfaces â”€â”€ */
+    --gc-bg:             #F8F9FC;
+    --gc-surface:        #FFFFFF;
+    --gc-surface-raised: #FFFFFF;
+    --gc-surface-sunken: #F3F4F8;
+
+    /* â”€â”€ Borders â”€â”€ */
+    --gc-border:         #E5E7EB;
+    --gc-border-strong:  #D1D5DB;
+
+    /* â”€â”€ Text â”€â”€ */
+    --gc-ink:            #111827;
+    --gc-ink-secondary:  #6B7280;
+    --gc-muted:          #9CA3AF;
+
+    /* â”€â”€ Sidebar â€” deep navy â”€â”€ */
+    --gc-sidebar-bg:         #0F172A;
+    --gc-sidebar-link:       rgba(255, 255, 255, 0.50);
+    --gc-sidebar-hover:      #FFFFFF;
+    --gc-sidebar-active-bg:  rgba(99, 102, 241, 0.18);
+    --gc-sidebar-separator:  rgba(255, 255, 255, 0.07);
+
+    /* â”€â”€ Semantic â”€â”€ */
+    --gc-success:       #10B981;
+    --gc-success-bg:    #ECFDF5;
+    --gc-success-text:  #065F46;
+    --gc-warning:       #F59E0B;
+    --gc-warning-bg:    #FFFBEB;
+    --gc-warning-text:  #92400E;
+    --gc-danger:        #EF4444;
+    --gc-danger-bg:     #FEF2F2;
+    --gc-danger-text:   #B91C1C;
+
+    /* â”€â”€ Radii â”€â”€ */
+    --gc-radius-sm: 4px;
+    --gc-radius-md: 8px;
+    --gc-radius-lg: 10px;
+    --gc-radius-xl: 14px;
+
+    /* â”€â”€ Shadows â”€â”€ */
+    --gc-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --gc-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --gc-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.07), 0 2px 6px rgba(0, 0, 0, 0.04);
+    --gc-shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.12);
+
+    /* â”€â”€ Table â”€â”€ */
+    --gc-table-head-bg: #F9FAFB;
+    --gc-table-border:  var(--gc-border);
+
+    /* â”€â”€ Transitions â”€â”€ */
+    --gc-ease:     cubic-bezier(0.4, 0, 0.2, 1);
+    --gc-duration: 0.15s;
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   2. GLOBAL TYPOGRAPHY
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+html, body {
+    font-family: "Inter", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    background: var(--gc-bg);
+    color: var(--gc-ink);
+}
+
+h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--gc-ink);
+}
+
+h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--gc-ink);
+}
+
+h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: -0.008em;
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   3. LAYOUT â€” App shell & page container
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+.app-shell {
+    min-height: 100vh;
+    display: flex;
+    background: var(--gc-bg);
+}
+
+.app-main-shell {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--gc-bg);
+}
+
+.app-page-container {
+    flex: 1;
+    padding: 2rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    max-width: 1280px;
+    width: 100%;
+}
+
+/* â”€â”€ Page-level h1 â€” styled as a page header â”€â”€ */
+.app-page-container > h1:first-child {
+    font-size: 1.375rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--gc-ink);
+    padding-bottom: 0.125rem;
+    border-bottom: none;
+    margin-bottom: -0.5rem;
+}
+
+/* â”€â”€ Footer â”€â”€ */
+.app-footer {
+    padding: 1.25rem 2.5rem;
+    color: var(--gc-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    border-top: 1px solid var(--gc-border);
+    margin-top: auto;
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   4. SIDEBAR
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+.app-sidebar-panel {
+    width: 240px;
+    min-height: 100vh;
+    height: 100vh;
+    background: var(--gc-sidebar-bg);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    position: sticky;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+.app-sidebar-panel::-webkit-scrollbar {
+    width: 4px;
+}
+.app-sidebar-panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+.app-sidebar-panel::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+}
+
+/* â”€â”€ Brand panel â”€â”€ */
+.app-brand-panel {
+    padding: 1.25rem 1rem 1rem;
+    border-bottom: 1px solid var(--gc-sidebar-separator);
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.app-logo-frame {
+    width: 42px;
+    height: 42px;
+    border-radius: var(--gc-radius-md);
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.10);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    flex-shrink: 0;
+    transition: border-color var(--gc-duration) var(--gc-ease),
+                box-shadow var(--gc-duration) var(--gc-ease);
+}
+
+.app-brand-link:hover .app-logo-frame {
+    border-color: rgba(255,255,255,0.22);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.28);
+}
+
+.app-logo-frame-large {
+    width: 120px;
+    height: 120px;
+    border-radius: var(--gc-radius-lg);
+}
+
+/* â”€â”€ Nav sections â”€â”€ */
+.app-nav-sections {
+    display: flex;
+    flex-direction: column;
+    padding: 0 0.625rem;
+    flex: 1;
+}
+
+.app-nav-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.app-nav-group-separated {
+    margin-top: 0.25rem;
+    padding-top: 0.875rem;
+    border-top: 1px solid var(--gc-sidebar-separator);
+}
+
+.app-nav-group-label {
+    display: block;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.28);
+    padding: 0 0.625rem 0.375rem;
+    margin-bottom: 0.125rem;
+}
+
+/* â”€â”€ Nav links â”€â”€ */
+.app-nav-link {
+    display: flex;
+    align-items: center;
+    border-radius: var(--gc-radius-md);
+    padding: 0.4375rem 0.625rem;
+    color: var(--gc-sidebar-link);
+    text-decoration: none;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    transition: color var(--gc-duration) var(--gc-ease),
+                background-color var(--gc-duration) var(--gc-ease);
+    cursor: pointer;
+}
+
+.app-nav-link:hover {
+    color: #FFFFFF;
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.app-nav-link.active {
+    color: #FFFFFF;
+    background: var(--gc-sidebar-active-bg);
+}
+
+/* Active indicator left stripe */
+.app-nav-link.active .app-nav-icon svg {
+    color: #A5B4FC;
+}
+
+.app-nav-link-main {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.app-nav-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    opacity: 0.7;
+    transition: opacity var(--gc-duration) var(--gc-ease);
+}
+
+.app-nav-link:hover .app-nav-icon,
+.app-nav-link.active .app-nav-icon {
+    opacity: 1;
+}
+
+/* â”€â”€ Logout link â”€â”€ */
+.app-nav-logout {
+    margin-top: auto;
+    padding-top: 1rem;
+    padding-bottom: 0.25rem;
+    border-top: 1px solid var(--gc-sidebar-separator);
+}
+
+.app-nav-link-logout {
+    color: rgba(255, 255, 255, 0.38);
+}
+
+.app-nav-link-logout:hover {
+    color: #FCA5A5;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   5. MOBILE TOPBAR
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+@media (max-width: 768px) {
+    .app-mobile-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 1rem;
+        background: var(--gc-sidebar-bg);
+        border-bottom: 1px solid var(--gc-sidebar-separator);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .app-sidebar-panel {
+        position: fixed;
+        left: -260px;
+        top: 0;
+        z-index: 200;
+        width: 240px;
+        height: 100%;
+        transition: left 0.22s var(--gc-ease);
+        box-shadow: none;
+    }
+
+    .app-sidebar-panel.is-open {
+        left: 0;
+        box-shadow: 4px 0 32px rgba(0, 0, 0, 0.22);
+    }
+
+    .app-page-container {
+        padding: 1.25rem 1rem;
+    }
+
+    .app-nav-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 150;
+        backdrop-filter: blur(2px);
+    }
+
+    .app-nav-overlay.is-open {
+        display: block;
+    }
+}
+
+/* â”€â”€ Menu toggle button â”€â”€ */
+.app-menu-toggle {
+    background: none;
+    border: none;
+    padding: 0.375rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    cursor: pointer;
+    border-radius: var(--gc-radius-sm);
+    box-shadow: none;
+}
+
+.app-menu-toggle:hover {
+    background: rgba(255,255,255,0.08);
+    box-shadow: none;
+    transform: none;
+}
+
+.app-menu-toggle span {
+    display: block;
+    width: 18px;
+    height: 1.5px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 2px;
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   6. BUTTONS
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+button,
+.app-button,
+a.app-button,
+.clients-new-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    border: none;
+    border-radius: 6px;
+    background: var(--gc-accent);
+    color: #FFFFFF;
+    padding: 0.5rem 1rem;
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.5;
+    cursor: pointer;
+    text-decoration: none;
+    letter-spacing: -0.003em;
+    transition: background-color var(--gc-duration) var(--gc-ease),
+                box-shadow var(--gc-duration) var(--gc-ease),
+                transform 0.1s var(--gc-ease);
+}
+
+button:hover,
+.app-button:hover,
+a.app-button:hover,
+.clients-new-button:hover {
+    background: var(--gc-accent-hover);
+    color: #FFFFFF;
+    box-shadow: 0 2px 12px rgba(99, 102, 241, 0.32);
+    transform: translateY(-1px);
+}
+
+button:active,
+.app-button:active,
+.clients-new-button:active {
+    transform: scale(0.975) translateY(0);
+    box-shadow: none;
+}
+
+button:focus-visible,
+.app-button:focus-visible {
+    outline: 2px solid var(--gc-accent);
+    outline-offset: 2px;
+}
+
+button:disabled,
+.app-button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* â”€â”€ Secondary button â”€â”€ */
+.btn-secondary {
+    background: var(--gc-surface);
+    color: var(--gc-ink);
+    border: 1.5px solid var(--gc-border);
+    box-shadow: var(--gc-shadow-xs);
+}
+
+.btn-secondary:hover {
+    background: var(--gc-surface-sunken);
+    color: var(--gc-ink);
+    border-color: var(--gc-border-strong);
+    box-shadow: var(--gc-shadow-sm);
+    transform: translateY(-1px);
+}
+
+/* â”€â”€ Danger button â”€â”€ */
+.btn-danger {
+    background: var(--gc-danger-bg);
+    color: var(--gc-danger-text);
+    border: 1.5px solid rgba(239, 68, 68, 0.2);
+    box-shadow: none;
+}
+
+.btn-danger:hover {
+    background: #FEE2E2;
+    color: var(--gc-danger-text);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.18);
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   7. INPUTS & FORMS
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+input,
+textarea,
+select {
+    font-family: inherit;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    border: 1.5px solid var(--gc-border);
+    border-radius: var(--gc-radius-md);
+    background: var(--gc-surface);
+    color: var(--gc-ink);
+    padding: 0.5rem 0.75rem;
+    transition: border-color var(--gc-duration) var(--gc-ease),
+                box-shadow var(--gc-duration) var(--gc-ease);
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--gc-muted);
+    font-size: 0.8125rem;
+}
+
+input:hover,
+textarea:hover,
+select:hover {
+    border-color: var(--gc-border-strong);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: var(--gc-accent);
+    box-shadow: 0 0 0 3px var(--gc-accent-ring);
+    background: #FEFEFF;
+}
+
+.app-input {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: var(--gc-radius-md);
+}
+
+.app-form-field label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--gc-ink);
+    letter-spacing: 0.01em;
+}
+
+/* â”€â”€ Search inputs â”€â”€ */
+.clients-search,
+.produits-search,
+.app-search {
+    padding: 0.5rem 0.875rem;
+    font-size: 0.8125rem;
+    border-radius: 20px;
+    border: 1.5px solid var(--gc-border);
+    background: var(--gc-surface);
+    transition: border-color var(--gc-duration) var(--gc-ease),
+                box-shadow var(--gc-duration) var(--gc-ease),
+                width 0.2s var(--gc-ease);
+}
+
+.clients-search:focus,
+.produits-search:focus,
+.app-search:focus {
+    outline: none;
+    border-color: var(--gc-accent);
+    box-shadow: 0 0 0 3px var(--gc-accent-ring);
+    width: min(400px, 100%);
+}
+
+/* â”€â”€ Validation â”€â”€ */
+.valid.modified:not([type=checkbox]) {
+    border-color: var(--gc-success);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+.invalid {
+    border-color: var(--gc-danger);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.validation-message {
+    color: var(--gc-danger);
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   8. CARDS / PANELS
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+.app-panel {
+    background: var(--gc-surface);
+    border: 1px solid var(--gc-border);
+    border-radius: var(--gc-radius-xl);
+    padding: 1.5rem;
+    box-shadow: var(--gc-shadow-sm);
+}
+
+.app-summary-card {
+    background: var(--gc-surface);
+    border: 1px solid var(--gc-border);
+    border-radius: var(--gc-radius-xl);
+    padding: 1.25rem 1.375rem;
+    box-shadow: var(--gc-shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    transition: box-shadow var(--gc-duration) var(--gc-ease),
+                transform var(--gc-duration) var(--gc-ease);
+}
+
+.app-summary-card:hover {
+    box-shadow: var(--gc-shadow-md);
+    transform: translateY(-1px);
+}
+
+.app-card-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--gc-ink-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.app-summary-card strong {
+    font-size: 1.375rem;
+    font-weight: 700;
+    color: var(--gc-ink);
+    letter-spacing: -0.02em;
+}
+
+/* Dashboard hero panel with subtle gradient */
+.dashboard-hero-panel {
+    background:
+        radial-gradient(circle at top right, rgba(99, 102, 241, 0.08), transparent 30%),
+        radial-gradient(circle at bottom left, rgba(79, 70, 229, 0.06), transparent 30%),
+        var(--gc-surface) !important;
+}
+
+/* Metric card top stripe â€” update accent colour */
+.dashboard-metric-card-user::after {
+    background: linear-gradient(90deg, #6366F1, #818CF8) !important;
+}
+.dashboard-metric-card-sales::after {
+    background: linear-gradient(90deg, #4F46E5, #818CF8) !important;
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   9. TABLES
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+.app-table-shell,
+.clients-table-wrapper,
+.produits-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--gc-border);
+    border-radius: var(--gc-radius-xl);
+    background: var(--gc-surface);
+    box-shadow: var(--gc-shadow-sm);
+}
+
+.app-table,
+.clients-table,
+.produits-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Table header */
+.app-table th,
+.clients-table th,
+.produits-table th {
+    background: var(--gc-table-head-bg);
+    color: var(--gc-ink-secondary);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--gc-border);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+/* Table cells */
+.app-table td,
+.clients-table td,
+.produits-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--gc-border);
+    font-size: 0.875rem;
+    color: var(--gc-ink);
+    vertical-align: middle;
+}
+
+/* Alternating row backgrounds */
+.app-table tbody tr:nth-child(even),
+.clients-table tbody tr:nth-child(even),
+.produits-table tbody tr:nth-child(even) {
+    background: #FBFBFE;
+}
+
+/* Last row: remove bottom border */
+.app-table tbody tr:last-child td,
+.clients-table tbody tr:last-child td,
+.produits-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Interactive rows */
+.app-row-interactive,
+.clients-row {
+    cursor: pointer;
+    transition: background-color var(--gc-duration) var(--gc-ease);
+}
+
+.app-row-interactive:hover,
+.clients-row:hover {
+    background: var(--gc-accent-subtle) !important;
+}
+
+.app-row-interactive:focus,
+.clients-row:focus {
+    outline: none;
+    background: var(--gc-accent-subtle) !important;
+    box-shadow: inset 2px 0 0 var(--gc-accent);
+}
+
+/* Amount column */
+.app-table .amount,
+.clients-amount,
+.produits-table .amount {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   10. BADGES & STATUS PILLS
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+
+/* Base pill */
+.badge,
+[class*="-badge"],
+[class*="-pill"],
+[class*="-status"] {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.1875rem 0.625rem;
+    border-radius: 999px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    line-height: 1.5;
+}
+
+/* Stock levels */
+.stock-positive,
+.clients-clear {
+    color: var(--gc-success-text);
+    background: var(--gc-success-bg);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.stock-negative,
+.clients-debt {
+    color: var(--gc-danger-text);
+    background: var(--gc-danger-bg);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Debt amount badge on clients table */
+.clients-debt {
+/*    display: inline-block;*/    
+    padding: 0.125rem 0.5rem;
+    /*border-radius: 999px;*/
+    font-weight: 600;
+    font-size: 0.8125rem;
+}
+
+.clients-clear {
+/*    display: inline-block;
+*/    padding: 0.125rem 0.5rem;
+    /*border-radius: 999px;*/
+    font-weight: 500;
+    font-size: 0.8125rem;
+}
+
+/* Client name cell with avatar-like dot */
+.clients-name {
+    font-weight: 600;
+    color: var(--gc-ink);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.clients-name::before {
+    content: "";
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--gc-accent);
+    opacity: 0.6;
+    flex-shrink: 0;
+}
+
+/* â”€â”€ Count badges â”€â”€ */
+.clients-count,
+.produits-count,
+.app-count {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1875rem 0.5rem;
+    background: var(--gc-surface-sunken);
+    border: 1px solid var(--gc-border);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--gc-ink-secondary);
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   11. ALERTS / MESSAGES / TOASTS
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+.app-message,
+.app-state,
+.produits-message,
+.clients-state {
+    padding: 0.875rem 1.125rem;
+    border-radius: var(--gc-radius-lg);
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.app-message::before,
+.produits-message::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.app-message-success,
+.produits-message-success {
+    background: var(--gc-success-bg);
+    color: var(--gc-success-text);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.app-message-success::before,
+.produits-message-success::before {
+    background: var(--gc-success);
+}
+
+.app-message-error,
+.app-inline-error,
+.produits-message-error,
+.clients-state-error {
+    background: var(--gc-danger-bg);
+    color: var(--gc-danger-text);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.app-message-error::before,
+.produits-message-error::before {
+    background: var(--gc-danger);
+}
+
+.app-message-warning {
+    background: var(--gc-warning-bg);
+    color: var(--gc-warning-text);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+/* â”€â”€ Empty / loading state â”€â”€ */
+.app-state,
+.produits-state,
+.clients-state {
+    border: 1.5px dashed var(--gc-border-strong);
+    background: var(--gc-surface-sunken);
+    color: var(--gc-ink-secondary);
+    border-radius: var(--gc-radius-xl);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    justify-content: center;
+    font-size: 0.875rem;
+}
+
+/* â”€â”€ Blazor error UI â”€â”€ */
+#blazor-error-ui {
+    background: var(--gc-danger);
+    color: #FFFFFF;
+    bottom: 1.25rem;
+    right: 1.25rem;
+    left: auto;
+    width: min(380px, calc(100vw - 2.5rem));
+    border-radius: var(--gc-radius-xl);
+    box-shadow: var(--gc-shadow-lg);
+    display: none;
+    padding: 0.875rem 1.125rem;
+    position: fixed;
+    z-index: 9999;
+    font-size: 0.875rem;
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   12. PAGE HEADERS (toolbar rows)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+.app-toolbar,
+.clients-toolbar,
+.produits-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.app-toolbar-left,
+.clients-toolbar-left {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+/* â”€â”€ Section headers â”€â”€ */
+.app-section-header,
+.app-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   13. FORMS PANEL (create product / stock panels)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+.produits-panel {
+    background: var(--gc-surface);
+    border: 1px solid var(--gc-border);
+    border-radius: var(--gc-radius-xl);
+    padding: 1.5rem;
+    box-shadow: var(--gc-shadow-sm);
+}
+
+.produits-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.produits-form > div {
+    display: grid;
+    gap: 0.375rem;
+}
+
+.produits-form label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--gc-ink);
+}
+
+.produits-form input,
+.produits-form select {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+}
+
+/* â”€â”€ Produits grid layout â”€â”€ */
+.produits-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+    align-items: start;
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   14. DASHBOARD SPECIFICS
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+.dashboard-filter-card {
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--gc-border);
+    border-radius: var(--gc-radius-lg);
+    background: var(--gc-surface);
+    box-shadow: var(--gc-shadow-xs);
+}
+
+.dashboard-toolbar-copy span {
+    font-size: 0.8125rem;
+    color: var(--gc-ink-secondary);
+}
+
+/* â”€â”€ Info / detail lists â”€â”€ */
+.app-info-list dt {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--gc-ink-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.app-info-list dd {
+    font-weight: 500;
+    color: var(--gc-ink);
+    font-size: 0.9rem;
+}
+
+/* â”€â”€ Item cards â”€â”€ */
+.app-item-card {
+    background: var(--gc-surface-sunken);
+    border: 1px solid var(--gc-border);
+    border-radius: var(--gc-radius-lg);
+    padding: 0.875rem 1rem;
+    transition: box-shadow var(--gc-duration) var(--gc-ease);
+}
+
+.app-item-card:hover {
+    box-shadow: var(--gc-shadow-sm);
+}
+
+/* â”€â”€ Readonly field â”€â”€ */
+.app-readonly {
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--gc-radius-md);
+    border: 1.5px solid var(--gc-border);
+    background: var(--gc-surface-sunken);
+    color: var(--gc-ink);
+    font-weight: 600;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   15. SCROLLBAR (global thin scrollbar)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--gc-border-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+    background: var(--gc-border-strong);
+    border-radius: 6px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background: var(--gc-muted);
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   16. RESPONSIVE OVERRIDES
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+@media (max-width: 1024px) {
+    .app-page-container {
+        padding: 1.5rem 1.75rem;
+    }
+
+    .produits-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .app-page-container {
+        padding: 1rem;
+    }
+
+    .app-summary-grid-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dashboard-filter-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+
+    .clients-toolbar,
+    .produits-toolbar,
+    .app-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .clients-new-button,
+    .app-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .clients-search,
+    .produits-search {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-summary-grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .dashboard-filter-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   17. PRINT â€” hide sidebar
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+@media print {
+    .app-sidebar-panel,
+    .app-mobile-topbar,
+    .app-footer {
+        display: none !important;
+    }
+
+    .app-page-container {
+        padding: 0;
+        max-width: 100%;
+    }
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   18. SORTABLE TABLE HEADERS
+   â€” Works on ALL tables: clients, ventes, produits, achats
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+.sortable-th {
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    transition: color var(--gc-duration) var(--gc-ease),
+                background-color var(--gc-duration) var(--gc-ease);
+}
+
+.sortable-th:hover {
+    color: var(--gc-ink);
+    background: #EDEEF8;
+}
+
+/* Active sorted column header */
+.sorted-th {
+    color: var(--gc-accent) !important;
+    background: #EDEEF8 !important;
+}
+
+/* Sort arrow icon â€” inline after the label text */
+.sort-icon {
+    display: inline-block;
+    margin-left: 0.3em;
+    font-size: 0.7em;
+    opacity: 0.5;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+.sorted-th .sort-icon {
+    opacity: 1;
+    color: var(--gc-accent);
+}
+
+/* â”€â”€ EN COURS column: smaller, tighter pill, hard right-align â”€â”€ */
+/* The th already has .clients-amount (text-align: right).       */
+/* We strengthen it globally to survive any override chains.     */
+th.clients-amount,
+td.clients-amount {
+    text-align: right !important;
+    padding-right: 1.25rem !important;
+}
+
+/* Smaller, pill-like debt / clear badges â€” less prominent border */
+td.clients-debt,
+td.clients-clear {
+    text-align: right !important;
+    padding-right: 1.25rem !important;
+}
+
+td.clients-debt {
+    font-weight: 600;
+    font-size: 0.8125rem;
+}
+
+td.clients-clear {
+    font-weight: 500;
+    font-size: 0.8125rem;
+    color: var(--gc-success-text);
+}
+
+/* Ventes status pill */
+.vente-etat {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.1875rem 0.625rem;
+    border-radius: 999px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.vente-etat-livre {
+    background: var(--gc-success-bg);
+    color: var(--gc-success-text);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.vente-etat-commande {
+    background: #EFF6FF;
+    color: #1D4ED8;
+    border: 1px solid rgba(29, 78, 216, 0.18);
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   19. DASHBOARD â€” CHART COLORS (GLOBAL â€” not scoped)
+   â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+   ROOT CAUSE: SVG elements emitted by RenderTreeBuilder do NOT receive
+   Blazor's scoped CSS attribute (e.g. b-xxxx), so rules in Dashboard.razor.css
+   never match them. These global rules have no scoping and therefore work.
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+
+/* â”€â”€ SVG axis & grid â”€â”€ */
+.dashboard-axis {
+    stroke: #E5E7EB !important;
+    stroke-width: 1 !important;
+}
+
+.dashboard-grid-line {
+    stroke: #F3F4F6;
+    stroke-width: 1;
+    stroke-dasharray: 3 4;
+}
+
+.dashboard-axis-label {
+    fill: #9CA3AF !important;
+    font-size: 11px;
+    font-family: "Inter", "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+.dashboard-value-label {
+    fill: #6B7280;
+    font-size: 9px;
+    font-family: "Inter", "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+/* â”€â”€ Line chart â€” user sales (indigo) â”€â”€ */
+.dashboard-line {
+    stroke-width: 2.5 !important;
+    stroke-linecap: round !important;
+    stroke-linejoin: round !important;
+    fill: none !important;
+}
+
+.dashboard-line.dashboard-user-color-1,
+.dashboard-line-user-1 {
+    stroke: #6366F1 !important;
+}
+.dashboard-line.dashboard-user-color-2,
+.dashboard-line-user-2 {
+    stroke: #10B981 !important;
+}
+.dashboard-line.dashboard-user-color-3,
+.dashboard-line-user-3 {
+    stroke: #F59E0B !important;
+}
+.dashboard-line.dashboard-user-color-4,
+.dashboard-line-user-4 {
+    stroke: #EF4444 !important;
+}
+.dashboard-line.dashboard-user-color-5,
+.dashboard-line-user-5 {
+    stroke: #8B5CF6 !important;
+}
+
+/* â”€â”€ Line points â”€â”€ */
+.dashboard-line-point {
+    stroke: #FFFFFF !important;
+    stroke-width: 2 !important;
+}
+
+.dashboard-line-point.dashboard-user-color-1 { fill: #6366F1 !important; }
+.dashboard-line-point.dashboard-user-color-2 { fill: #10B981 !important; }
+.dashboard-line-point.dashboard-user-color-3 { fill: #F59E0B !important; }
+.dashboard-line-point.dashboard-user-color-4 { fill: #EF4444 !important; }
+.dashboard-line-point.dashboard-user-color-5 { fill: #8B5CF6 !important; }
+
+/* â”€â”€ Bar charts â”€â”€ */
+/* Generic bar fallback */
+.dashboard-bar {
+    fill: #6366F1 !important;
+    opacity: 0.92;
+    transition: opacity 0.15s ease;
+}
+
+/* Company sales bars â€” vivid indigo */
+.dashboard-bar-sales {
+    fill: #6366F1 !important;
+}
+
+/* Purchases bars â€” sky blue */
+.dashboard-bar-purchase {
+    fill: #38BDF8 !important;
+}
+
+/* Expenses bars â€” amber */
+.dashboard-bar-expense {
+    fill: #FB923C !important;
+}
+
+/* â”€â”€ User color classes (bar fills + dot backgrounds) â”€â”€ */
+.dashboard-user-color-1 {
+    stroke: #6366F1 !important;
+    fill:   #6366F1 !important;
+    background: #6366F1 !important;
+}
+.dashboard-user-color-2 {
+    stroke: #10B981 !important;
+    fill:   #10B981 !important;
+    background: #10B981 !important;
+}
+.dashboard-user-color-3 {
+    stroke: #F59E0B !important;
+    fill:   #F59E0B !important;
+    background: #F59E0B !important;
+}
+.dashboard-user-color-4 {
+    stroke: #EF4444 !important;
+    fill:   #EF4444 !important;
+    background: #EF4444 !important;
+}
+.dashboard-user-color-5 {
+    stroke: #8B5CF6 !important;
+    fill:   #8B5CF6 !important;
+    background: #8B5CF6 !important;
+}
+
+/* â”€â”€ Legend swatches â”€â”€ */
+.dashboard-legend-swatch-purchase {
+    background: #38BDF8 !important;
+}
+.dashboard-legend-swatch-expense {
+    background: #FB923C !important;
+}
+
+/* â”€â”€ Metric card top stripes â€” full palette â”€â”€ */
+.dashboard-metric-card-user::after     { background: linear-gradient(90deg, #6366F1, #818CF8) !important; }
+.dashboard-metric-card-sales::after    { background: linear-gradient(90deg, #4F46E5, #6366F1) !important; }
+.dashboard-metric-card-purchase::after { background: linear-gradient(90deg, #0EA5E9, #38BDF8) !important; }
+.dashboard-metric-card-expense::after  { background: linear-gradient(90deg, #F97316, #FB923C) !important; }
+.dashboard-metric-card-client::after   { background: linear-gradient(90deg, #10B981, #34D399) !important; }
+.dashboard-metric-card-supplier::after { background: linear-gradient(90deg, #F59E0B, #FCD34D) !important; }
+.dashboard-metric-card-calendar::after { background: linear-gradient(90deg, #8B5CF6, #A78BFA) !important; }
+.dashboard-metric-card-stock::after    { background: linear-gradient(90deg, #EF4444, #F87171) !important; }
+
+/* â”€â”€ Hero panel gradient updated to indigo â”€â”€ */
+.dashboard-hero-panel {
+    background:
+        radial-gradient(circle at top right, rgba(99, 102, 241, 0.09), transparent 32%),
+        radial-gradient(circle at bottom left, rgba(79, 70, 229, 0.05), transparent 32%),
+        #FFFFFF !important;
+}
+
+/* â”€â”€ Chart panel highlight (user chart) â€” subtle indigo wash â”€â”€ */
+.dashboard-chart-panel-highlight {
+    background:
+        radial-gradient(circle at top right, rgba(99, 102, 241, 0.07), transparent 35%),
+        #FFFFFF !important;
+}
+
+/* â”€â”€ Chart total value â”€â”€ */
+.dashboard-chart-total {
+    color: var(--gc-accent) !important;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+/* â”€â”€ Top-client value â”€â”€ */
+.dashboard-value-sales {
+    color: var(--gc-accent) !important;
+    font-weight: 700;
+}
+
+/* â”€â”€ Stock alert pills on dashboard â”€â”€ */
+.dashboard-negative {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    background: var(--gc-danger-bg);
+    color: var(--gc-danger-text) !important;
+    border: 1px solid rgba(239, 68, 68, 0.18);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.dashboard-warning {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    background: var(--gc-warning-bg);
+    color: var(--gc-warning-text) !important;
+    border: 1px solid rgba(245, 158, 11, 0.18);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* â”€â”€ "Aujourd'hui" badge â”€â”€ */
+.dashboard-badge {
+    display: inline-flex;
+    margin-left: 0.5rem;
+    padding: 0.1875rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(99, 102, 241, 0.1);
+    color: #4F46E5;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+/* â”€â”€ User bar track â”€â”€ */
+.dashboard-user-bar-track {
+    width: 100%;
+    height: 8px !important;
+    margin-top: 0.75rem;
+    border-radius: 999px;
+    background: #F3F4F6 !important;
+    overflow: hidden;
+}
+
+/* â”€â”€ User bar cards â”€â”€ */
+.dashboard-user-bar-card {
+    padding: 0.875rem 1rem;
+    border: 1px solid var(--gc-border);
+    border-radius: var(--gc-radius-lg);
+    background: var(--gc-surface);
+    transition: box-shadow var(--gc-duration) var(--gc-ease);
+}
+
+.dashboard-user-bar-card:hover {
+    box-shadow: var(--gc-shadow-sm);
+}
+
+/* â”€â”€ Top-client rank indicator â”€â”€ */
+.dashboard-rank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    color: #FFFFFF;
+}
+
+.dashboard-rank-1 { background: #F59E0B; }
+.dashboard-rank-2 { background: #9CA3AF; }
+.dashboard-rank-3 { background: #B45309; }
+.dashboard-rank-n { background: var(--gc-surface-sunken); color: var(--gc-muted); }
+
+/* â”€â”€ Event card â”€â”€ */
+.dashboard-event-card p {
+    font-size: 0.875rem;
+    color: var(--gc-ink-secondary);
+    margin: 0;
+    line-height: 1.55;
+}
+
+/* â”€â”€ Section summary values (stock/events count cards) â”€â”€ */
+.app-summary-card .dashboard-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+
+

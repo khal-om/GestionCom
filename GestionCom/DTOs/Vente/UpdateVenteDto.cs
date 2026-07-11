@@ -12,6 +12,9 @@ namespace GestionCom.DTOs.Vente
         public DateTime DateVente { get; set; }
         public DateTime? DateLivraison { get; set; }
 
+        [StringLength(100)]
+        public string? FactureNumber { get; set; }
+
         [StringLength(1000)]
         public string? Note { get; set; }
 

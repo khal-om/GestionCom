@@ -12,3 +12,12 @@
 
 ## Edit Flows
 - For correction/edit flows in this app, avoid a separate 'Corriger' button when possible; list items should be clickable to enter edit mode, and the same interaction pattern should be used consistently across modules.
+
+## Formatting Guidelines
+- When formatting vente references, ensure the visual format matches exactly, including line breaks: 
+  - Format vente references as `V-day-month-last-2-digits-of-year`, visually displayed with the date on the first line and the 5-character code on the second line. 
+  - For example: 
+    - `V-26-04-28` should be on one line 
+    - the 5-character code on the next line.
+- Use Tunisian dinar formatting for currency values, with 3 digits after the decimal separator/comma.
+- For expected invoice numbers, always use the format `REV<2-digit year>/<facture number>`, where the facture number is a simple editable number and must not include the vente document date or random suffix (e.g., `REV26/54`).

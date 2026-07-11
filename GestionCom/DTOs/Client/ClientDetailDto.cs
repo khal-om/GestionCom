@@ -29,5 +29,7 @@
 
         public List<ClientLedgerItemDto> Ledger { get; set; } = new();
         public List<ClientPaymentItemDto> Payments { get; set; } = new();
+        public List<ClientVenteItemDto> Ventes { get; set; } = new();
+
     }
 }

@@ -6,7 +6,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Components.Authorization
 
-@attribute [Authorize]
+@attribute [Authorize(Roles = "Admin")]
 @rendermode InteractiveServer
 
 <PageTitle>Dashboard</PageTitle>
@@ -96,30 +96,30 @@
         <div class="app-summary-grid app-summary-grid-4 dashboard-metrics-grid">
             <div class="app-summary-card dashboard-metric-card dashboard-metric-card-user">
                 <span class="app-card-label">Ventes de @overview.SelectedUserDisplayName</span>
-                <strong>@overview.CurrentUserYearSales.ToString("N2")</strong>
+                <strong>@overview.CurrentUserYearSales.ToString("N3")</strong>
             </div>
             <div class="app-summary-card dashboard-metric-card dashboard-metric-card-sales">
                 <span class="app-card-label">@(isAdmin ? "Ventes globales" : "Mes ventes filtrées")</span>
-                <strong>@overview.CompanyYearSales.ToString("N2")</strong>
+                <strong>@overview.CompanyYearSales.ToString("N3")</strong>
             </div>
             <div class="app-summary-card dashboard-metric-card dashboard-metric-card-purchase">
                 <span class="app-card-label">Achats</span>
-                <strong>@overview.CompanyYearPurchases.ToString("N2")</strong>
+                <strong>@overview.CompanyYearPurchases.ToString("N3")</strong>
             </div>
             <div class="app-summary-card dashboard-metric-card dashboard-metric-card-expense">
                 <span class="app-card-label">Dépenses</span>
-                <strong>@overview.CompanyYearExpenses.ToString("N2")</strong>
+                <strong>@overview.CompanyYearExpenses.ToString("N3")</strong>
             </div>
         </div>
 
         <div class="app-summary-grid app-summary-grid-4 dashboard-metrics-grid">
             <div class="app-summary-card dashboard-metric-card dashboard-metric-card-client">
                 <span class="app-card-label">@(isAdmin ? "Solde clients" : "Mon solde clients")</span>
-                <strong>@overview.OutstandingClientBalance.ToString("N2")</strong>
+                <strong>@overview.OutstandingClientBalance.ToString("N3")</strong>
             </div>
             <div class="app-summary-card dashboard-metric-card dashboard-metric-card-supplier">
                 <span class="app-card-label">Solde fournisseurs</span>
-                <strong>@overview.OutstandingSupplierBalance.ToString("N2")</strong>
+                <strong>@overview.OutstandingSupplierBalance.ToString("N3")</strong>
             </div>
             <div class="app-summary-card dashboard-metric-card dashboard-metric-card-calendar">
                 <span class="app-card-label">Événements à venir</span>
@@ -138,7 +138,7 @@
                         <h2>Ventes mensuelles de @overview.SelectedUserDisplayName</h2>
                         <span>@GetFilterSummary()</span>
                     </div>
-                    <strong class="dashboard-chart-total">@overview.CurrentUserYearSales.ToString("N2")</strong>
+                        <strong class="dashboard-chart-total">@overview.CurrentUserYearSales.ToString("N3")</strong>
                 </div>
 
                 <div class="dashboard-chart-shell">
@@ -154,7 +154,7 @@
                             <h2>Ventes globales par mois</h2>
                             <span>Comparaison globale après filtres administrateur.</span>
                         </div>
-                        <strong class="dashboard-chart-total">@overview.CompanyYearSales.ToString("N2")</strong>
+                        <strong class="dashboard-chart-total">@overview.CompanyYearSales.ToString("N3")</strong>
                     </div>
 
                     <div class="dashboard-chart-shell">
@@ -220,7 +220,7 @@
                                             <span class="dashboard-user-dot @GetUserColorClass(entry.index)" aria-hidden="true"></span>
                                             <strong>@entry.value.Username</strong>
                                         </div>
-                                        <span>@entry.value.TotalAmount.ToString("N2")</span>
+                                        <span>@entry.value.TotalAmount.ToString("N3")</span>
                                     </div>
                                     <div class="dashboard-user-bar-track">
                                         <div class="dashboard-user-bar-fill @GetUserColorClass(entry.index)" style="width:@width"></div>
@@ -256,7 +256,7 @@
                                         <span class="@rankClass" aria-hidden="true">@(entry.i + 1)</span>
                                         <a href="@($"/clients/{entry.c.ClientId}")">@entry.c.ClientName</a>
                                     </div>
-                                    <strong class="dashboard-value-sales">@entry.c.TotalAmount.ToString("N2")</strong>
+                                    <strong class="dashboard-value-sales">@entry.c.TotalAmount.ToString("N3")</strong>
                                 </div>
                             </article>
                         }

@@ -1,5 +1,7 @@
-﻿@implements IDisposable
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@implements IDisposable
 @inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <div class="app-navigation-shell">
     <header class="app-mobile-topbar">
@@ -59,14 +61,17 @@
                         <span>Ventes</span>
                     </span>
                 </NavLink>
-                <NavLink href="/achats" class="app-nav-link">
-                    <span class="app-nav-link-main">
-                        <span class="app-nav-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                @if (isAdmin)
+                {
+                    <NavLink href="/achats" class="app-nav-link">
+                        <span class="app-nav-link-main">
+                            <span class="app-nav-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                            </span>
+                            <span>Achats</span>
                         </span>
-                        <span>Achats</span>
-                    </span>
-                </NavLink>
+                    </NavLink>
+                }
             </div>
 
             <div class="app-nav-group app-nav-group-separated">
@@ -99,14 +104,17 @@
 
             <div class="app-nav-group app-nav-group-separated">
                 <span class="app-nav-group-label">Administration</span>
-                <NavLink href="/dashboard" class="app-nav-link">
-                    <span class="app-nav-link-main">
-                        <span class="app-nav-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+                @if (isAdmin)
+                {
+                    <NavLink href="/dashboard" class="app-nav-link">
+                        <span class="app-nav-link-main">
+                            <span class="app-nav-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8m-4-4v4"/></svg>
+                            </span>
+                            <span>Dashboard</span>
                         </span>
-                        <span>Dashboard</span>
-                    </span>
-                </NavLink>
+                    </NavLink>
+                }
                 <NavLink href="/profil" class="app-nav-link">
                     <span class="app-nav-link-main">
                         <span class="app-nav-icon">
@@ -141,9 +149,12 @@
 
 @code {
     private bool isMenuOpen;
+    private bool isAdmin;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        isAdmin = authenticationState.User.IsInRole("Admin");
         Navigation.LocationChanged += OnLocationChanged;
     }
 

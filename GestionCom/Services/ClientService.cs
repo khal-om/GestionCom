@@ -1,4 +1,5 @@
 using GestionCom.Data;
+using Microsoft.EntityFrameworkCore;
 using GestionCom.DTOs.Client;
 using GestionCom.Entities;
 
@@ -42,6 +43,41 @@ namespace GestionCom.Services
             await _context.SaveChangesAsync();
 
             return client.Id;
+        }
+
+        public async Task UpdateClientAsync(int clientId, CreateClientDto dto, int userId, bool isAdmin = false)
+        {
+            if (!isAdmin)
+                throw new UnauthorizedAccessException("Seuls les admins peuvent modifier un client.");
+
+            if (string.IsNullOrWhiteSpace(dto.Name))
+                throw new InvalidOperationException("Le nom du client est requis.");
+
+            var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == clientId);
+
+            if (client == null)
+                throw new InvalidOperationException("Client introuvable.");
+
+            // Update fields
+            client.Name = dto.Name.Trim();
+            client.Profession = Normalize(dto.Profession);
+            client.MatriculeFiscale = Normalize(dto.MatriculeFiscale);
+            client.Email = Normalize(dto.Email);
+            client.Telephone = Normalize(dto.Telephone);
+            client.Portable = Normalize(dto.Portable);
+            client.Fax = Normalize(dto.Fax);
+            client.Adresse = Normalize(dto.Adresse);
+            client.CodePostal = Normalize(dto.CodePostal);
+            client.Ville = Normalize(dto.Ville);
+            client.Pays = Normalize(dto.Pays);
+            client.Banque = Normalize(dto.Banque);
+            client.RIB = Normalize(dto.RIB);
+            client.Note = Normalize(dto.Note);
+
+            client.UpdatedAt = DateTime.UtcNow;
+            client.UpdatedBy = userId;
+
+            await _context.SaveChangesAsync();
         }
 
         private static string? Normalize(string? value)

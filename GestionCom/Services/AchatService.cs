@@ -79,7 +79,7 @@ namespace GestionCom.Services
             }
         }
 
-        public async Task<AchatResultDto> UpdateAchatAsync(int achatId, UpdateAchatDto dto, int userId)
+        public async Task<AchatResultDto> UpdateAchatAsync(int achatId, UpdateAchatDto dto, int userId, bool isAdmin = false)
         {
             if (dto == null)
                 throw new Exception("Données invalides.");
@@ -88,7 +88,7 @@ namespace GestionCom.Services
 
             var achat = await _context.Achats
                 .Include(a => a.Lignes)
-                .FirstOrDefaultAsync(a => a.Id == achatId && a.CreatedBy == userId);
+                .FirstOrDefaultAsync(a => a.Id == achatId && (isAdmin || a.CreatedBy == userId));
 
             if (achat == null)
                 throw new Exception("Achat introuvable.");

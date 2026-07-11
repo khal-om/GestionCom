@@ -5,6 +5,10 @@
             public int ClientId { get; set; }
             public Client Client { get; set; } = null!;
 
+            // Optional link to a specific vente this payment applies to
+            public int? VenteId { get; set; }
+            public Vente? Vente { get; set; }
+
             public decimal Amount { get; set; }
 
             public string PaymentMode { get; set; } = null!;

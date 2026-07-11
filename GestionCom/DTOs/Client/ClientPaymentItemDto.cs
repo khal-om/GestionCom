@@ -12,5 +12,8 @@ namespace GestionCom.DTOs.Client
         public string? Label { get; set; }
         public bool IsReceived { get; set; }
         public string? Note { get; set; }
+        // Optional link to a Vente this payment is applied to
+        public int? VenteId { get; set; }
+        public string? VenteRef { get; set; }
     }
 }

@@ -109,6 +109,11 @@
     gap: 1rem;
 }
 
+/* When a section should span the full width, use this class */
+.vente-detail-panel-full {
+    grid-column: 1 / -1;
+}
+
 .vente-detail-info-list {
     display: grid;
     gap: 0.875rem;
@@ -158,6 +163,8 @@
 .vente-detail-table {
     width: 100%;
     border-collapse: collapse;
+    /* Ensure table can grow wider than container so horizontal scroll shows all columns */
+    min-width: 900px;
 }
 
 .vente-detail-table th,
@@ -186,6 +193,17 @@
     text-align: right;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
+}
+
+.vente-detail-table .column-pu {
+    width: 7rem;
+}
+
+/* Allow the first column (Produit) to wrap and have a sensible min width so other numeric columns remain visible */
+.vente-detail-table th:first-child,
+.vente-detail-table td:first-child {
+    min-width: 260px;
+    white-space: normal;
 }
 
 .stock-negative {

@@ -25,7 +25,8 @@ namespace GestionCom.Services
                     Ville = c.Ville,
                     Telephone = c.Telephone,
 
-                    Debt = (c.Ventes.Sum(v => (decimal?)v.TotalAmount) ?? 0)
+                    // Debt computed on TTC amounts (TotalAmount + TVA 19%)
+                    Debt = (c.Ventes.Sum(v => (decimal?)(v.TotalAmount * 1.19m)) ?? 0)
                         - (c.Payments.Where(p => p.IsReceived).Sum(p => (decimal?)p.Amount) ?? 0)
                 })
                 .ToListAsync();
@@ -55,7 +56,8 @@ namespace GestionCom.Services
                     Banque = c.Banque,
                     RIB = c.RIB,
                     Note = c.Note,
-                    TotalSpent = c.Ventes.Sum(v => (decimal?)v.TotalAmount) ?? 0,
+                    // TotalSpent reported TTC
+                    TotalSpent = c.Ventes.Sum(v => (decimal?)(v.TotalAmount * 1.19m)) ?? 0,
                     TotalPaid = c.Payments.Where(p => p.IsReceived).Sum(p => (decimal?)p.Amount) ?? 0
                 })
                 .FirstOrDefaultAsync();
@@ -72,9 +74,31 @@ namespace GestionCom.Services
                     Objet = $"Vente {v.Id}",
                     Type = "Vente",
                     ReferenceId = v.Id,
-                    Debit = v.TotalAmount,
+                    // Debit shown TTC
+                    Debit = v.TotalAmount * 1.19m,
                     Credit = 0
                 })
+                .ToListAsync();
+
+            var ventesList = await _context.Ventes
+                .AsNoTracking()
+                .Where(v => v.ClientId == clientId)
+                .Select(v => new ClientVenteItemDto
+                {
+                    Id = v.Id,
+                    DocumentNumber = v.DocumentNumber,
+                    DateVente = v.DateVente,
+                    // Compute amounts using payments sum and apply rounding to 3 decimals to avoid precision mismatches
+                    TotalAmount = decimal.Round(v.TotalAmount * 1.19m, 3, MidpointRounding.AwayFromZero),
+                    PaidAmount = decimal.Round((_context.Payments.Where(p => p.VenteId == v.Id && p.IsReceived).Sum(p => (decimal?)p.Amount) ?? v.PaidAmount), 3, MidpointRounding.AwayFromZero),
+                    PaymentStatus = (
+                        decimal.Round((v.TotalAmount * 1.19m), 3, MidpointRounding.AwayFromZero)
+                        - decimal.Round((_context.Payments.Where(p => p.VenteId == v.Id && p.IsReceived).Sum(p => (decimal?)p.Amount) ?? v.PaidAmount), 3, MidpointRounding.AwayFromZero)
+                        <= 0)
+                        ? "Payée"
+                        : ((decimal.Round((_context.Payments.Where(p => p.VenteId == v.Id && p.IsReceived).Sum(p => (decimal?)p.Amount) ?? v.PaidAmount), 3, MidpointRounding.AwayFromZero) > 0) ? "En cours" : "Non payée")
+                })
+                .OrderByDescending(v => v.DateVente)
                 .ToListAsync();
 
             var payments = await _context.Payments
@@ -92,12 +116,15 @@ namespace GestionCom.Services
                     DueDate = p.DueDate,
                     Label = p.Note,
                     IsReceived = p.IsReceived,
-                    Note = p.Note
+                    Note = p.Note,
+                    VenteId = p.VenteId,
+                    VenteRef = p.Vente != null ? (p.Vente.DocumentNumber + " — " + (p.Vente.TotalAmount * 1.19m).ToString("N3")) : null
                 })
                 .ToListAsync();
 
             client.Debt = client.TotalSpent - client.TotalPaid;
             client.Payments = payments;
+            client.Ventes = ventesList;
             client.Ledger = ventes
                 .Concat(payments
                     .Where(p => p.IsReceived)

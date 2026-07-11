@@ -69,7 +69,7 @@
                             </td>
                             <td>@DisplayValue(client.Ville)</td>
                             <td>@DisplayValue(client.Telephone)</td>
-                            <td class="clients-amount @(client.Debt > 0 ? "clients-debt" : "clients-clear")">
+                            <td class="clients-amount @(decimal.Round(client.Debt, 3) > 0m ? "clients-debt" : "clients-clear")">
                                 @client.Debt.ToString("N2")
                             </td>
                         </tr>

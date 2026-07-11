@@ -31,13 +31,21 @@ else if (vente is not null)
             </div>
 
             <div class="vente-detail-actions">
+                <a class="vente-detail-link-button" href="@($"/ventes/{vente.Id}/edit")">Modifier</a>
                 @if (vente.Etat == "Commande")
                 {
-                    <a class="vente-detail-link-button" href="@($"/ventes/{vente.Id}/edit")">Modifier</a>
                     <button type="button" @onclick="DeliverAsync" disabled="@isDelivering">
                         @(isDelivering ? "Livraison..." : "Marquer comme livrée")
                     </button>
                 }
+                <a class="vente-detail-link-button" href="@($"/api/ventes/{vente.Id}/bon-sortie")">
+                    <span aria-hidden="true">📄</span>
+                    <span>Bon de sortie</span>
+                </a>
+                <a class="vente-detail-link-button" href="@($"/api/ventes/{vente.Id}/facture")">
+                    <span aria-hidden="true">📄</span>
+                    <span>Facture</span>
+                </a>
                 <a class="vente-detail-link-button" href="/ventes/new">Nouvelle vente</a>
             </div>
         </div>
@@ -79,8 +87,11 @@ else if (vente is not null)
                 <strong>@vente.Etat</strong>
             </div>
             <div class="vente-detail-card">
-                <span class="vente-detail-label">Montant</span>
-                <strong>@vente.TotalAmount.ToString("N2")</strong>
+                <span class="vente-detail-label">Montant HT</span>
+                <strong>@((vente.TotalAmount / 1.19m).ToString("N3"))</strong>
+                <div class="vente-detail-subtext">TVA (19%): @((vente.TotalAmount - (vente.TotalAmount / 1.19m)).ToString("N3"))</div>
+                <div class="vente-detail-subtext">Montant TTC: <strong>@vente.TotalAmount.ToString("N3")</strong></div>
+                <div class="vente-detail-subtext">Reste: <strong>@vente.Remaining.ToString("N3")</strong></div>
             </div>
         </div>
 
@@ -101,6 +112,48 @@ else if (vente is not null)
 
             <section class="vente-detail-panel">
                 <div class="vente-detail-section-header">
+                    <h2>Paiements</h2>
+                    <span>@(vente.Payments?.Count ?? 0) paiement(s)</span>
+                </div>
+
+                @if (vente.Payments == null || vente.Payments.Count == 0)
+                {
+                    <div class="vente-detail-empty">Aucun paiement pour cette vente.</div>
+                }
+                else
+                {
+                    <div class="vente-detail-table-wrapper">
+                        <table class="vente-detail-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Mode</th>
+                                    <th>Référence</th>
+                                    <th>Note</th>
+                                    <th class="amount">Montant</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var p in vente.Payments)
+                                {
+                                    <tr>
+                                        <td>@p.Date.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>@p.PaymentMode</td>
+                                        <td>@DisplayValue(p.PaymentNumber)</td>
+                                        <td>@DisplayValue(p.Note)</td>
+                                        <td class="amount">@p.Amount.ToString("N3")</td>
+                                        <td>@(p.IsReceived ? "Reçu" : "En attente")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </section>
+
+            <section class="vente-detail-panel vente-detail-panel-full">
+                <div class="vente-detail-section-header">
                     <h2>Lignes</h2>
                     <span>@vente.Lignes.Count ligne(s)</span>
                 </div>
@@ -116,7 +169,11 @@ else if (vente is not null)
                             <thead>
                                 <tr>
                                     <th>Produit</th>
+                                    <th class="amount column-pu">PU</th>
+                                    <th class="amount">Remise</th>
+                                    <th class="amount">Prix net</th>
                                     <th class="amount">Quantité</th>
+                                    <th class="amount">Total ligne</th>
                                     <th class="amount">Stock actuel</th>
                                 </tr>
                             </thead>
@@ -125,7 +182,11 @@ else if (vente is not null)
                                 {
                                     <tr>
                                         <td>@line.ProduitLabel</td>
+                                        <td class="amount column-pu">@FormatAmount(line.PrixUnitaire)</td>
+                                        <td class="amount">@FormatPercent(line.RemisePercent)</td>
+                                        <td class="amount">@FormatAmount(line.PrixUnitaireApresRemise)</td>
                                         <td class="amount">@line.Quantite</td>
+                                        <td class="amount">@FormatAmount(line.TotalLigne)</td>
                                         <td class="amount @(line.CurrentStock < 0 ? "stock-negative" : "stock-positive")">@line.CurrentStock</td>
                                     </tr>
                                 }
@@ -174,7 +235,7 @@ else if (vente is not null)
                 throw new InvalidOperationException("Utilisateur introuvable.");
             }
 
-            vente = await VenteQueryService.GetVenteDetailAsync(VenteId, userId);
+            vente = await VenteQueryService.GetVenteDetailAsync(VenteId, userId, authenticationState.User.IsInRole("Admin"));
         }
         catch (InvalidOperationException ex)
         {
@@ -209,7 +270,7 @@ else if (vente is not null)
                 throw new InvalidOperationException("Utilisateur introuvable.");
             }
 
-            var result = await VenteService.DeliverVenteAsync(VenteId, userId);
+            var result = await VenteService.DeliverVenteAsync(VenteId, userId, authenticationState.User.IsInRole("Admin"));
             successMessage = $"Vente #{result.VenteId} livrée avec succès.";
             warnings = result.Warnings;
             await LoadVenteAsync();
@@ -229,4 +290,10 @@ else if (vente is not null)
 
     private static string DisplayDate(DateTime? value)
         => value.HasValue ? value.Value.ToString("dd/MM/yyyy") : "—";
+
+    private static string FormatAmount(decimal? value)
+        => value.HasValue ? value.Value.ToString("N3") : "—";
+
+    private static string FormatPercent(decimal value)
+        => value.ToString("N2") + " %";
 }
