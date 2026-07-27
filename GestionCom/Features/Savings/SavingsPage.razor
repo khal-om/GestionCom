@@ -1,0 +1,123 @@
+﻿@* This feature page is not routable to avoid conflicting with the main /savings route
+   rendered by Components/Pages/Savings.razor. *@
+@using GestionCom.Features.Savings
+@using Microsoft.AspNetCore.Components.Web
+@using GestionCom.Components.Layout
+@inject SavingsService Service
+@layout SavingsLayout
+
+@* Uses SavingsLayout from GestionCom/Layouts/SavingsLayout.razor *@
+
+<div class="savings-page">
+    <div class="hero-card @(_justSaved ? "pulse" : "")">
+        <p class="prompt">How much did you save today?</p>
+
+        <div class="input-row">
+            <span class="euro">€</span>
+            <input @bind="_amountInput" @bind:event="oninput"
+                   @onkeyup="OnKeyUp"
+                   type="number" min="0" step="0.5"
+                   placeholder="0" class="amount-input" />
+        </div>
+
+        <button class="save-btn" @onclick="Save" disabled="@_saving">
+            @(_alreadySavedToday ? "Update" : "Save")
+        </button>
+
+        @if (_reaction is not null)
+        {
+            <p class="reaction @_reactionTier">@_reaction</p>
+        }
+    </div>
+
+    <div class="total-strip">
+        <span class="total-label">Total saved</span>
+        <span class="total-value">@_total.ToString("0.##")€</span>
+    </div>
+
+    <div class="history">
+        <h3>History</h3>
+        @if (_history.Count == 0)
+        {
+            <p class="empty">Nothing yet. Day one starts now.</p>
+        }
+        else
+        {
+            @foreach (var entry in _history)
+            {
+                <div class="history-row">
+                    <span class="history-date">@entry.Date.ToString("dd MMM")</span>
+                    <span class="history-amount @(entry.Amount == 0 ? "zero" : "")">
+                        @(entry.Amount == 0 ? "0€" : $"+{entry.Amount:0.##}€")
+                    </span>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+@code {
+    private List<SavingEntry> _history = [];
+    private decimal _total;
+    private string _amountInput = "";
+    private string? _reaction;
+    private string _reactionTier = "";
+    private string? _lastReactionText;
+    private bool _saving;
+    private bool _justSaved;
+    private bool _alreadySavedToday;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Refresh();
+        var today = await Service.GetTodayAsync();
+        if (today is not null)
+        {
+            _alreadySavedToday = true;
+            _amountInput = today.Amount.ToString("0.##");
+        }
+    }
+
+    private async Task Refresh()
+    {
+        _history = await Service.GetHistoryAsync();
+        _total = await Service.GetTotalAsync();
+    }
+
+    private async Task OnKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await Save();
+    }
+
+    private async Task Save()
+    {
+        if (!decimal.TryParse(_amountInput, out var amount) || amount < 0) return;
+
+        _saving = true;
+        var entry = await Service.SaveTodayAsync(amount);
+        _alreadySavedToday = true;
+
+        _reaction = Reactions.Pick(amount, _lastReactionText);
+        _lastReactionText = _reaction;
+        _reactionTier = amount switch
+        {
+            0m => "tier-zero",
+            < 5m => "tier-small",
+            < 10m => "tier-medium",
+            _ => "tier-large"
+        };
+
+        await Refresh();
+        _saving = false;
+        _justSaved = true;
+        StateHasChanged();
+
+        // remove the pulse class after the animation plays once
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(600);
+            _justSaved = false;
+            await InvokeAsync(StateHasChanged);
+        });
+    }
+}

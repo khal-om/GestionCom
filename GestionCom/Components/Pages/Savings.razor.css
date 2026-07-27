@@ -1,0 +1,573 @@
+﻿/* ============================================================
+   The Freedom Fund — scoped styles.
+
+   This file is Blazor CSS isolation: the build appends a unique
+   [b-xxxxxxxx] attribute to every element this component renders, and to
+   every selector below, so none of this can leak out and nothing from
+   outside can leak in *by default*.
+
+   BUT: you mentioned a global stylesheet already in the project that
+   overrides everything else. Scoped CSS raises specificity a little (the
+   attribute selector), but it can still lose to a global rule that uses
+   !important, an ID, or a more specific chain. So instead of bare element
+   selectors (button, input, ul, li, h1, h2 — all common targets for a
+   site-wide reset/design-system stylesheet), every rule below pairs the
+   tag with its class (e.g. "button.ff-save-btn"), and the highest-risk
+   visual properties carry !important. If you still see it get overridden,
+   tell me what's in that global file and I'll target it precisely.
+   ============================================================ */
+
+.ff-shell {
+    --ink-navy-deep: #0D172E;
+    --ink-navy: #14213D;
+    --mint-cash: #2EC4B6;
+    --mint-cash-dark: #1E9E92;
+    --coin-gold: #FFB703;
+    --ember-coral: #FF6B6B;
+    --cloud: #F7F9FB;
+    --ink-text: #1B1F3B;
+    --ink-muted: #6B7280;
+    --font-display: "Space Grotesk", sans-serif;
+    --font-body: "Manrope", sans-serif;
+    position: relative;
+    min-height: 100vh;
+    padding-bottom: 2rem;
+    overflow-x: hidden;
+    font-family: var(--font-body) !important;
+    color: var(--ink-text);
+    background: radial-gradient(120% 100% at 50% 0%, var(--ink-navy) 0%, var(--ink-navy-deep) 60%) !important;
+}
+
+    .ff-shell,
+    .ff-shell *,
+    .ff-shell *::before,
+    .ff-shell *::after {
+        box-sizing: border-box;
+    }
+
+.ff-glow {
+    position: absolute;
+    top: -10%;
+    left: 50%;
+    width: 60rem;
+    height: 30rem;
+    transform: translateX(-50%);
+    background: radial-gradient(closest-side, rgba(46, 196, 182, 0.25), transparent 70%);
+    pointer-events: none;
+}
+
+/* ---------- Header ---------- */
+
+.ff-header {
+    position: relative;
+    text-align: center;
+    padding: 2.75rem 1.25rem 2rem;
+    color: var(--cloud);
+}
+
+.ff-eyebrow {
+    display: inline-block;
+    font-family: var(--font-body);
+    font-weight: 800;
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mint-cash);
+    margin-bottom: 0.6rem;
+}
+
+h1.ff-title {
+    font-family: var(--font-display) !important;
+    font-weight: 700;
+    font-size: 2.25rem;
+    margin: 0 !important;
+    letter-spacing: -0.01em;
+    color: inherit !important;
+    border: none !important;
+    background: none !important;
+}
+
+/* ---------- Layout ---------- */
+
+.ff-main {
+    position: relative;
+    max-width: 940px;
+    margin: 0 auto;
+    padding: 0 1.1rem 3rem;
+}
+
+.ff-grid {
+    display: grid;
+    gap: 1.1rem;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 992px) {
+    .ff-grid {
+        grid-template-columns: 1.05fr 0.95fr;
+        align-items: start;
+        gap: 1.5rem;
+    }
+}
+
+.ff-left {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.ff-card {
+    background: var(--cloud) !important;
+    border-radius: 24px;
+    box-shadow: 0 20px 45px -20px rgba(0, 0, 0, 0.55);
+    border: none !important;
+}
+
+/* ---------- Save card ---------- */
+
+.ff-save-card {
+    padding: 2rem 1.5rem 1.75rem;
+    text-align: center;
+}
+
+p.ff-label {
+    font-family: var(--font-body);
+    font-weight: 800;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin: 0 0 0.5rem !important;
+}
+
+.ff-amount-wrap {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.15rem;
+    margin-bottom: 1.25rem;
+}
+
+.ff-euro {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 2.75rem;
+    color: var(--mint-cash-dark);
+}
+
+input.ff-amount-input {
+    width: 7.5rem;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-family: var(--font-display) !important;
+    font-weight: 700;
+    font-size: 3.75rem;
+    color: var(--ink-text) !important;
+    text-align: left;
+    font-variant-numeric: tabular-nums;
+    padding: 0 !important;
+}
+
+    input.ff-amount-input::placeholder {
+        color: #C7CCD6;
+        opacity: 1;
+    }
+
+    input.ff-amount-input::-webkit-outer-spin-button,
+    input.ff-amount-input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    input.ff-amount-input[type="number"] {
+        -moz-appearance: textfield;
+    }
+
+button.ff-save-btn {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    border: none !important;
+    border-radius: 999px !important;
+    padding: 0.9rem 2.75rem !important;
+    font-family: var(--font-body) !important;
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: var(--ink-navy-deep) !important;
+    background: linear-gradient(135deg, var(--mint-cash), var(--coin-gold)) !important;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 12px 24px -12px rgba(46, 196, 182, 0.6) !important;
+    line-height: normal;
+}
+
+    button.ff-save-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    button.ff-save-btn:active {
+        transform: scale(0.97);
+    }
+
+    button.ff-save-btn:disabled {
+        opacity: 0.7;
+        cursor: default;
+    }
+
+    button.ff-save-btn.celebrate {
+        animation: ff-btn-celebrate 0.6s ease;
+    }
+
+.ff-quote {
+    min-height: 2.75rem;
+    margin-top: 1.1rem;
+    padding: 0.65rem 0.9rem;
+    border-radius: 14px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    border-left: 4px solid transparent;
+}
+
+    .ff-quote.show {
+        animation: ff-quote-in 0.35s ease forwards;
+    }
+
+    .ff-quote.tier-Zero {
+        background: rgba(255, 107, 107, 0.12);
+        border-color: var(--ember-coral);
+    }
+
+    .ff-quote.tier-Low {
+        background: rgba(107, 114, 128, 0.10);
+        border-color: var(--ink-muted);
+    }
+
+    .ff-quote.tier-Medium {
+        background: rgba(46, 196, 182, 0.12);
+        border-color: var(--mint-cash);
+    }
+
+    .ff-quote.tier-High {
+        background: rgba(255, 183, 3, 0.14);
+        border-color: var(--coin-gold);
+    }
+
+.quote-emoji {
+    font-size: 1.35rem;
+    line-height: 1;
+    flex: none;
+}
+
+.quote-text {
+    color: var(--ink-text);
+}
+
+/* ---------- Month total ---------- */
+
+p.ff-month-total {
+    text-align: center;
+    margin: 0 !important;
+    padding: 0.65rem 1rem;
+    border-radius: 999px;
+    background: rgba(247, 249, 251, 0.08);
+    color: var(--cloud);
+    font-size: 0.85rem;
+}
+
+    p.ff-month-total strong {
+        font-family: var(--font-display);
+        color: var(--coin-gold);
+        font-size: 1rem;
+        margin-left: 0.25rem;
+    }
+
+/* ---------- Receipt / history card ---------- */
+
+.ff-receipt-card {
+    position: relative;
+    padding: 1.75rem 1.5rem 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.ff-receipt-notch {
+    position: absolute;
+    top: -10px;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: radial-gradient(circle at 10px 10px, transparent 10px, var(--cloud) 10.5px) repeat-x;
+    background-size: 20px 20px;
+    background-position: 0 -10px;
+}
+
+h2.ff-receipt-title {
+    font-family: var(--font-display) !important;
+    font-weight: 700;
+    font-size: 1.15rem;
+    margin: 0 0 1rem !important;
+    color: var(--ink-text) !important;
+    border: none !important;
+    background: none !important;
+}
+
+ul.ff-receipt-list {
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+li.ff-receipt-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.5rem 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    border-bottom: 1px dashed #E3E7ED !important;
+    font-variant-numeric: tabular-nums;
+    list-style: none !important;
+}
+
+    li.ff-receipt-item:last-child {
+        border-bottom: none !important;
+    }
+
+.ff-receipt-date {
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    white-space: nowrap;
+}
+
+.ff-receipt-leader {
+    flex: 1;
+    border-bottom: 1px dotted #D5DAE1;
+    transform: translateY(-4px);
+}
+
+.ff-receipt-amount {
+    font-weight: 800;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    color: var(--ink-text);
+}
+
+    .ff-receipt-amount.is-zero {
+        color: var(--ink-muted);
+        font-weight: 600;
+    }
+
+li.ff-receipt-empty {
+    color: var(--ink-muted);
+    font-size: 0.9rem;
+    padding: 0.5rem 0 !important;
+    list-style: none !important;
+}
+
+li.ff-receipt-item.new-entry {
+    animation: ff-entry-flash 1.4s ease;
+}
+
+/* ---------- Test mode panel (Debug builds only) ---------- */
+/* Deliberately styled like a dev console, not the "real" app aesthetic —
+   it should read as obviously temporary scaffolding, not a finished feature. */
+
+.ff-test-panel {
+    margin-top: 1.5rem;
+    padding: 1.1rem 1.25rem;
+    border: 2px dashed var(--coin-gold) !important;
+    border-radius: 14px;
+    background: #12131a !important;
+    font-family: "SFMono-Regular", Consolas, monospace !important;
+    color: var(--coin-gold) !important;
+}
+
+p.ff-test-label {
+    margin: 0 0 0.85rem !important;
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+}
+
+.ff-test-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+label.ff-test-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #E8E8E8 !important;
+}
+
+.ff-test-row input[type="date"],
+input.ff-test-number {
+    font-family: inherit !important;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.5rem !important;
+    border: 1px solid #3A3B45 !important;
+    border-radius: 6px;
+    background: #1E1F29 !important;
+    color: #F7F9FB !important;
+}
+
+input.ff-test-number {
+    width: 4rem;
+}
+
+button.ff-test-btn,
+button.ff-test-btn-ghost,
+button.ff-test-btn-danger {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    border-radius: 8px !important;
+    padding: 0.4rem 0.9rem !important;
+    font-family: inherit !important;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+button.ff-test-btn {
+    border: none !important;
+    background: var(--coin-gold) !important;
+    color: var(--ink-navy-deep) !important;
+}
+
+    button.ff-test-btn:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+
+button.ff-test-btn-ghost {
+    border: 1px solid #3A3B45 !important;
+    background: transparent !important;
+    color: #E8E8E8 !important;
+}
+
+button.ff-test-btn-danger {
+    border: 1px solid var(--ember-coral) !important;
+    background: transparent !important;
+    color: var(--ember-coral) !important;
+    margin-top: 0.25rem;
+}
+
+/* ---------- Falling money / confetti ---------- */
+
+.ff-money-rain,
+.ff-confetti-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 9999;
+}
+
+.falling-money {
+    position: absolute;
+    top: -10%;
+    animation: ff-fall 1.6s ease-in forwards;
+}
+
+.confetti-piece {
+    position: absolute;
+    top: -5%;
+    width: 8px;
+    height: 12px;
+    border-radius: 2px;
+    animation: ff-confetti-fall 1.6s ease-in forwards;
+}
+
+@keyframes ff-fall {
+    0% {
+        transform: translateY(-10vh) rotate(0deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(110vh) rotate(50deg);
+        opacity: 0.85;
+    }
+}
+
+@keyframes ff-confetti-fall {
+    0% {
+        transform: translateY(-10vh) rotate(0deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(110vh) rotate(340deg);
+        opacity: 0;
+    }
+}
+
+@keyframes ff-quote-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes ff-btn-celebrate {
+    0% {
+        transform: scale(1) rotate(0deg);
+    }
+
+    30% {
+        transform: scale(1.08) rotate(-3deg);
+    }
+
+    60% {
+        transform: scale(1.04) rotate(2deg);
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+@keyframes ff-entry-flash {
+    0% {
+        background-color: rgba(46, 196, 182, 0.22);
+    }
+
+    100% {
+        background-color: transparent;
+    }
+}
+
+/* ---------- Accessibility ---------- */
+
+button.ff-save-btn:focus-visible,
+input.ff-amount-input:focus-visible {
+    outline: 3px solid var(--coin-gold) !important;
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ff-quote.show,
+    button.ff-save-btn.celebrate,
+    .falling-money,
+    .confetti-piece,
+    li.ff-receipt-item.new-entry {
+        animation: none !important;
+        transition: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}

@@ -1,0 +1,143 @@
+﻿@page "/savings"
+@rendermode InteractiveServer
+@using GestionCom.Components.Layout
+@using GestionCom.Features.Savings
+@using GestionCom.Entities
+@layout BlankLayout
+@* If your project already sets InteractiveServer globally (interactivity
+   location = "Global" in the Blazor Web App template), you can delete the
+   @rendermode line above — it's redundant but harmless either way. *@
+
+<PageTitle>The Freedom Fund</PageTitle>
+
+<HeadContent>
+    <meta name="theme-color" content="#0D172E" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Manrope:wght@400;600;800&display=swap" rel="stylesheet" />
+</HeadContent>
+
+<div class="ff-shell">
+    <div class="ff-glow" aria-hidden="true"></div>
+
+    <header class="ff-header">
+        <span class="ff-eyebrow">Not smoking. Not caffeinated. Definitely richer.</span>
+        <h1 class="ff-title">شقاقة فنٌوش الالكترونية</h1>
+    </header>
+
+    <main class="ff-main">
+        <div class="ff-grid">
+            <div class="ff-left">
+                <section class="ff-card ff-save-card">
+                    <p class="ff-label">Today you saved</p>
+
+                    <div class="ff-amount-wrap">
+                        <span class="ff-euro">TND</span>
+                        <input type="number" inputmode="decimal" step="0.001" min="0"
+                               class="ff-amount-input" placeholder="0,000"
+                               @bind-value="AmountInput" @bind-value:event="oninput"
+                               aria-label="Amount saved today in Tunisian dinar" />
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(ErrorText))
+                    {
+                        <div class="ff-error" role="alert">@ErrorText</div>
+                    }
+
+                    <button type="button" class="ff-save-btn" disabled="@IsSaving"
+                            @key="@(string.Format("celebrate-{0}", CelebrateVersion))" @onclick="HandleSaveAsync">
+                        @(IsSaving ? "Saving…" : "Save it")
+                    </button>
+
+                    @if (QuoteText is not null)
+                    {
+                        <div class="ff-quote show tier-@QuoteTier" @key="@(string.Format("quote-{0}", QuoteVersion))"
+                             role="status" aria-live="polite">
+                            <span class="quote-emoji">@GetTierEmoji(QuoteTier)</span>
+                            <span class="quote-text @(IsArabic(QuoteText) ? "rtl" : "ltr")">@QuoteText</span>
+                        </div>
+                    }
+                </section>
+
+                <p class="ff-month-total">
+                    This month's payout so far: <strong>@FormatTnd(MonthTotal)</strong>
+                </p>
+            </div>
+
+            <section class="ff-card ff-receipt-card">
+                <div class="ff-receipt-notch" aria-hidden="true"></div>
+                <h2 class="ff-receipt-title">History</h2>
+
+                <ul class="ff-receipt-list">
+                    @foreach (var entry in History)
+                    {
+                        <li class="ff-receipt-item @(entry.Id == LastSavedEntryId ? "new-entry" : "")" @key="entry.Id">
+                            <span class="ff-receipt-date">@entry.Date.ToString("dd MMM")</span>
+                            <span class="ff-receipt-leader" aria-hidden="true"></span>
+                            <span class="ff-receipt-amount @(entry.AmountSaved <= 0 ? "is-zero" : "")">
+                                +@FormatTnd(entry.AmountSaved)
+                            </span>
+                        </li>
+                    }
+                    @if (History.Count == 0)
+                    {
+                        <li class="ff-receipt-empty">No entries yet. Today's a great day to start.</li>
+                    }
+                </ul>
+            </section>
+        </div>
+
+        @if (IsTestMode)
+        {
+            <section class="ff-test-panel">
+                <p class="ff-test-label">🧪 Test mode — Debug builds only, your brother will never see this</p>
+
+                <div class="ff-test-row">
+                    <label class="ff-test-field">
+                        Save as date
+                        <InputDate @bind-Value="TestDateOverride" />
+                    </label>
+                    @if (TestDateOverride is not null)
+                    {
+                        <button type="button" class="ff-test-btn-ghost" @onclick="@(() => TestDateOverride = null)">
+                            Use today
+                        </button>
+                    }
+                </div>
+
+                <div class="ff-test-row">
+                    <label class="ff-test-field">
+                        Seed
+                        <input type="number" min="1" max="90" class="ff-test-number" @bind-value="SeedDayCount" />
+                        days ending on the date above
+                    </label>
+                    <button type="button" class="ff-test-btn" @onclick="SeedSampleDataAsync" disabled="@IsSeeding">
+                        @(IsSeeding ? "Generating…" : "Generate sample data")
+                    </button>
+                </div>
+
+                <button type="button" class="ff-test-btn-danger" @onclick="ClearAllDataAsync">
+                    Clear all entries
+                </button>
+            </section>
+        }
+    </main>
+</div>
+
+<div class="ff-money-rain" aria-hidden="true">
+    @foreach (var item in FallingItems.Where(i => !i.IsConfetti))
+    {
+        <span class="falling-money" @key="item.Id"
+              style="left:@(FormatInvariant(item.LeftPercent))%; animation-delay:@(FormatInvariant(item.DelaySeconds))s; font-size:@(FormatInvariant(item.SizePx))px;">@item.Symbol</span>
+    }
+</div>
+
+<div class="ff-confetti-layer" aria-hidden="true">
+    @foreach (var item in FallingItems.Where(i => i.IsConfetti))
+    {
+        <span class="confetti-piece" @key="item.Id"
+              style="left:@(FormatInvariant(item.LeftPercent))%; animation-delay:@(FormatInvariant(item.DelaySeconds))s; animation-duration:@(FormatInvariant(item.DurationSeconds))s; background:@item.Color;"></span>
+    }
+</div>

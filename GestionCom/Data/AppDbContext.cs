@@ -20,6 +20,9 @@ namespace GestionCom.Data
         public DbSet<Payment> Payments => Set<Payment>();
         public DbSet<StockMovement> StockMovements => Set<StockMovement>();
 
+        public DbSet<SavingsEntry> SavingsEntries => Set<SavingsEntry>();
+
+
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
         {
@@ -124,6 +127,21 @@ namespace GestionCom.Data
                 .HasOne(p => p.Client)
                 .WithMany(c => c.Payments)
                 .HasForeignKey(p => p.ClientId);
+
+            modelBuilder.Entity<SavingsEntry>(entity =>
+            {
+                // The actual table created by previous migrations is named "SavingEntries"
+                // (note the singular 'Saving' prefix). Map the entity to that table name
+                // so EF queries the correct relation at runtime.
+                entity.ToTable("SavingEntries");
+                entity.HasIndex(e => e.Date).IsUnique();
+                // The database column created by the migration is named "Amount".
+                // Map the CLR property AmountSaved to that column and set precision
+                // to match the migration (numeric(8,2)).
+                entity.Property(e => e.AmountSaved)
+                    .HasColumnName("Amount")
+                    .HasPrecision(8, 2);
+            });
         }
 
         private static void SetSoftDeleteFilter<TEntity>(ModelBuilder modelBuilder)

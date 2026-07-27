@@ -19,8 +19,9 @@ namespace GestionCom.Services
             if (dto.ProduitId <= 0)
                 throw new InvalidOperationException("Le produit est requis.");
 
-            if (dto.Quantity <= 0)
-                throw new InvalidOperationException("La quantité doit être supérieure à 0.");
+            // Allow positive or negative quantities. Zero is not accepted because it makes no change.
+            if (dto.Quantity == 0)
+                throw new InvalidOperationException("La quantité ne peut pas être zéro.");
 
             var produitExists = await _context.Produits.AnyAsync(p => p.Id == dto.ProduitId);
 

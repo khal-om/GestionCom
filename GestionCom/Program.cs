@@ -1,10 +1,13 @@
 using GestionCom.Components;
 using GestionCom.Data;
+using GestionCom.Features.Savings;
 using GestionCom.Services;
 using GestionCom.Services.Auth;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Microsoft.AspNetCore.Components.Server;
+using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +15,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddDbContext<AppDbContext>(options =>
+// Enable detailed Blazor circuit errors in development so unhandled exceptions
+// on the circuit surface as detailed messages instead of silently terminating
+// the connection. Remove or gate this in production.
+builder.Services.Configure<CircuitOptions>(options => options.DetailedErrors = true);
+
+// Register an IDbContextFactory so interactive server components can create
+// short-lived DbContext instances safely. Some pages inject IDbContextFactory<AppDbContext>.
+builder.Services.AddDbContextFactory<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<VenteService>();
@@ -33,6 +43,12 @@ builder.Services.AddScoped<ProduitQueryService>();
 builder.Services.AddScoped<StockMovementService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<PasswordService>();
+
+builder.Services.AddScoped<SavingsService>();
+
+// QuoteService used by the Savings component; register its interface
+builder.Services.AddSingleton<IQuoteService, QuoteService>();
+
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 builder.Services.AddControllers();
@@ -51,7 +67,8 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 using var scope = app.Services.CreateScope();
-var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+var dbFactory = scope.ServiceProvider.GetRequiredService<Microsoft.EntityFrameworkCore.IDbContextFactory<AppDbContext>>();
+await using var db = dbFactory.CreateDbContext();
 try
 {
     db.Database.Migrate();
@@ -70,8 +87,20 @@ catch (InvalidOperationException ex) when (
 }
 catch (Exception ex)
 {
-    // Rethrow unexpected exceptions so the app doesn't start in a bad state.
-    app.Logger.LogError(ex, "Unexpected error while migrating the database.");
+    // Try to produce a DDL script for operators/DBA to apply manually, then rethrow.
+    try
+    {
+        var script = db.Database.GenerateCreateScript();
+        var path = Path.Combine(app.Environment.ContentRootPath, "ef_autogen_create_script.sql");
+        await File.WriteAllTextAsync(path, script);
+        app.Logger.LogError(ex, "Unexpected error while migrating the database. Generated DDL script at {Path}", path);
+    }
+    catch (Exception scriptEx)
+    {
+        app.Logger.LogError(scriptEx, "Failed to generate DDL script after migration error.");
+    }
+
+    app.Logger.LogError(ex, "Unexpected error while migrating the database. See generated script or exception details.");
     throw;
 }
 
