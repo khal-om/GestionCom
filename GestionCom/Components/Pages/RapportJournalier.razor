@@ -1,0 +1,184 @@
+@page "/rapport-journalier"
+@using GestionCom.Services
+@using GestionCom.DTOs.Vente
+@using GestionCom.Data
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.EntityFrameworkCore
+@using System.Security.Claims
+@inject VenteQueryService VenteQueryService
+@inject AppDbContext DbContext
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<PageTitle>Rapport journalier</PageTitle>
+
+<h1>Rapport journalier</h1>
+
+<div class="rapport-page">
+    <div class="rapport-controls">
+        <label for="rapport-date">Date</label>
+        <InputDate id="rapport-date" @bind-Value="selectedDate" />
+    </div>
+
+    @if (isLoading)
+    {
+        <div>Chargement...</div>
+    }
+    else if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="error">@errorMessage</div>
+    }
+    else
+    {
+        <section class="rapport-section">
+            <h2>Ventes (@ventesForDay.Count)</h2>
+            @if (ventesForDay.Count == 0)
+            {
+                <div>Aucune vente pour cette date.</div>
+            }
+            else
+            {
+                <table class="rapport-table">
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>Client</th>
+                            <th class="amount">Montant TTC</th>
+                            <th class="amount">Payé</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var v in ventesForDay)
+                        {
+                            <tr>
+                                <td>#@v.Id</td>
+                                <td>@v.ClientName</td>
+                                <td class="amount">@v.TotalAmount.ToString("N3")</td>
+                                <td class="amount">@v.PaidAmount.ToString("N3")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </section>
+
+        <section class="rapport-section">
+            <h2>Règlements (@paymentsForDay.Count)</h2>
+            @if (paymentsForDay.Count == 0)
+            {
+                <div>Aucun règlement pour cette date.</div>
+            }
+            else
+            {
+                <table class="rapport-table">
+                    <thead>
+                        <tr>
+                            <th>Vente N°</th>
+                            <th>Client</th>
+                            <th class="amount">Montant</th>
+                            <th>Mode</th>
+                            <th>Référence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var p in paymentsForDay)
+                        {
+                                <tr>
+                                <td>@(p.VenteId.HasValue ? "#" + p.VenteId.Value.ToString() : "-")</td>
+                                <td>@(string.IsNullOrWhiteSpace(p.ClientName) ? "-" : p.ClientName)</td>
+                                <td class="amount">@p.Amount.ToString("N3")</td>
+                                <td>@p.PaymentMode</td>
+                                <td>@p.PaymentNumber</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </section>
+    }
+</div>
+
+@code {
+    // Bindable date that triggers reload when changed (allows past dates)
+    private DateTime _selectedDate = DateTime.UtcNow.Date;
+    private DateTime selectedDate
+    {
+        get => _selectedDate;
+        set
+        {
+            _selectedDate = value.Date;
+            // Reload report when user changes date
+            _ = LoadAsync();
+        }
+    }
+
+    private List<VenteListItemDto> ventesForDay = new();
+    private List<VentePaymentItemDto> paymentsForDay = new();
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            var auth = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userIdValue = auth.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(userIdValue, out var userId))
+            {
+                throw new InvalidOperationException("Utilisateur introuvable.");
+            }
+
+            var isAdmin = auth.User.IsInRole("Admin");
+
+            var allVentes = await VenteQueryService.GetVentesAsync(userId, isAdmin);
+
+            var start = selectedDate.Date.ToUniversalTime();
+            var end = start.AddDays(1);
+
+            ventesForDay = allVentes.Where(v => v.DateVente.ToUniversalTime() >= start && v.DateVente.ToUniversalTime() < end).ToList();
+
+            paymentsForDay = await DbContext.Payments
+                .AsNoTracking()
+                .Where(p => (isAdmin || p.CreatedBy == userId)
+                            && p.CreatedAt >= start
+                            && p.CreatedAt < end)
+                .OrderByDescending(p => p.CreatedAt)
+                .Select(p => new VentePaymentItemDto
+                {
+                    Id = p.Id,
+                    Date = p.CreatedAt,
+                    Amount = p.Amount,
+                    PaymentMode = p.PaymentMode,
+                    PaymentNumber = p.PaymentNumber,
+                    IsReceived = p.IsReceived,
+                    Note = p.Note,
+                    ClientId = p.ClientId,
+                    VenteId = p.VenteId,
+                    ClientName = p.Client != null ? p.Client.Name : null
+                })
+                .ToListAsync();
+        }
+        catch (Exception)
+        {
+            errorMessage = "Erreur lors du chargement du rapport.";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+}

@@ -100,10 +100,19 @@
                         <span>Calendrier</span>
                     </span>
                 </NavLink>
+                
             </div>
 
             <div class="app-nav-group app-nav-group-separated">
                 <span class="app-nav-group-label">Administration</span>
+                <NavLink href="/rapport-journalier" class="app-nav-link">
+                    <span class="app-nav-link-main">
+                        <span class="app-nav-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><path d="M3 10h18M8 2v4M16 2v4" /></svg>
+                        </span>
+                        <span>Rapport journalier</span>
+                    </span>
+                </NavLink>
                 @if (isAdmin)
                 {
                     <NavLink href="/dashboard" class="app-nav-link">

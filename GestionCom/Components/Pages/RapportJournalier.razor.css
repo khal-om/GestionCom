@@ -1,0 +1,95 @@
+.rapport-page {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Controls */
+.rapport-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.rapport-controls label {
+    font-size: 0.875rem;
+    color: var(--gc-ink-secondary);
+    font-weight: 600;
+}
+
+.rapport-controls ::deep input,
+.rapport-controls ::deep select,
+.rapport-controls ::deep .mud-input-root {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+/* Sections */
+.rapport-section {
+    border: 1.5px solid var(--gc-border);
+    border-radius: var(--gc-radius-xl);
+    background: var(--gc-surface);
+    padding: 1.25rem;
+    box-shadow: var(--gc-shadow-xs);
+}
+
+.rapport-section h2 {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9375rem;
+}
+
+.rapport-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.rapport-table th,
+.rapport-table td {
+    padding: 0.6875rem 1rem;
+    border-bottom: 1px solid var(--gc-border);
+    text-align: left;
+    font-size: 0.875rem;
+}
+
+.rapport-table th {
+    background: var(--gc-surface-sunken);
+    color: var(--gc-muted);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.rapport-table .amount {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.rapport-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Empty / error states */
+.rapport-page .error {
+    padding: 0.75rem 1rem;
+    border-radius: var(--gc-radius-md);
+    background: var(--gc-danger-bg);
+    color: var(--gc-danger-text);
+    border: 1.5px solid rgba(220, 38, 38, 0.12);
+}
+
+@media (max-width: 640px) {
+    .rapport-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .rapport-section {
+        padding: 1rem;
+    }
+
+    .rapport-controls ::deep input {
+        width: 100%;
+    }
+}

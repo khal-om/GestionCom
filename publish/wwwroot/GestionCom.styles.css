@@ -2994,6 +2994,102 @@ a.idx-tile:hover .idx-tile-icon[b-lrgxuo0coc] {
 .profile-page[b-06npwszdb5] {
     max-width: 1280px;
 }
+/* /Components/Pages/RapportJournalier.razor.rz.scp.css */
+.rapport-page[b-bhhjtnqw37] {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Controls */
+.rapport-controls[b-bhhjtnqw37] {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.rapport-controls label[b-bhhjtnqw37] {
+    font-size: 0.875rem;
+    color: var(--gc-ink-secondary);
+    font-weight: 600;
+}
+
+.rapport-controls[b-bhhjtnqw37]  input,
+.rapport-controls[b-bhhjtnqw37]  select,
+.rapport-controls[b-bhhjtnqw37]  .mud-input-root {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+/* Sections */
+.rapport-section[b-bhhjtnqw37] {
+    border: 1.5px solid var(--gc-border);
+    border-radius: var(--gc-radius-xl);
+    background: var(--gc-surface);
+    padding: 1.25rem;
+    box-shadow: var(--gc-shadow-xs);
+}
+
+.rapport-section h2[b-bhhjtnqw37] {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.9375rem;
+}
+
+.rapport-table[b-bhhjtnqw37] {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.rapport-table th[b-bhhjtnqw37],
+.rapport-table td[b-bhhjtnqw37] {
+    padding: 0.6875rem 1rem;
+    border-bottom: 1px solid var(--gc-border);
+    text-align: left;
+    font-size: 0.875rem;
+}
+
+.rapport-table th[b-bhhjtnqw37] {
+    background: var(--gc-surface-sunken);
+    color: var(--gc-muted);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.rapport-table .amount[b-bhhjtnqw37] {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.rapport-table tr:last-child td[b-bhhjtnqw37] {
+    border-bottom: none;
+}
+
+/* Empty / error states */
+.rapport-page .error[b-bhhjtnqw37] {
+    padding: 0.75rem 1rem;
+    border-radius: var(--gc-radius-md);
+    background: var(--gc-danger-bg);
+    color: var(--gc-danger-text);
+    border: 1.5px solid rgba(220, 38, 38, 0.12);
+}
+
+@media (max-width: 640px) {
+    .rapport-controls[b-bhhjtnqw37] {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .rapport-section[b-bhhjtnqw37] {
+        padding: 1rem;
+    }
+
+    .rapport-controls[b-bhhjtnqw37]  input {
+        width: 100%;
+    }
+}
 /* /Components/Pages/Savings.razor.rz.scp.css */
 /* ============================================================
    The Freedom Fund — scoped styles.

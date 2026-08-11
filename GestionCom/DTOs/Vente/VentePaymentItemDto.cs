@@ -10,5 +10,8 @@ namespace GestionCom.DTOs.Vente
         public bool IsReceived { get; set; }
         public string? Note { get; set; }
         public int ClientId { get; set; }
+        // Optional: linked vente and client name for reporting
+        public int? VenteId { get; set; }
+        public string? ClientName { get; set; }
     }
 }
