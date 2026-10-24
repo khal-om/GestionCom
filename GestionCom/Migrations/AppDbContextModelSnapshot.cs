@@ -422,6 +422,33 @@ namespace GestionCom.Migrations
                     b.ToTable("Roles");
                 });
 
+            modelBuilder.Entity("GestionCom.Entities.SavingsEntry", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("AmountSaved")
+                        .HasPrecision(8, 2)
+                        .HasColumnType("numeric(8,2)")
+                        .HasColumnName("Amount");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Date")
+                        .IsUnique();
+
+                    b.ToTable("SavingEntries", (string)null);
+                });
+
             modelBuilder.Entity("GestionCom.Entities.StockMovement", b =>
                 {
                     b.Property<int>("Id")
@@ -538,6 +565,9 @@ namespace GestionCom.Migrations
 
                     b.Property<int>("Etat")
                         .HasColumnType("integer");
+
+                    b.Property<string>("FactureNumber")
+                        .HasColumnType("text");
 
                     b.Property<string>("Note")
                         .HasColumnType("text");

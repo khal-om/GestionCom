@@ -15,10 +15,12 @@ namespace GestionCom.Services
         public const string LowStockThresholdKey = "LowStockThreshold";
 
         private readonly AppDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public AppSettingsService(AppDbContext context)
+        public AppSettingsService(AppDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         public async Task<AppSettingsDto> GetAsync()
@@ -29,7 +31,7 @@ namespace GestionCom.Services
 
             return new AppSettingsDto
             {
-                CompanyName = GetValue(settings, CompanyNameKey, "FedNad Holding"),
+                CompanyName = GetValue(settings, CompanyNameKey, _configuration["Branding:CompanyName"] ?? "FedNad Holding"),
                 CompanyTagline = GetNullableValue(settings, CompanyTaglineKey, "Gestion commerciale"),
                 CompanyAddress = GetNullableValue(settings, CompanyAddressKey, null),
                 CompanyPhone = GetNullableValue(settings, CompanyPhoneKey, null),

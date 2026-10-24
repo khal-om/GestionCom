@@ -1,4 +1,10 @@
-﻿<!DOCTYPE html>
+﻿@inject IConfiguration Configuration
+
+@{
+    var logoPath = Configuration["Branding:Logo"] ?? "/branding/logo.jpeg";
+}
+
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="utf-8" />
@@ -7,6 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="icon" href="@logoPath" />
     <link rel="stylesheet" href="app.css" />
     <link rel="stylesheet" href="GestionCom.styles.css" />
     <link rel="stylesheet" href="css/modern-theme.css" />

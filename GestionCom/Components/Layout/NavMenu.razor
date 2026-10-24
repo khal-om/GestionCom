@@ -2,15 +2,16 @@
 @implements IDisposable
 @inject NavigationManager Navigation
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IConfiguration Configuration
 
 <div class="app-navigation-shell">
     <header class="app-mobile-topbar">
         <a href="/" class="app-mobile-brand">
             <span class="app-logo-frame">
-                <img src="branding/logo.jpeg" alt="Logo GestionCom" class="app-logo-image" />
+                <img src="@(Configuration["Branding:Logo"] ?? "/branding/logo.jpeg")" alt="Logo @(Configuration["Branding:CompanyName"] ?? "FedNad")" class="app-logo-image" />
             </span>
             <span>
-                <strong>FedNad</strong>
+                <strong>@(Configuration["Branding:CompanyName"] ?? "FedNad")</strong>
                 <small>HOLDING</small>
             </span>
         </a>
@@ -25,7 +26,7 @@
         <div class="app-brand-panel">
             <a href="/" class="app-brand-link">
                 <span class="app-logo-frame app-logo-frame-large">
-                    <img src="branding/logo.jpeg" alt="Logo GestionCom" class="app-logo-image" />
+                    <img src="@(Configuration["Branding:Logo"] ?? "/branding/logo.jpeg")" alt="Logo @(Configuration["Branding:CompanyName"] ?? "FedNad")" class="app-logo-image" />
                 </span>
             </a>
         </div>

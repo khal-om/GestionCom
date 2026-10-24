@@ -20,15 +20,18 @@ namespace GestionCom.Controllers
         private readonly VenteQueryService _venteQueryService;
         private readonly AppSettingsService _appSettingsService;
         private readonly IWebHostEnvironment _environment;
+        private readonly IConfiguration _configuration;
 
         public VenteDocumentsController(
             VenteQueryService venteQueryService,
             AppSettingsService appSettingsService,
-            IWebHostEnvironment environment)
+            IWebHostEnvironment environment,
+            IConfiguration configuration)
         {
             _venteQueryService = venteQueryService;
             _appSettingsService = appSettingsService;
             _environment = environment;
+            _configuration = configuration;
 
             QuestPDF.Settings.License = LicenseType.Community;
         }
@@ -520,7 +523,10 @@ namespace GestionCom.Controllers
 
         private async Task<byte[]?> LoadLogoAsync()
         {
-            var logoPath = Path.Combine(_environment.WebRootPath, "branding", "logo.jpeg");
+            var configuredLogoPath = _configuration["Branding:Logo"] ?? "/branding/logo.jpeg";
+            var relativeLogoPath = configuredLogoPath.TrimStart('/', '\\')
+                .Replace('/', Path.DirectorySeparatorChar);
+            var logoPath = Path.Combine(_environment.WebRootPath, relativeLogoPath);
             return System.IO.File.Exists(logoPath)
                 ? await System.IO.File.ReadAllBytesAsync(logoPath)
                 : null;
