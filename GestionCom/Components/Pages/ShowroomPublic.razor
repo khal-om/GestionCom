@@ -65,7 +65,7 @@
                     @foreach (var brand in brands)
                     {
                         var isKemon = brand.Slug.Equals("kemon", StringComparison.OrdinalIgnoreCase);
-                        <a class="showroom-brand-card @(isKemon ? "showroom-brand-kemon" : "showroom-brand-actyva")" href="#selection">
+                        <a class="showroom-brand-card @(isKemon ? "showroom-brand-kemon" : "showroom-brand-actyva")" href="#selection" @onclick="() => selectedBrandSlug = brand.Slug">
                             <span class="showroom-brand-index">@(isKemon ? "01 / L'EXPERTISE PROFESSIONNELLE" : "02 / LES RITUELS CAPILLAIRES")</span>
                             <span class="showroom-brand-name">@brand.NameFr</span>
                             <span class="showroom-brand-description">@(string.IsNullOrWhiteSpace(brand.TaglineFr) ? (isKemon ? "L'expression de la beauté professionnelle." : "Des rituels ciblés pour le bien-être des cheveux.") : brand.TaglineFr)</span>
@@ -218,6 +218,9 @@
          product.NameFr.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ||
          (product.CategoryFr?.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ?? false) ||
          (product.ShortDescriptionFr?.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ?? false) ||
+         (product.HairNeedFr?.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ?? false) ||
+         (product.HairTypeFr?.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ?? false) ||
+         (product.Range?.NameFr.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ?? false) ||
          product.Brand.NameFr.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase)));
 
     protected override async Task OnInitializedAsync()
