@@ -259,26 +259,65 @@
             SetMessage("Vérifiez la marque et le prix.", true);
             return;
         }
-        if (selectedPhoto is not null && (selectedPhoto.Size > MaxPhotoBytes || !IsAllowedImage(selectedPhoto.ContentType)))
+
+        byte[]? photoBytes = null;
+        string? photoExtension = null;
+        if (selectedPhoto is not null)
         {
-            SetMessage("La photo doit être au format JPG, PNG ou WebP et ne pas dépasser 5 Mo.", true);
-            return;
+            if (selectedPhoto.Size <= 0 || selectedPhoto.Size > MaxPhotoBytes)
+            {
+                SetMessage("La photo ne doit pas dépasser 5 Mo et ne peut pas être vide.", true);
+                return;
+            }
+
+            try
+            {
+                await using var input = selectedPhoto.OpenReadStream(MaxPhotoBytes);
+                await using var buffer = new MemoryStream();
+                await input.CopyToAsync(buffer);
+                photoBytes = buffer.ToArray();
+                photoExtension = GetValidatedImageExtension(photoBytes, selectedPhoto.ContentType);
+                if (photoExtension is null)
+                {
+                    SetMessage("Le contenu du fichier ne correspond pas à une image JPG, PNG ou WebP valide.", true);
+                    return;
+                }
+            }
+            catch (Exception ex) when (ex is IOException or InvalidOperationException)
+            {
+                SetMessage("Impossible de lire la photo. Choisissez une autre image de 5 Mo maximum.", true);
+                return;
+            }
         }
 
         isSaving = true;
+        string? newlyCreatedFile = null;
+        string? previousPrimaryImagePath = null;
         try
         {
             await using var db = await DbFactory.CreateDbContextAsync();
+            await using var transaction = await db.Database.BeginTransactionAsync();
+
             ShowroomProduct product;
             if (editingId.HasValue)
             {
-                product = await db.ShowroomProducts.Include(p => p.Images).FirstAsync(p => p.Id == editingId.Value);
+                product = await db.ShowroomProducts
+                    .Include(p => p.Images)
+                    .FirstAsync(p => p.Id == editingId.Value);
                 product.UpdatedAt = DateTime.UtcNow;
             }
             else
             {
                 product = new ShowroomProduct { CreatedAt = DateTime.UtcNow, SortOrder = products.Count + 1 };
                 db.ShowroomProducts.Add(product);
+            }
+
+            var brandExists = await db.ShowroomBrands.AnyAsync(b => b.Id == model.BrandId);
+            if (!brandExists)
+            {
+                await transaction.RollbackAsync();
+                SetMessage("La marque sélectionnée n’existe plus. Actualisez la page et réessayez.", true);
+                return;
             }
 
             product.BrandId = model.BrandId;
@@ -294,23 +333,27 @@
             product.IsFeatured = model.IsFeatured;
             product.IsPublished = model.IsPublished;
 
+            // Persist first inside the transaction to obtain the product ID.
             await db.SaveChangesAsync();
 
-            if (selectedPhoto is not null)
+            if (photoBytes is not null && photoExtension is not null)
             {
-                var uploadFolder = Path.Combine(Environment.WebRootPath ?? Path.Combine(Environment.ContentRootPath, "wwwroot"), "uploads", "showroom");
+                var uploadFolder = Path.Combine(
+                    Environment.WebRootPath ?? Path.Combine(Environment.ContentRootPath, "wwwroot"),
+                    "uploads", "showroom");
                 Directory.CreateDirectory(uploadFolder);
-                var extension = selectedPhoto.ContentType.ToLowerInvariant() switch
-                {
-                    "image/jpeg" => ".jpg", "image/png" => ".png", "image/webp" => ".webp", _ => throw new InvalidOperationException("Format de photo non autorisé.")
-                };
-                var fileName = $"{Guid.NewGuid():N}{extension}";
-                var fullPath = Path.Combine(uploadFolder, fileName);
-                await using (var stream = File.Create(fullPath))
-                await using (var input = selectedPhoto.OpenReadStream(MaxPhotoBytes))
-                    await input.CopyToAsync(stream);
 
-                foreach (var image in product.Images) image.IsPrimary = false;
+                var fileName = $"{Guid.NewGuid():N}{photoExtension}";
+                newlyCreatedFile = Path.Combine(uploadFolder, fileName);
+                await File.WriteAllBytesAsync(newlyCreatedFile, photoBytes);
+
+                var oldPrimaryImage = product.Images.FirstOrDefault(i => i.IsPrimary);
+                if (oldPrimaryImage is not null)
+                {
+                    previousPrimaryImagePath = oldPrimaryImage.ImagePath;
+                    db.ShowroomProductImages.Remove(oldPrimaryImage);
+                }
+
                 db.ShowroomProductImages.Add(new ShowroomProductImage
                 {
                     ProductId = product.Id,
@@ -323,17 +366,85 @@
                 await db.SaveChangesAsync();
             }
 
+            await transaction.CommitAsync();
+
+            // Remove the replaced file only after the database transaction succeeds.
+            if (previousPrimaryImagePath is not null)
+                TryDeleteUploadedImage(previousPrimaryImagePath);
+
             await LoadAsync();
             CancelEdit();
             SetMessage("Fiche showroom enregistrée.", false);
         }
         catch (Exception ex)
         {
-            SetMessage($"Enregistrement impossible : {ex.GetBaseException().Message}", true);
+            if (newlyCreatedFile is not null)
+            {
+                try
+                {
+                    if (File.Exists(newlyCreatedFile))
+                        File.Delete(newlyCreatedFile);
+                }
+                catch
+                {
+                    // Preserve the original save error; a leftover file can be cleaned up manually.
+                }
+            }
+
+            SetMessage("Enregistrement impossible. Vérifiez les informations et réessayez. Si le problème persiste, consultez les journaux de l’application.", true);
         }
         finally
         {
             isSaving = false;
+        }
+    }
+
+    private static string? GetValidatedImageExtension(byte[] bytes, string contentType)
+    {
+        if (contentType == "image/jpeg" &&
+            bytes.Length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF)
+            return ".jpg";
+
+        if (contentType == "image/png" &&
+            bytes.Length >= 8 &&
+            bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47 &&
+            bytes[4] == 0x0D && bytes[5] == 0x0A && bytes[6] == 0x1A && bytes[7] == 0x0A)
+            return ".png";
+
+        if (contentType == "image/webp" &&
+            bytes.Length >= 12 &&
+            bytes[0] == (byte)'R' && bytes[1] == (byte)'I' && bytes[2] == (byte)'F' && bytes[3] == (byte)'F' &&
+            bytes[8] == (byte)'W' && bytes[9] == (byte)'E' && bytes[10] == (byte)'B' && bytes[11] == (byte)'P')
+            return ".webp";
+
+        return null;
+    }
+
+    private void TryDeleteUploadedImage(string imagePath)
+    {
+        const string uploadPrefix = "/uploads/showroom/";
+        if (!imagePath.StartsWith(uploadPrefix, StringComparison.Ordinal))
+            return;
+
+        var fileName = imagePath[uploadPrefix.Length..];
+        if (string.IsNullOrWhiteSpace(fileName) || fileName != Path.GetFileName(fileName))
+            return;
+
+        var uploadFolder = Path.GetFullPath(Path.Combine(
+            Environment.WebRootPath ?? Path.Combine(Environment.ContentRootPath, "wwwroot"),
+            "uploads", "showroom"));
+        var fullPath = Path.GetFullPath(Path.Combine(uploadFolder, fileName));
+        if (!fullPath.StartsWith(uploadFolder + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+            return;
+
+        try
+        {
+            if (File.Exists(fullPath))
+                File.Delete(fullPath);
+        }
+        catch
+        {
+            // A stale image file is preferable to failing an already-saved product update.
         }
     }
 
