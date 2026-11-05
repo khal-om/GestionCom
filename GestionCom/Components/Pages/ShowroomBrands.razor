@@ -188,7 +188,9 @@
             }
 
             brand.NameFr = name;
-            brand.Slug = await MakeUniqueSlugAsync(db, name, editingId);
+            // Keep the public URL stable when an existing brand is renamed.
+            if (!editingId.HasValue)
+                brand.Slug = await MakeUniqueSlugAsync(db, name);
             brand.TaglineFr = Clean(model.TaglineFr);
             brand.DescriptionFr = Clean(model.DescriptionFr);
             brand.AccentColor = Clean(model.AccentColor);
@@ -214,7 +216,7 @@
 
     private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
-    private async Task<string> MakeUniqueSlugAsync(AppDbContext db, string name, int? currentId)
+    private async Task<string> MakeUniqueSlugAsync(AppDbContext db, string name)
     {
         var stem = new string(name.Trim().ToLowerInvariant().Normalize(System.Text.NormalizationForm.FormD)
             .Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
@@ -222,12 +224,15 @@
         while (stem.Contains("--")) stem = stem.Replace("--", "-");
         stem = stem.Trim('-');
         if (string.IsNullOrWhiteSpace(stem)) stem = "marque";
+        if (stem.Length > 110) stem = stem[..110].TrimEnd('-');
 
         var candidate = stem;
         var suffix = 2;
-        while (await db.ShowroomBrands.IgnoreQueryFilters()
-            .AnyAsync(x => x.Slug == candidate && x.Id != currentId))
-            candidate = $"{stem}-{suffix++}";
+        while (await db.ShowroomBrands.IgnoreQueryFilters().AnyAsync(x => x.Slug == candidate))
+        {
+            var suffixText = "-" + suffix++;
+            candidate = stem[..Math.Min(stem.Length, 120 - suffixText.Length)] + suffixText;
+        }
         return candidate;
     }
 
