@@ -1,0 +1,183 @@
+@page "/vitrine"
+@using System.Globalization
+@using GestionCom.Data
+@using GestionCom.Features.Showroom.Entities
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components
+@inject IDbContextFactory<AppDbContext> DbFactory
+@layout GestionCom.Components.Layout.BlankLayout
+@attribute [AllowAnonymous]
+@rendermode InteractiveServer
+
+<PageTitle>FedNad — Kemon & Actyva</PageTitle>
+
+<div class="fednad-showroom">
+    <div class="showroom-announcement">L'EXPERTISE CAPILLAIRE PROFESSIONNELLE · SÉLECTION FEDNAD</div>
+
+    <header class="showroom-site-header">
+        <a class="showroom-wordmark" href="/vitrine" aria-label="FedNad, accueil">
+            <span class="showroom-wordmark-main">FEDNAD</span>
+            <span class="showroom-wordmark-sub">BEAUTÉ PROFESSIONNELLE</span>
+        </a>
+        <nav class="showroom-main-nav" aria-label="Navigation principale">
+            <a href="#marques">Nos marques</a>
+            <a href="#selection">La sélection</a>
+            <a href="#apropos">Notre expertise</a>
+        </nav>
+        <a class="showroom-contact-link" href="#contact">Nous contacter <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <main>
+        <section class="showroom-hero">
+            <div class="showroom-hero-copy">
+                <p class="showroom-kicker">LE SOIN CAPILLAIRE, AUTREMENT</p>
+                <h1>Révélez la<br /><em>beauté</em> de vos cheveux.</h1>
+                <p class="showroom-hero-description">Découvrez l'univers Kemon & Actyva : des soins professionnels pensés pour révéler le meilleur de chaque chevelure.</p>
+                <div class="showroom-hero-actions">
+                    <a class="showroom-button showroom-button-dark" href="#marques">Explorer les marques <span aria-hidden="true">↘</span></a>
+                    <a class="showroom-quiet-link" href="#selection">Découvrir la sélection</a>
+                </div>
+                <div class="showroom-hero-note"><span class="showroom-note-rule"></span> L'expertise professionnelle, sélectionnée par FedNad.</div>
+            </div>
+            <div class="showroom-hero-art" aria-label="Composition graphique élégante aux tons naturels">
+                <div class="showroom-art-orbit showroom-art-orbit-one"></div>
+                <div class="showroom-art-orbit showroom-art-orbit-two"></div>
+                <div class="showroom-art-disc"></div>
+                <div class="showroom-art-label"><span>RITUELS</span><strong>de soin</strong><span>PROFESSIONNELS</span></div>
+                <div class="showroom-art-caption">KEMON <span>·</span> ACTYVA</div>
+            </div>
+        </section>
+
+        <section class="showroom-brand-section" id="marques">
+            <div class="showroom-section-heading">
+                <div><p class="showroom-kicker">DEUX UNIVERS, UNE MÊME EXIGENCE</p><h2>Des marques qui ont<br /><em>du sens.</em></h2></div>
+                <p>Une sélection de marques professionnelles et de soins adaptés à vos envies, vos habitudes et la nature de vos cheveux.</p>
+            </div>
+            <div class="showroom-brand-grid">
+                @if (brands.Count == 0)
+                {
+                    <a class="showroom-brand-card showroom-brand-kemon" href="#selection"><span class="showroom-brand-index">01 / LA COULEUR & LE SOIN</span><span class="showroom-brand-name">Kemon</span><span class="showroom-brand-description">L'expression de la beauté professionnelle.</span><span class="showroom-brand-explore">Découvrir <span aria-hidden="true">↗</span></span></a>
+                    <a class="showroom-brand-card showroom-brand-actyva" href="#selection"><span class="showroom-brand-index">02 / LES RITUELS CAPILLAIRES</span><span class="showroom-brand-name">Actyva</span><span class="showroom-brand-description">Des rituels ciblés pour le bien-être des cheveux.</span><span class="showroom-brand-explore">Découvrir <span aria-hidden="true">↗</span></span></a>
+                }
+                else
+                {
+                    @foreach (var brand in brands)
+                    {
+                        var isKemon = brand.Slug.Equals("kemon", StringComparison.OrdinalIgnoreCase);
+                        <a class="showroom-brand-card @(isKemon ? "showroom-brand-kemon" : "showroom-brand-actyva")" href="#selection">
+                            <span class="showroom-brand-index">@(isKemon ? "01 / L'EXPERTISE PROFESSIONNELLE" : "02 / LES RITUELS CAPILLAIRES")</span>
+                            <span class="showroom-brand-name">@brand.NameFr</span>
+                            <span class="showroom-brand-description">@(string.IsNullOrWhiteSpace(brand.TaglineFr) ? (isKemon ? "L'expression de la beauté professionnelle." : "Des rituels ciblés pour le bien-être des cheveux.") : brand.TaglineFr)</span>
+                            <span class="showroom-brand-explore">Découvrir <span aria-hidden="true">↗</span></span>
+                        </a>
+                    }
+                }
+            </div>
+        </section>
+
+        <section class="showroom-selection-section" id="selection">
+            <div class="showroom-section-heading showroom-selection-heading">
+                <div><p class="showroom-kicker">LA SÉLECTION FEDNAD</p><h2>Les essentiels<br /><em>à découvrir.</em></h2></div>
+                <p>Retrouvez ici les produits sélectionnés par notre équipe. Pour toute question ou disponibilité, contactez-nous directement.</p>
+            </div>
+
+            <div class="showroom-catalogue-tools">
+                <label class="showroom-search-box"><span aria-hidden="true">⌕</span><input type="search" placeholder="Rechercher un produit…" aria-label="Rechercher un produit" @bind="searchText" @bind:event="oninput" /></label>
+                <div class="showroom-brand-filters" aria-label="Filtrer par marque">
+                    <button type="button" class="@(selectedBrandSlug is null ? "is-active" : "")" @onclick="() => selectedBrandSlug = null">Tout</button>
+                    @foreach (var brand in brands)
+                    {
+                        <button type="button" class="@(selectedBrandSlug == brand.Slug ? "is-active" : "")" @onclick="() => selectedBrandSlug = brand.Slug">@brand.NameFr</button>
+                    }
+                </div>
+            </div>
+
+            @if (isLoading)
+            {
+                <div class="showroom-catalogue-message">Préparation de la sélection…</div>
+            }
+            else if (!FilteredProducts.Any())
+            {
+                <div class="showroom-catalogue-empty"><span class="showroom-empty-symbol">✳</span><h3>@(products.Count == 0 ? "La sélection arrive bientôt." : "Aucun produit ne correspond à votre recherche.")</h3><p>@(products.Count == 0 ? "Notre catalogue est en préparation. Revenez bientôt pour découvrir les produits Kemon & Actyva." : "Essayez un autre terme ou choisissez une autre marque.")</p></div>
+            }
+            else
+            {
+                <div class="showroom-product-grid">
+                    @foreach (var product in FilteredProducts)
+                    {
+                        var primaryImage = product.Images.OrderByDescending(i => i.IsPrimary).ThenBy(i => i.SortOrder).FirstOrDefault();
+                        <article class="showroom-public-product" @key="product.Id">
+                            <div class="showroom-public-product-image-wrap">
+                                @if (primaryImage is not null && !string.IsNullOrWhiteSpace(primaryImage.ImagePath))
+                                {
+                                    <img class="showroom-public-product-image" src="@primaryImage.ImagePath" alt="@(primaryImage.AltTextFr ?? product.NameFr)" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <div class="showroom-product-image-placeholder"><span>@product.Brand.NameFr</span><strong>@product.NameFr</strong></div>
+                                }
+                                @if (product.IsNew) { <span class="showroom-product-badge">NOUVEAUTÉ</span> }
+                                @if (!product.IsAvailable) { <span class="showroom-product-unavailable">Disponibilité à confirmer</span> }
+                            </div>
+                            <div class="showroom-public-product-meta"><span>@product.Brand.NameFr</span>@if (product.Range is not null) { <span> / @product.Range.NameFr</span> }</div>
+                            <h3>@product.NameFr</h3>
+                            @if (!string.IsNullOrWhiteSpace(product.ShortDescriptionFr))
+                            {
+                                <p class="showroom-public-product-description">@product.ShortDescriptionFr</p>
+                            }
+                            <div class="showroom-public-product-bottom"><strong>@product.PriceTnd.ToString("0.00", CultureInfo.GetCultureInfo("fr-TN")) <span>TND</span></strong><a href="#contact" aria-label="Contacter FedNad au sujet de @product.NameFr">En savoir plus <span aria-hidden="true">↗</span></a></div>
+                        </article>
+                    }
+                </div>
+            }
+            <p class="showroom-catalogue-disclaimer">Les prix sont affichés à titre informatif. Pour confirmer la disponibilité d'un produit ou obtenir un conseil, contactez FedNad.</p>
+        </section>
+
+        <section class="showroom-expertise-section" id="apropos">
+            <div class="showroom-expertise-mark">F.</div>
+            <div><p class="showroom-kicker">LE CONSEIL AVANT TOUT</p><h2>Le bon soin commence<br />par <em>la bonne écoute.</em></h2><p>Vous hésitez entre plusieurs produits ? Notre équipe vous accompagne pour identifier les soins adaptés à vos besoins et à votre routine.</p><a class="showroom-button showroom-button-light" href="#contact">Parlons de vos cheveux <span aria-hidden="true">↗</span></a></div>
+        </section>
+    </main>
+
+    <footer class="showroom-footer" id="contact">
+        <div class="showroom-footer-top"><a class="showroom-wordmark showroom-wordmark-footer" href="/vitrine"><span class="showroom-wordmark-main">FEDNAD</span><span class="showroom-wordmark-sub">BEAUTÉ PROFESSIONNELLE</span></a><p>La beauté professionnelle,<br />choisie avec attention.</p><a class="showroom-footer-contact" href="mailto:contact@fednad.com">Contactez notre équipe <span aria-hidden="true">↗</span></a></div>
+        <div class="showroom-footer-bottom"><span>© @DateTime.Now.Year FedNad. Tous droits réservés.</span><span>Kemon · Actyva · FedNad</span></div>
+    </footer>
+</div>
+
+@code {
+    private List<ShowroomBrand> brands = new();
+    private List<ShowroomProduct> products = new();
+    private bool isLoading = true;
+    private string searchText = string.Empty;
+    private string? selectedBrandSlug;
+
+    private IEnumerable<ShowroomProduct> FilteredProducts => products.Where(product =>
+        (selectedBrandSlug is null || product.Brand.Slug == selectedBrandSlug) &&
+        (string.IsNullOrWhiteSpace(searchText) ||
+         product.NameFr.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ||
+         (product.CategoryFr?.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ?? false) ||
+         (product.ShortDescriptionFr?.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ?? false) ||
+         product.Brand.NameFr.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase)));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await using var db = await DbFactory.CreateDbContextAsync();
+        brands = await db.ShowroomBrands.AsNoTracking()
+            .Where(brand => brand.IsPublished)
+            .OrderBy(brand => brand.SortOrder)
+            .ThenBy(brand => brand.NameFr)
+            .ToListAsync();
+
+        products = await db.ShowroomProducts.AsNoTracking()
+            .Where(product => product.IsPublished)
+            .Include(product => product.Brand)
+            .Include(product => product.Range)
+            .Include(product => product.Images)
+            .OrderBy(product => product.SortOrder)
+            .ThenBy(product => product.NameFr)
+            .ToListAsync();
+        isLoading = false;
+    }
+}

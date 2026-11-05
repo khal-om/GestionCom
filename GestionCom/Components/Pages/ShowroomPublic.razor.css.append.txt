@@ -1,0 +1,118 @@
+/* FEDNAD visual refinement — append to the END of ShowroomPublic.razor.css */
+
+.fednad-showroom {
+    --fs-paper: #faf7f1;
+    --fs-cream: #eee5d8;
+    --fs-accent: #94765d;
+    background: #fffdf9;
+}
+
+.showroom-site-header {
+    height: 78px;
+    padding-inline: clamp(1.2rem, 4.8vw, 5rem);
+    position: relative;
+    z-index: 2;
+}
+
+.showroom-wordmark-main { letter-spacing: .2em; }
+.showroom-main-nav a { font-size: .72rem; }
+
+.showroom-hero {
+    min-height: 480px;
+    grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
+}
+
+.showroom-hero-copy {
+    padding: clamp(2.5rem, 5.5vw, 5.5rem) clamp(1.5rem, 5vw, 5rem);
+}
+
+.showroom-hero h1 {
+    font-size: clamp(3rem, 5vw, 5rem);
+    line-height: .98;
+    letter-spacing: -.06em;
+}
+
+.showroom-hero-description {
+    font-size: .88rem;
+    line-height: 1.75;
+    margin: 1.2rem 0 1.5rem;
+}
+
+.showroom-hero-art {
+    min-height: 480px;
+    background-image: linear-gradient(90deg, rgba(80, 55, 35, .02), rgba(38, 27, 19, .12)), url('/images/showroom-hero.jpg');
+    background-size: cover;
+    background-position: center 43%;
+    display: block;
+}
+
+.showroom-art-orbit,
+.showroom-art-disc { display: none; }
+
+.showroom-art-label {
+    position: absolute;
+    top: 50%;
+    right: clamp(1rem, 4vw, 3.5rem);
+    transform: translateY(-50%);
+    color: #fffaf4;
+    text-shadow: 0 1px 12px rgba(0,0,0,.22);
+}
+
+.showroom-art-label strong { font-size: clamp(1.4rem, 2.4vw, 2.5rem); }
+.showroom-art-caption { color: rgba(255,250,244,.88); }
+
+.showroom-brand-section,
+.showroom-selection-section {
+    padding: clamp(3.5rem, 6vw, 5.5rem) clamp(1.2rem, 5vw, 5rem);
+}
+
+.showroom-section-heading { margin-bottom: 2rem; }
+.showroom-section-heading h2 { font-size: clamp(2.4rem, 4vw, 3.7rem); }
+.showroom-brand-grid { gap: 1rem; }
+
+.showroom-brand-card {
+    min-height: 290px;
+    padding: 2rem;
+    transition: transform .28s ease, box-shadow .28s ease;
+}
+
+.showroom-brand-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 38px rgba(53, 43, 31, .10);
+}
+
+.showroom-brand-kemon {
+    background: radial-gradient(ellipse at 78% 50%, rgba(255,255,255,.42), transparent 43%), linear-gradient(120deg, #e6d5c1, #cbb49b);
+}
+
+.showroom-brand-actyva {
+    background: radial-gradient(ellipse at 80% 48%, rgba(255,255,255,.35), transparent 43%), linear-gradient(120deg, #d8ddd2, #aab7a5);
+}
+
+.showroom-brand-card:before { width: 230px; height: 230px; right: -45px; top: -95px; }
+.showroom-brand-card:after { width: 160px; height: 210px; right: 40px; top: 35px; }
+.showroom-brand-name { font-size: clamp(2.8rem, 4.5vw, 4.4rem); }
+.showroom-brand-description { max-width: 260px; }
+
+.showroom-selection-section { background: #f8f5ef; }
+.showroom-catalogue-tools { padding-block: .9rem; }
+.showroom-product-grid { gap: 1.7rem 1rem; }
+.showroom-public-product-image-wrap {
+    height: 265px;
+    background: linear-gradient(145deg, #f1ece4, #e8dfd3);
+}
+.showroom-public-product h3 { font-size: 1.08rem; }
+.showroom-public-product-bottom { border-color: #ddd3c6; }
+
+@media (min-width: 1200px) {
+    .showroom-product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@media (max-width: 720px) {
+    .showroom-site-header { min-height: 72px; }
+    .showroom-hero { grid-template-columns: 1fr; }
+    .showroom-hero-art { min-height: 340px; background-position: center 38%; }
+    .showroom-art-label { right: 1.2rem; }
+    .showroom-brand-card { min-height: 270px; }
+    .showroom-public-product-image-wrap { height: clamp(165px, 48vw, 230px); }
+}

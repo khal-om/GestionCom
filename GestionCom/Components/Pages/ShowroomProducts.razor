@@ -1,0 +1,392 @@
+@page "/showroom/produits"
+@using GestionCom.Data
+@using GestionCom.Features.Showroom.Entities
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Forms
+@inject IDbContextFactory<AppDbContext> DbFactory
+@inject IWebHostEnvironment Environment
+
+@attribute [Authorize(Roles = "Admin")]
+@rendermode InteractiveServer
+
+<PageTitle>Produits du showroom</PageTitle>
+
+<div class="showroom-admin-page">
+    <header class="showroom-admin-heading">
+        <div>
+            <p class="showroom-eyebrow">BOUTIQUE PUBLIQUE · SHOP.FEDNAD.COM</p>
+            <h1>Produits du showroom</h1>
+            <p>Gérez les produits présentés au public. Ces fiches sont indépendantes du stock et des ventes GestionCom.</p>
+        </div>
+        <button type="button" class="showroom-primary-button" @onclick="NewProduct">+ Nouveau produit</button>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(message))
+    {
+        <div class="showroom-alert @(isError ? "is-error" : "is-success")">@message</div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="showroom-empty-state">Chargement des produits…</div>
+    }
+    else
+    {
+        <div class="showroom-admin-layout">
+            <section class="showroom-admin-panel showroom-product-list-panel">
+                <div class="showroom-panel-heading">
+                    <div><h2>Catalogue</h2><span>@products.Count fiche(s)</span></div>
+                    <input class="showroom-search" placeholder="Rechercher un produit…" @bind="searchText" @bind:event="oninput" aria-label="Rechercher un produit" />
+                </div>
+
+                @if (!FilteredProducts.Any())
+                {
+                    <div class="showroom-empty-state">Aucun produit trouvé. Créez votre première fiche showroom.</div>
+                }
+                else
+                {
+                    <div class="showroom-product-list">
+                        @foreach (var product in FilteredProducts)
+                        {
+                            <article class="showroom-product-row" @key="product.Id">
+                                @if (!string.IsNullOrWhiteSpace(product.Images.FirstOrDefault(i => i.IsPrimary)?.ImagePath))
+                                {
+                                    <img class="showroom-product-thumb" src="@product.Images.First(i => i.IsPrimary).ImagePath" alt="" />
+                                }
+                                else
+                                {
+                                    <div class="showroom-product-thumb showroom-no-image">Photo</div>
+                                }
+                                <div class="showroom-product-row-info">
+                                    <strong>@product.NameFr</strong>
+                                    <span>@product.Brand.NameFr · @product.PriceTnd.ToString("0.00") TND</span>
+                                    <small class="@(product.IsPublished ? "showroom-status-live" : "showroom-status-draft")">@(product.IsPublished ? "Publié" : "Brouillon")</small>
+                                </div>
+                                <div class="showroom-row-actions">
+                                    <button type="button" class="showroom-text-button" @onclick="() => EditProduct(product.Id)">Modifier</button>
+                                    <button type="button" class="showroom-text-button showroom-delete-button" @onclick="() => DeleteProductAsync(product.Id)">Supprimer</button>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+            </section>
+
+            @if (isEditorOpen)
+            {
+                <section class="showroom-admin-panel showroom-editor-panel">
+                    <div class="showroom-panel-heading">
+                        <div><h2>@(editingId.HasValue ? "Modifier la fiche" : "Nouvelle fiche")</h2><span>Informations en français et en arabe</span></div>
+                        <button type="button" class="showroom-close-button" @onclick="CancelEdit" aria-label="Fermer">×</button>
+                    </div>
+
+                    <EditForm Model="model" OnValidSubmit="SaveProductAsync" FormName="showroom-product-editor" class="showroom-editor-form">
+                        <DataAnnotationsValidator />
+                        <div class="showroom-form-grid">
+                            <div class="showroom-field">
+                                <label for="showroom-brand">Marque *</label>
+                                <InputSelect id="showroom-brand" class="showroom-input" @bind-Value="model.BrandId">
+                                    @foreach (var brand in brands)
+                                    {
+                                        <option value="@brand.Id">@brand.NameFr</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            <div class="showroom-field">
+                                <label for="showroom-price">Prix public (TND) *</label>
+                                <InputNumber id="showroom-price" class="showroom-input" @bind-Value="model.PriceTnd" step="0.001" min="0" />
+                            </div>
+                            <div class="showroom-field">
+                                <label for="showroom-name-fr">Nom français *</label>
+                                <InputText id="showroom-name-fr" class="showroom-input" @bind-Value="model.NameFr" />
+                            </div>
+                            
+                            <div class="showroom-field">
+                                <label for="showroom-size">Contenance / format</label>
+                                <InputText id="showroom-size" class="showroom-input" @bind-Value="model.Size" placeholder="Ex. 250 ml" />
+                            </div>
+                            <div class="showroom-field">
+                                <label for="showroom-category-fr">Catégorie (FR)</label>
+                                <InputText id="showroom-category-fr" class="showroom-input" @bind-Value="model.CategoryFr" placeholder="Ex. Shampooing" />
+                            </div>
+                            
+                            <div class="showroom-field">
+                                <label for="showroom-hair-fr">Besoin capillaire (FR)</label>
+                                <InputText id="showroom-hair-fr" class="showroom-input" @bind-Value="model.HairNeedFr" placeholder="Ex. Cheveux secs" />
+                            </div>
+                            
+                        </div>
+
+                        <div class="showroom-field">
+                            <label for="showroom-short-fr">Description courte (FR)</label>
+                            <InputTextArea id="showroom-short-fr" class="showroom-input" @bind-Value="model.ShortDescriptionFr" rows="2" />
+                        </div>
+                        
+                        <div class="showroom-field">
+                            <label for="showroom-description-fr">Description complète (FR)</label>
+                            <InputTextArea id="showroom-description-fr" class="showroom-input" @bind-Value="model.DescriptionFr" rows="4" />
+                        </div>
+                        
+
+                        <div class="showroom-field">
+                            <label for="showroom-photo">Photo principale</label>
+                            <InputFile id="showroom-photo" OnChange="OnPhotoSelected" accept="image/jpeg,image/png,image/webp" class="showroom-file-input" />
+                            <small>JPG, PNG ou WebP · 5 Mo maximum. @selectedFileName</small>
+                        </div>
+                        @if (!string.IsNullOrWhiteSpace(currentImagePath))
+                        {
+                            <div class="showroom-current-image-wrap"><img src="@currentImagePath" alt="Photo actuelle du produit" /><span>Photo principale actuelle</span></div>
+                        }
+
+                        <div class="showroom-checkbox-row">
+                            <label><InputCheckbox @bind-Value="model.IsAvailable" /> Disponible</label>
+                            <label><InputCheckbox @bind-Value="model.IsFeatured" /> Mise en avant</label>
+                            <label><InputCheckbox @bind-Value="model.IsPublished" /> Publier sur le showroom</label>
+                        </div>
+                        <div class="showroom-editor-actions">
+                            <button type="button" class="showroom-secondary-button" @onclick="CancelEdit">Annuler</button>
+                            <button type="submit" class="showroom-primary-button" disabled="@isSaving">@(isSaving ? "Enregistrement…" : "Enregistrer la fiche")</button>
+                        </div>
+                    </EditForm>
+                </section>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private const long MaxPhotoBytes = 5 * 1024 * 1024;
+    private List<ShowroomProduct> products = new();
+    private List<ShowroomBrand> brands = new();
+    private ProductEditorModel model = new();
+    private IBrowserFile? selectedPhoto;
+    private string? selectedFileName;
+    private string? currentImagePath;
+    private string? message;
+    private string searchText = string.Empty;
+    private bool isLoading = true;
+    private bool isSaving;
+    private bool isError;
+    private bool isEditorOpen;
+    private int? editingId;
+
+    private IEnumerable<ShowroomProduct> FilteredProducts => products.Where(p =>
+        string.IsNullOrWhiteSpace(searchText) ||
+        p.NameFr.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+        
+        p.Brand.NameFr.Contains(searchText, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        await using var db = await DbFactory.CreateDbContextAsync();
+        brands = await db.ShowroomBrands.AsNoTracking().OrderBy(b => b.SortOrder).ThenBy(b => b.NameFr).ToListAsync();
+        if (brands.Count == 0)
+        {
+            var kemon = new ShowroomBrand { Slug = "kemon", NameFr = "Kemon", SortOrder = 1, IsPublished = true, CreatedAt = DateTime.UtcNow };
+            var actyva = new ShowroomBrand { Slug = "actyva", NameFr = "Actyva", SortOrder = 2, IsPublished = true, CreatedAt = DateTime.UtcNow };
+            db.ShowroomBrands.AddRange(kemon, actyva);
+            await db.SaveChangesAsync();
+            brands = await db.ShowroomBrands.AsNoTracking().OrderBy(b => b.SortOrder).ToListAsync();
+        }
+        products = await db.ShowroomProducts.AsNoTracking()
+            .Include(p => p.Brand).Include(p => p.Images)
+            .OrderBy(p => p.SortOrder).ThenByDescending(p => p.CreatedAt).ToListAsync();
+        isLoading = false;
+    }
+
+    private void NewProduct()
+    {
+        editingId = null;
+        model = new ProductEditorModel { BrandId = brands.FirstOrDefault()?.Id ?? 0, IsAvailable = true };
+        selectedPhoto = null;
+        selectedFileName = null;
+        currentImagePath = null;
+        message = null;
+        isEditorOpen = true;
+    }
+
+    private void EditProduct(int id)
+    {
+        var product = products.First(p => p.Id == id);
+        editingId = id;
+        model = new ProductEditorModel
+        {
+            BrandId = product.BrandId, NameFr = product.NameFr, 
+            PriceTnd = product.PriceTnd, Size = product.Size, CategoryFr = product.CategoryFr,
+            HairNeedFr = product.HairNeedFr, 
+            ShortDescriptionFr = product.ShortDescriptionFr, 
+            DescriptionFr = product.DescriptionFr, 
+            IsAvailable = product.IsAvailable, IsFeatured = product.IsFeatured, IsPublished = product.IsPublished
+        };
+        currentImagePath = product.Images.FirstOrDefault(i => i.IsPrimary)?.ImagePath;
+        selectedPhoto = null;
+        selectedFileName = null;
+        message = null;
+        isEditorOpen = true;
+    }
+
+    private void CancelEdit()
+    {
+        isEditorOpen = false;
+        editingId = null;
+        selectedPhoto = null;
+        selectedFileName = null;
+    }
+
+    private Task OnPhotoSelected(InputFileChangeEventArgs args)
+    {
+        selectedPhoto = args.File;
+        selectedFileName = selectedPhoto.Name;
+        return Task.CompletedTask;
+    }
+
+    private async Task SaveProductAsync()
+    {
+        if (string.IsNullOrWhiteSpace(model.NameFr))
+        {
+            SetMessage("Le nom doit être renseigné en français ou en arabe.", true);
+            return;
+        }
+        if (model.PriceTnd < 0 || model.BrandId <= 0)
+        {
+            SetMessage("Vérifiez la marque et le prix.", true);
+            return;
+        }
+        if (selectedPhoto is not null && (selectedPhoto.Size > MaxPhotoBytes || !IsAllowedImage(selectedPhoto.ContentType)))
+        {
+            SetMessage("La photo doit être au format JPG, PNG ou WebP et ne pas dépasser 5 Mo.", true);
+            return;
+        }
+
+        isSaving = true;
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            ShowroomProduct product;
+            if (editingId.HasValue)
+            {
+                product = await db.ShowroomProducts.Include(p => p.Images).FirstAsync(p => p.Id == editingId.Value);
+                product.UpdatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                product = new ShowroomProduct { CreatedAt = DateTime.UtcNow, SortOrder = products.Count + 1 };
+                db.ShowroomProducts.Add(product);
+            }
+
+            product.BrandId = model.BrandId;
+            product.NameFr = model.NameFr.Trim();
+            product.Slug = await MakeUniqueSlugAsync(db, model.NameFr, editingId);
+            product.PriceTnd = model.PriceTnd;
+            product.Size = Clean(model.Size);
+            product.CategoryFr = Clean(model.CategoryFr);
+            product.HairNeedFr = Clean(model.HairNeedFr);
+            product.ShortDescriptionFr = Clean(model.ShortDescriptionFr);
+            product.DescriptionFr = Clean(model.DescriptionFr);
+            product.IsAvailable = model.IsAvailable;
+            product.IsFeatured = model.IsFeatured;
+            product.IsPublished = model.IsPublished;
+
+            await db.SaveChangesAsync();
+
+            if (selectedPhoto is not null)
+            {
+                var uploadFolder = Path.Combine(Environment.WebRootPath ?? Path.Combine(Environment.ContentRootPath, "wwwroot"), "uploads", "showroom");
+                Directory.CreateDirectory(uploadFolder);
+                var extension = selectedPhoto.ContentType.ToLowerInvariant() switch
+                {
+                    "image/jpeg" => ".jpg", "image/png" => ".png", "image/webp" => ".webp", _ => throw new InvalidOperationException("Format de photo non autorisé.")
+                };
+                var fileName = $"{Guid.NewGuid():N}{extension}";
+                var fullPath = Path.Combine(uploadFolder, fileName);
+                await using (var stream = File.Create(fullPath))
+                await using (var input = selectedPhoto.OpenReadStream(MaxPhotoBytes))
+                    await input.CopyToAsync(stream);
+
+                foreach (var image in product.Images) image.IsPrimary = false;
+                db.ShowroomProductImages.Add(new ShowroomProductImage
+                {
+                    ProductId = product.Id,
+                    ImagePath = $"/uploads/showroom/{fileName}",
+                    AltTextFr = product.NameFr,
+                    IsPrimary = true,
+                    SortOrder = 0,
+                    CreatedAt = DateTime.UtcNow
+                });
+                await db.SaveChangesAsync();
+            }
+
+            await LoadAsync();
+            CancelEdit();
+            SetMessage("Fiche showroom enregistrée.", false);
+        }
+        catch (Exception ex)
+        {
+            SetMessage($"Enregistrement impossible : {ex.GetBaseException().Message}", true);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task DeleteProductAsync(int id)
+    {
+        var product = products.FirstOrDefault(p => p.Id == id);
+        if (product is null) return;
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var entity = await db.ShowroomProducts.FirstAsync(p => p.Id == id);
+        entity.IsDeleted = true;
+        entity.IsPublished = false;
+        entity.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        await LoadAsync();
+        SetMessage($"La fiche « {product.NameFr} » a été supprimée du catalogue.", false);
+    }
+
+    private static bool IsAllowedImage(string contentType) => contentType is "image/jpeg" or "image/png" or "image/webp";
+    private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private async Task<string> MakeUniqueSlugAsync(AppDbContext db, string name, int? currentId)
+    {
+        var stem = new string(name.Trim().ToLowerInvariant().Normalize(System.Text.NormalizationForm.FormD)
+            .Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
+            .Select(c => char.IsLetterOrDigit(c) ? c : '-').ToArray());
+        while (stem.Contains("--")) stem = stem.Replace("--", "-");
+        stem = stem.Trim('-');
+        if (string.IsNullOrWhiteSpace(stem)) stem = "produit";
+        var candidate = stem;
+        var suffix = 2;
+        while (await db.ShowroomProducts.IgnoreQueryFilters().AnyAsync(p => p.Slug == candidate && p.Id != currentId))
+            candidate = $"{stem}-{suffix++}";
+        return candidate;
+    }
+
+    private void SetMessage(string text, bool error)
+    {
+        message = text;
+        isError = error;
+    }
+
+    private sealed class ProductEditorModel
+    {
+        public int BrandId { get; set; }
+        public string NameFr { get; set; } = string.Empty;
+        public decimal PriceTnd { get; set; }
+        public string? Size { get; set; }
+        public string? CategoryFr { get; set; }
+        public string? HairNeedFr { get; set; }
+        public string? ShortDescriptionFr { get; set; }
+        public string? DescriptionFr { get; set; }
+        public bool IsAvailable { get; set; } = true;
+        public bool IsFeatured { get; set; }
+        public bool IsPublished { get; set; }
+    }
+}
