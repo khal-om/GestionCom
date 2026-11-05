@@ -367,6 +367,8 @@
             }
 
             await transaction.CommitAsync();
+            // The new file is now referenced by committed database data; never delete it in the catch block.
+            newlyCreatedFile = null;
 
             // Remove the replaced file only after the database transaction succeeds.
             if (previousPrimaryImagePath is not null)
