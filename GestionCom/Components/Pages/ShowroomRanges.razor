@@ -1,0 +1,268 @@
+@page "/showroom/gammes"
+@using GestionCom.Data
+@using GestionCom.Features.Showroom.Entities
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using System.ComponentModel.DataAnnotations
+@inject IDbContextFactory<AppDbContext> DbFactory
+
+@attribute [Authorize(Roles = "Admin")]
+@rendermode InteractiveServer
+
+<PageTitle>Gammes du showroom</PageTitle>
+
+<div class="showroom-brands-admin">
+    <header class="showroom-brands-heading">
+        <div>
+            <p class="showroom-brands-eyebrow">BOUTIQUE PUBLIQUE · SHOP.FEDNAD.COM</p>
+            <h1>Gammes</h1>
+            <p>Organisez les gammes de produits par marque.</p>
+        </div>
+        <button type="button" class="showroom-brands-primary" @onclick="NewRange" disabled="@(brands.Count == 0)">+ Nouvelle gamme</button>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(message))
+    {
+        <div class="showroom-brands-alert @(isError ? "is-error" : "is-success")">@message</div>
+    }
+
+    @if (isLoading)
+    {
+        <p class="showroom-brands-empty">Chargement des gammes…</p>
+    }
+    else
+    {
+        @if (brands.Count == 0)
+        {
+            <section class="showroom-brands-panel"><p class="showroom-brands-empty">Créez d’abord une marque avant d’ajouter une gamme.</p></section>
+        }
+        <div class="showroom-brands-layout">
+            <section class="showroom-brands-panel">
+                <div class="showroom-brands-panel-heading">
+                    <div><h2>Gammes enregistrées</h2><span>@ranges.Count gamme(s)</span></div>
+                </div>
+                @if (ranges.Count == 0)
+                {
+                    <p class="showroom-brands-empty">Aucune gamme enregistrée.</p>
+                }
+                else
+                {
+                    <div class="showroom-brands-list">
+                        @foreach (var range in ranges)
+                        {
+                            <article class="showroom-brands-row" @key="range.Id">
+                                <div class="showroom-brands-row-info">
+                                    <strong>@range.NameFr</strong>
+                                    <span>@range.Brand.NameFr · @range.Slug</span>
+                                    <small class="@(range.IsPublished ? "is-published" : "is-draft")">@(range.IsPublished ? "Publiée" : "Non publiée") · Ordre : @range.SortOrder · @range.Products.Count produit(s)</small>
+                                </div>
+                                <button type="button" class="showroom-brands-link" @onclick="() => EditRange(range.Id)">Modifier</button>
+                            </article>
+                        }
+                    </div>
+                }
+            </section>
+
+            @if (isEditorOpen)
+            {
+                <section class="showroom-brands-panel">
+                    <div class="showroom-brands-panel-heading">
+                        <div><h2>@(editingId.HasValue ? "Modifier la gamme" : "Nouvelle gamme")</h2><span>Informations en français</span></div>
+                        <button type="button" class="showroom-brands-close" @onclick="CancelEdit" aria-label="Fermer">×</button>
+                    </div>
+                    <EditForm Model="model" OnValidSubmit="SaveRangeAsync" FormName="showroom-range-editor" class="showroom-brands-form">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="showroom-brands-field">
+                            <label for="range-brand">Marque *</label>
+                            <InputSelect id="range-brand" class="showroom-brands-input" @bind-Value="model.BrandId">
+                                <option value="0">Choisir une marque</option>
+                                @foreach (var brand in brands)
+                                {
+                                    <option value="@brand.Id">@brand.NameFr</option>
+                                }
+                            </InputSelect>
+                            <ValidationMessage For="@(() => model.BrandId)" />
+                        </div>
+                        <div class="showroom-brands-field">
+                            <label for="range-name">Nom de la gamme *</label>
+                            <InputText id="range-name" class="showroom-brands-input" @bind-Value="model.NameFr" />
+                            <ValidationMessage For="@(() => model.NameFr)" />
+                        </div>
+                        <div class="showroom-brands-field">
+                            <label for="range-description">Description</label>
+                            <InputTextArea id="range-description" class="showroom-brands-input" @bind-Value="model.DescriptionFr" rows="4" />
+                        </div>
+                        <div class="showroom-brands-field">
+                            <label for="range-order">Ordre d’affichage</label>
+                            <InputNumber id="range-order" class="showroom-brands-input" @bind-Value="model.SortOrder" />
+                        </div>
+                        <label class="showroom-brands-checkbox"><InputCheckbox @bind-Value="model.IsPublished" /> Publier cette gamme</label>
+                        <div class="showroom-brands-actions">
+                            <button type="button" class="showroom-brands-secondary" @onclick="CancelEdit">Annuler</button>
+                            <button type="submit" class="showroom-brands-primary" disabled="@isSaving">@(isSaving ? "Enregistrement…" : "Enregistrer")</button>
+                        </div>
+                    </EditForm>
+                </section>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<ShowroomBrand> brands = new();
+    private List<ShowroomRange> ranges = new();
+    private RangeEditorModel model = new();
+    private bool isLoading = true;
+    private bool isSaving;
+    private bool isEditorOpen;
+    private bool isError;
+    private int? editingId;
+    private string? message;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        await using var db = await DbFactory.CreateDbContextAsync();
+        brands = await db.ShowroomBrands.AsNoTracking()
+            .OrderBy(x => x.SortOrder).ThenBy(x => x.NameFr).ToListAsync();
+        ranges = await db.ShowroomRanges.AsNoTracking()
+            .Include(x => x.Brand)
+            .Include(x => x.Products)
+            .OrderBy(x => x.Brand.SortOrder).ThenBy(x => x.SortOrder).ThenBy(x => x.NameFr)
+            .ToListAsync();
+        isLoading = false;
+    }
+
+    private void NewRange()
+    {
+        editingId = null;
+        model = new RangeEditorModel { BrandId = brands.FirstOrDefault()?.Id ?? 0, SortOrder = ranges.Count + 1 };
+        message = null;
+        isEditorOpen = true;
+    }
+
+    private void EditRange(int id)
+    {
+        var range = ranges.First(x => x.Id == id);
+        editingId = id;
+        model = new RangeEditorModel
+        {
+            BrandId = range.BrandId,
+            NameFr = range.NameFr,
+            DescriptionFr = range.DescriptionFr,
+            SortOrder = range.SortOrder,
+            IsPublished = range.IsPublished
+        };
+        message = null;
+        isEditorOpen = true;
+    }
+
+    private void CancelEdit()
+    {
+        isEditorOpen = false;
+        editingId = null;
+    }
+
+    private async Task SaveRangeAsync()
+    {
+        var name = model.NameFr.Trim();
+        if (string.IsNullOrWhiteSpace(name) || model.BrandId <= 0 || model.SortOrder < 0)
+        {
+            SetMessage("Vérifiez le nom, la marque et l’ordre d’affichage.", true);
+            return;
+        }
+
+        isSaving = true;
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            if (!await db.ShowroomBrands.AnyAsync(x => x.Id == model.BrandId))
+            {
+                SetMessage("La marque sélectionnée n’existe plus. Actualisez la page et réessayez.", true);
+                return;
+            }
+
+            ShowroomRange range;
+            if (editingId.HasValue)
+                range = await db.ShowroomRanges.FirstAsync(x => x.Id == editingId.Value);
+            else
+            {
+                range = new ShowroomRange { CreatedAt = DateTime.UtcNow };
+                db.ShowroomRanges.Add(range);
+            }
+
+            range.BrandId = model.BrandId;
+            range.NameFr = name;
+            if (!editingId.HasValue)
+                range.Slug = await MakeUniqueSlugAsync(db, model.BrandId, name);
+            range.DescriptionFr = Clean(model.DescriptionFr);
+            range.SortOrder = model.SortOrder;
+            range.IsPublished = model.IsPublished;
+            if (editingId.HasValue)
+                range.UpdatedAt = DateTime.UtcNow;
+
+            await db.SaveChangesAsync();
+            await LoadAsync();
+            CancelEdit();
+            SetMessage("Gamme enregistrée.", false);
+        }
+        catch
+        {
+            SetMessage("Enregistrement impossible. Vérifiez les informations et réessayez.", true);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private async Task<string> MakeUniqueSlugAsync(AppDbContext db, int brandId, string name)
+    {
+        var brandSlug = await db.ShowroomBrands.Where(x => x.Id == brandId).Select(x => x.Slug).FirstAsync();
+        var stem = Slugify(brandSlug + "-" + name);
+        if (stem.Length > 110) stem = stem[..110].TrimEnd('-');
+        var candidate = stem;
+        var suffix = 2;
+        while (await db.ShowroomRanges.IgnoreQueryFilters().AnyAsync(x => x.Slug == candidate))
+        {
+            var suffixText = "-" + suffix++;
+            candidate = stem[..Math.Min(stem.Length, 120 - suffixText.Length)] + suffixText;
+        }
+        return candidate;
+    }
+
+    private static string Slugify(string value)
+    {
+        var normalized = value.Trim().ToLowerInvariant().Normalize(System.Text.NormalizationForm.FormD);
+        var chars = normalized.Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
+            .Select(c => char.IsLetterOrDigit(c) ? c : '-').ToArray();
+        var slug = new string(chars);
+        while (slug.Contains("--")) slug = slug.Replace("--", "-");
+        return slug.Trim('-');
+    }
+
+    private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private void SetMessage(string text, bool error)
+    {
+        message = text;
+        isError = error;
+    }
+
+    private sealed class RangeEditorModel
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "Choisissez une marque.")]
+        public int BrandId { get; set; }
+        [Required(ErrorMessage = "Le nom de la gamme est obligatoire.")]
+        [StringLength(200, ErrorMessage = "Le nom ne peut pas dépasser 200 caractères.")]
+        public string NameFr { get; set; } = string.Empty;
+        [StringLength(3000, ErrorMessage = "La description ne peut pas dépasser 3 000 caractères.")]
+        public string? DescriptionFr { get; set; }
+        [Range(0, int.MaxValue, ErrorMessage = "L’ordre doit être positif ou nul.")]
+        public int SortOrder { get; set; }
+        public bool IsPublished { get; set; }
+    }
+}
