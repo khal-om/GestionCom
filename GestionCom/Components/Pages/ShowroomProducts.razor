@@ -77,7 +77,7 @@
             {
                 <section class="showroom-admin-panel showroom-editor-panel">
                     <div class="showroom-panel-heading">
-                        <div><h2>@(editingId.HasValue ? "Modifier la fiche" : "Nouvelle fiche")</h2><span>Informations en français et en arabe</span></div>
+                        <div><h2>@(editingId.HasValue ? "Modifier la fiche" : "Nouvelle fiche")</h2><span>Informations en français</span></div>
                         <button type="button" class="showroom-close-button" @onclick="CancelEdit" aria-label="Fermer">×</button>
                     </div>
 
@@ -251,7 +251,7 @@
     {
         if (string.IsNullOrWhiteSpace(model.NameFr))
         {
-            SetMessage("Le nom doit être renseigné en français ou en arabe.", true);
+            SetMessage("Le nom du produit doit être renseigné en français.", true);
             return;
         }
         if (model.PriceTnd < 0 || model.BrandId <= 0)
