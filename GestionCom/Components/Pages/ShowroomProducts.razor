@@ -116,8 +116,12 @@
                             </div>
                             
                             <div class="showroom-field">
-                                <label for="showroom-hair-fr">Besoin capillaire (FR)</label>
+                                <label for="showroom-hair-fr">Besoin capillaire</label>
                                 <InputText id="showroom-hair-fr" class="showroom-input" @bind-Value="model.HairNeedFr" placeholder="Ex. Cheveux secs" />
+                            </div>
+                            <div class="showroom-field">
+                                <label for="showroom-hair-type-fr">Type de cheveux</label>
+                                <InputText id="showroom-hair-type-fr" class="showroom-input" @bind-Value="model.HairTypeFr" placeholder="Ex. Tous types de cheveux" />
                             </div>
                             
                         </div>
@@ -128,8 +132,16 @@
                         </div>
                         
                         <div class="showroom-field">
-                            <label for="showroom-description-fr">Description complète (FR)</label>
+                            <label for="showroom-description-fr">Description complète</label>
                             <InputTextArea id="showroom-description-fr" class="showroom-input" @bind-Value="model.DescriptionFr" rows="4" />
+                        </div>
+                        <div class="showroom-field">
+                            <label for="showroom-how-to-use-fr">Conseils d'utilisation</label>
+                            <InputTextArea id="showroom-how-to-use-fr" class="showroom-input" @bind-Value="model.HowToUseFr" rows="3" />
+                        </div>
+                        <div class="showroom-field">
+                            <label for="showroom-ingredients-fr">Ingrédients</label>
+                            <InputTextArea id="showroom-ingredients-fr" class="showroom-input" @bind-Value="model.IngredientsFr" rows="3" />
                         </div>
                         
 
@@ -224,9 +236,10 @@
         {
             BrandId = product.BrandId, NameFr = product.NameFr, RangeNameFr = product.Range?.NameFr, 
             PriceTnd = product.PriceTnd, Size = product.Size, CategoryFr = product.CategoryFr,
-            HairNeedFr = product.HairNeedFr, 
-            ShortDescriptionFr = product.ShortDescriptionFr, 
-            DescriptionFr = product.DescriptionFr, 
+            HairNeedFr = product.HairNeedFr, HairTypeFr = product.HairTypeFr,
+            ShortDescriptionFr = product.ShortDescriptionFr,
+            DescriptionFr = product.DescriptionFr, HowToUseFr = product.HowToUseFr,
+            IngredientsFr = product.IngredientsFr, 
             IsAvailable = product.IsAvailable, IsFeatured = product.IsFeatured, IsPublished = product.IsPublished
         };
         currentImagePath = product.Images.FirstOrDefault(i => i.IsPrimary)?.ImagePath;
@@ -255,7 +268,7 @@
     {
         if (string.IsNullOrWhiteSpace(model.NameFr))
         {
-            SetMessage("Le nom doit être renseigné en français ou en arabe.", true);
+            SetMessage("Le nom doit être renseigné en français.", true);
             return;
         }
         if (model.PriceTnd < 0 || model.BrandId <= 0)
@@ -332,8 +345,11 @@
             product.Size = Clean(model.Size);
             product.CategoryFr = Clean(model.CategoryFr);
             product.HairNeedFr = Clean(model.HairNeedFr);
+            product.HairTypeFr = Clean(model.HairTypeFr);
             product.ShortDescriptionFr = Clean(model.ShortDescriptionFr);
             product.DescriptionFr = Clean(model.DescriptionFr);
+            product.HowToUseFr = Clean(model.HowToUseFr);
+            product.IngredientsFr = Clean(model.IngredientsFr);
             product.IsAvailable = model.IsAvailable;
             product.IsFeatured = model.IsFeatured;
             product.IsPublished = model.IsPublished;
@@ -428,8 +444,11 @@
         public string? Size { get; set; }
         public string? CategoryFr { get; set; }
         public string? HairNeedFr { get; set; }
+        public string? HairTypeFr { get; set; }
         public string? ShortDescriptionFr { get; set; }
         public string? DescriptionFr { get; set; }
+        public string? HowToUseFr { get; set; }
+        public string? IngredientsFr { get; set; }
         public bool IsAvailable { get; set; } = true;
         public bool IsFeatured { get; set; }
         public bool IsPublished { get; set; }
