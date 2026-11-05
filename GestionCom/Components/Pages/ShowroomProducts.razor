@@ -94,6 +94,16 @@
                                 </InputSelect>
                             </div>
                             <div class="showroom-field">
+                                <label for="showroom-range">Gamme</label>
+                                <InputSelect id="showroom-range" class="showroom-input" @bind-Value="model.RangeId">
+                                    <option value="">Aucune gamme</option>
+                                    @foreach (var range in AvailableRanges)
+                                    {
+                                        <option value="@range.Id">@range.NameFr</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                            <div class="showroom-field">
                                 <label for="showroom-price">Prix public (TND) *</label>
                                 <InputNumber id="showroom-price" class="showroom-input" @bind-Value="model.PriceTnd" step="0.001" min="0" />
                             </div>
@@ -159,7 +169,12 @@
     private const long MaxPhotoBytes = 5 * 1024 * 1024;
     private List<ShowroomProduct> products = new();
     private List<ShowroomBrand> brands = new();
+    private List<ShowroomRange> ranges = new();
     private ProductEditorModel model = new();
+
+    private IEnumerable<ShowroomRange> AvailableRanges =>
+        ranges.Where(range => range.BrandId == model.BrandId)
+            .OrderBy(range => range.SortOrder).ThenBy(range => range.NameFr);
     private IBrowserFile? selectedPhoto;
     private string? selectedFileName;
     private string? currentImagePath;
@@ -187,6 +202,9 @@
         isLoading = true;
         await using var db = await DbFactory.CreateDbContextAsync();
         brands = await db.ShowroomBrands.AsNoTracking().OrderBy(b => b.SortOrder).ThenBy(b => b.NameFr).ToListAsync();
+        ranges = await db.ShowroomRanges.AsNoTracking()
+            .OrderBy(range => range.SortOrder).ThenBy(range => range.NameFr)
+            .ToListAsync();
         if (brands.Count == 0)
         {
             var kemon = new ShowroomBrand { Slug = "kemon", NameFr = "Kemon", SortOrder = 1, IsPublished = true, CreatedAt = DateTime.UtcNow };
@@ -204,7 +222,7 @@
     private void NewProduct()
     {
         editingId = null;
-        model = new ProductEditorModel { BrandId = brands.FirstOrDefault()?.Id ?? 0, IsAvailable = true };
+        model = new ProductEditorModel { BrandId = brands.FirstOrDefault()?.Id ?? 0, IsAvailable = true, RangeId = null };
         selectedPhoto = null;
         selectedFileName = null;
         currentImagePath = null;
@@ -218,7 +236,7 @@
         editingId = id;
         model = new ProductEditorModel
         {
-            BrandId = product.BrandId, NameFr = product.NameFr, 
+            BrandId = product.BrandId, RangeId = product.RangeId, NameFr = product.NameFr,
             PriceTnd = product.PriceTnd, Size = product.Size, CategoryFr = product.CategoryFr,
             HairNeedFr = product.HairNeedFr, 
             ShortDescriptionFr = product.ShortDescriptionFr, 
@@ -320,7 +338,17 @@
                 return;
             }
 
+            if (model.RangeId.HasValue &&
+                !await db.ShowroomRanges.AnyAsync(range =>
+                    range.Id == model.RangeId.Value && range.BrandId == model.BrandId))
+            {
+                await transaction.RollbackAsync();
+                SetMessage("La gamme sélectionnée ne correspond pas à la marque choisie.", true);
+                return;
+            }
+
             product.BrandId = model.BrandId;
+            product.RangeId = model.RangeId;
             product.NameFr = model.NameFr.Trim();
             product.Slug = await MakeUniqueSlugAsync(db, model.NameFr, editingId);
             product.PriceTnd = model.PriceTnd;
@@ -491,6 +519,7 @@
     private sealed class ProductEditorModel
     {
         public int BrandId { get; set; }
+        public int? RangeId { get; set; }
         public string NameFr { get; set; } = string.Empty;
         public decimal PriceTnd { get; set; }
         public string? Size { get; set; }
