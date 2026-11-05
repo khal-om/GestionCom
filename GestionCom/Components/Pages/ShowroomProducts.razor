@@ -77,7 +77,7 @@
             {
                 <section class="showroom-admin-panel showroom-editor-panel">
                     <div class="showroom-panel-heading">
-                        <div><h2>@(editingId.HasValue ? "Modifier la fiche" : "Nouvelle fiche")</h2><span>Informations en français et en arabe</span></div>
+                        <div><h2>@(editingId.HasValue ? "Modifier la fiche" : "Nouvelle fiche")</h2><span>Informations en français</span></div>
                         <button type="button" class="showroom-close-button" @onclick="CancelEdit" aria-label="Fermer">×</button>
                     </div>
 
@@ -102,6 +102,10 @@
                                 <InputText id="showroom-name-fr" class="showroom-input" @bind-Value="model.NameFr" />
                             </div>
                             
+                            <div class="showroom-field">
+                                <label for="showroom-range">Gamme</label>
+                                <InputText id="showroom-range" class="showroom-input" @bind-Value="model.RangeNameFr" placeholder="Ex. Bellessere" />
+                            </div>
                             <div class="showroom-field">
                                 <label for="showroom-size">Contenance / format</label>
                                 <InputText id="showroom-size" class="showroom-input" @bind-Value="model.Size" placeholder="Ex. 250 ml" />
@@ -196,7 +200,7 @@
             brands = await db.ShowroomBrands.AsNoTracking().OrderBy(b => b.SortOrder).ToListAsync();
         }
         products = await db.ShowroomProducts.AsNoTracking()
-            .Include(p => p.Brand).Include(p => p.Images)
+            .Include(p => p.Brand).Include(p => p.Range).Include(p => p.Images)
             .OrderBy(p => p.SortOrder).ThenByDescending(p => p.CreatedAt).ToListAsync();
         isLoading = false;
     }
@@ -218,7 +222,7 @@
         editingId = id;
         model = new ProductEditorModel
         {
-            BrandId = product.BrandId, NameFr = product.NameFr, 
+            BrandId = product.BrandId, NameFr = product.NameFr, RangeNameFr = product.Range?.NameFr, 
             PriceTnd = product.PriceTnd, Size = product.Size, CategoryFr = product.CategoryFr,
             HairNeedFr = product.HairNeedFr, 
             ShortDescriptionFr = product.ShortDescriptionFr, 
@@ -282,6 +286,46 @@
             }
 
             product.BrandId = model.BrandId;
+            if (string.IsNullOrWhiteSpace(model.RangeNameFr))
+            {
+                product.Range = null;
+                product.RangeId = null;
+            }
+            else
+            {
+                var rangeName = model.RangeNameFr.Trim();
+                var range = await db.ShowroomRanges.IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(r => r.BrandId == model.BrandId && r.NameFr.ToLower() == rangeName.ToLower());
+                if (range is null)
+                {
+                    var rangeSlug = new string(rangeName.ToLowerInvariant()
+                        .Normalize(System.Text.NormalizationForm.FormD)
+                        .Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
+                        .Select(c => char.IsLetterOrDigit(c) ? c : '-').ToArray());
+                    while (rangeSlug.Contains("--")) rangeSlug = rangeSlug.Replace("--", "-");
+                    rangeSlug = rangeSlug.Trim('-');
+                    if (string.IsNullOrWhiteSpace(rangeSlug)) rangeSlug = "gamme";
+                    var stem = rangeSlug;
+                    var suffix = 2;
+                    while (await db.ShowroomRanges.IgnoreQueryFilters().AnyAsync(r => r.BrandId == model.BrandId && r.Slug == rangeSlug))
+                        rangeSlug = $"{stem}-{suffix++}";
+                    range = new ShowroomRange
+                    {
+                        BrandId = model.BrandId,
+                        NameFr = rangeName,
+                        Slug = rangeSlug,
+                        SortOrder = await db.ShowroomRanges.CountAsync(r => r.BrandId == model.BrandId) + 1,
+                        IsPublished = true,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    db.ShowroomRanges.Add(range);
+                }
+                else if (range.IsDeleted)
+                {
+                    range.IsDeleted = false;
+                }
+                product.Range = range;
+            }
             product.NameFr = model.NameFr.Trim();
             product.Slug = await MakeUniqueSlugAsync(db, model.NameFr, editingId);
             product.PriceTnd = model.PriceTnd;
@@ -379,6 +423,7 @@
     {
         public int BrandId { get; set; }
         public string NameFr { get; set; } = string.Empty;
+        public string? RangeNameFr { get; set; }
         public decimal PriceTnd { get; set; }
         public string? Size { get; set; }
         public string? CategoryFr { get; set; }
