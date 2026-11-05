@@ -171,7 +171,7 @@
             .ToListAsync();
 
         products = await db.ShowroomProducts.AsNoTracking()
-            .Where(product => product.IsPublished)
+            .Where(product => product.IsPublished && product.Brand.IsPublished)
             .Include(product => product.Brand)
             .Include(product => product.Range)
             .Include(product => product.Images)
