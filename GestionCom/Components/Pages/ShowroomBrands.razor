@@ -1,0 +1,253 @@
+@page "/showroom/marques"
+@using GestionCom.Data
+@using GestionCom.Features.Showroom.Entities
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using System.ComponentModel.DataAnnotations
+@inject IDbContextFactory<AppDbContext> DbFactory
+
+@attribute [Authorize(Roles = "Admin")]
+@rendermode InteractiveServer
+
+<PageTitle>Marques du showroom</PageTitle>
+
+<div class="showroom-brands-admin">
+    <header class="showroom-brands-heading">
+        <div>
+            <p class="showroom-brands-eyebrow">BOUTIQUE PUBLIQUE · SHOP.FEDNAD.COM</p>
+            <h1>Marques</h1>
+            <p>Gérez les marques présentées dans le showroom public.</p>
+        </div>
+        <button type="button" class="showroom-brands-primary" @onclick="NewBrand">+ Nouvelle marque</button>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(message))
+    {
+        <div class="showroom-brands-alert @(isError ? "is-error" : "is-success")">@message</div>
+    }
+
+    @if (isLoading)
+    {
+        <p class="showroom-brands-empty">Chargement des marques…</p>
+    }
+    else
+    {
+        <div class="showroom-brands-layout">
+            <section class="showroom-brands-panel">
+                <div class="showroom-brands-panel-heading">
+                    <div><h2>Marques enregistrées</h2><span>@brands.Count marque(s)</span></div>
+                </div>
+                @if (brands.Count == 0)
+                {
+                    <p class="showroom-brands-empty">Aucune marque enregistrée.</p>
+                }
+                else
+                {
+                    <div class="showroom-brands-list">
+                        @foreach (var brand in brands)
+                        {
+                            <article class="showroom-brands-row" @key="brand.Id">
+                                <div class="showroom-brands-row-info">
+                                    <strong>@brand.NameFr</strong>
+                                    <span>@brand.Slug</span>
+                                    <small class="@(brand.IsPublished ? "is-published" : "is-draft")">@(brand.IsPublished ? "Publiée" : "Non publiée") · Ordre : @brand.SortOrder</small>
+                                </div>
+                                <button type="button" class="showroom-brands-link" @onclick="() => EditBrand(brand.Id)">Modifier</button>
+                            </article>
+                        }
+                    </div>
+                }
+            </section>
+
+            @if (isEditorOpen)
+            {
+                <section class="showroom-brands-panel">
+                    <div class="showroom-brands-panel-heading">
+                        <div><h2>@(editingId.HasValue ? "Modifier la marque" : "Nouvelle marque")</h2><span>Informations en français</span></div>
+                        <button type="button" class="showroom-brands-close" @onclick="CancelEdit" aria-label="Fermer">×</button>
+                    </div>
+                    <EditForm Model="model" OnValidSubmit="SaveBrandAsync" FormName="showroom-brand-editor" class="showroom-brands-form">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="showroom-brands-field">
+                            <label for="brand-name">Nom de la marque *</label>
+                            <InputText id="brand-name" class="showroom-brands-input" @bind-Value="model.NameFr" />
+                            <ValidationMessage For="@(() => model.NameFr)" />
+                        </div>
+                        <div class="showroom-brands-field">
+                            <label for="brand-tagline">Signature</label>
+                            <InputText id="brand-tagline" class="showroom-brands-input" @bind-Value="model.TaglineFr" />
+                        </div>
+                        <div class="showroom-brands-field">
+                            <label for="brand-description">Description</label>
+                            <InputTextArea id="brand-description" class="showroom-brands-input" @bind-Value="model.DescriptionFr" rows="4" />
+                        </div>
+                        <div class="showroom-brands-grid">
+                            <div class="showroom-brands-field">
+                                <label for="brand-order">Ordre d’affichage</label>
+                                <InputNumber id="brand-order" class="showroom-brands-input" @bind-Value="model.SortOrder" />
+                            </div>
+                            <div class="showroom-brands-field">
+                                <label for="brand-color">Couleur d’accent (facultatif)</label>
+                                <InputText id="brand-color" class="showroom-brands-input" @bind-Value="model.AccentColor" placeholder="#000000" />
+                            </div>
+                        </div>
+                        <label class="showroom-brands-checkbox"><InputCheckbox @bind-Value="model.IsPublished" /> Publier cette marque</label>
+                        <div class="showroom-brands-actions">
+                            <button type="button" class="showroom-brands-secondary" @onclick="CancelEdit">Annuler</button>
+                            <button type="submit" class="showroom-brands-primary" disabled="@isSaving">@(isSaving ? "Enregistrement…" : "Enregistrer")</button>
+                        </div>
+                    </EditForm>
+                </section>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<ShowroomBrand> brands = new();
+    private BrandEditorModel model = new();
+    private bool isLoading = true;
+    private bool isSaving;
+    private bool isEditorOpen;
+    private bool isError;
+    private int? editingId;
+    private string? message;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        await using var db = await DbFactory.CreateDbContextAsync();
+        brands = await db.ShowroomBrands.AsNoTracking()
+            .OrderBy(x => x.SortOrder).ThenBy(x => x.NameFr).ToListAsync();
+        isLoading = false;
+    }
+
+    private void NewBrand()
+    {
+        editingId = null;
+        model = new BrandEditorModel { SortOrder = brands.Count + 1, IsPublished = false };
+        message = null;
+        isEditorOpen = true;
+    }
+
+    private void EditBrand(int id)
+    {
+        var brand = brands.First(x => x.Id == id);
+        editingId = id;
+        model = new BrandEditorModel
+        {
+            NameFr = brand.NameFr,
+            TaglineFr = brand.TaglineFr,
+            DescriptionFr = brand.DescriptionFr,
+            AccentColor = brand.AccentColor,
+            SortOrder = brand.SortOrder,
+            IsPublished = brand.IsPublished
+        };
+        message = null;
+        isEditorOpen = true;
+    }
+
+    private void CancelEdit()
+    {
+        isEditorOpen = false;
+        editingId = null;
+    }
+
+    private async Task SaveBrandAsync()
+    {
+        var name = model.NameFr.Trim();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            SetMessage("Le nom de la marque est obligatoire.", true);
+            return;
+        }
+
+        if (!string.IsNullOrWhiteSpace(model.AccentColor) &&
+            !System.Text.RegularExpressions.Regex.IsMatch(model.AccentColor, "^#[0-9a-fA-F]{6}$"))
+        {
+            SetMessage("La couleur doit être au format hexadécimal, par exemple #202020.", true);
+            return;
+        }
+
+        isSaving = true;
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            ShowroomBrand brand;
+            if (editingId.HasValue)
+            {
+                brand = await db.ShowroomBrands.FirstAsync(x => x.Id == editingId.Value);
+            }
+            else
+            {
+                brand = new ShowroomBrand { CreatedAt = DateTime.UtcNow };
+                db.ShowroomBrands.Add(brand);
+            }
+
+            brand.NameFr = name;
+            brand.Slug = await MakeUniqueSlugAsync(db, name, editingId);
+            brand.TaglineFr = Clean(model.TaglineFr);
+            brand.DescriptionFr = Clean(model.DescriptionFr);
+            brand.AccentColor = Clean(model.AccentColor);
+            brand.SortOrder = model.SortOrder;
+            brand.IsPublished = model.IsPublished;
+            if (editingId.HasValue)
+                brand.UpdatedAt = DateTime.UtcNow;
+
+            await db.SaveChangesAsync();
+            await LoadAsync();
+            CancelEdit();
+            SetMessage("Marque enregistrée.", false);
+        }
+        catch
+        {
+            SetMessage("Enregistrement impossible. Vérifiez les informations et réessayez.", true);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private async Task<string> MakeUniqueSlugAsync(AppDbContext db, string name, int? currentId)
+    {
+        var stem = new string(name.Trim().ToLowerInvariant().Normalize(System.Text.NormalizationForm.FormD)
+            .Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
+            .Select(c => char.IsLetterOrDigit(c) ? c : '-').ToArray());
+        while (stem.Contains("--")) stem = stem.Replace("--", "-");
+        stem = stem.Trim('-');
+        if (string.IsNullOrWhiteSpace(stem)) stem = "marque";
+
+        var candidate = stem;
+        var suffix = 2;
+        while (await db.ShowroomBrands.IgnoreQueryFilters()
+            .AnyAsync(x => x.Slug == candidate && x.Id != currentId))
+            candidate = $"{stem}-{suffix++}";
+        return candidate;
+    }
+
+    private void SetMessage(string text, bool error)
+    {
+        message = text;
+        isError = error;
+    }
+
+    private sealed class BrandEditorModel
+    {
+        [Required(ErrorMessage = "Le nom de la marque est obligatoire.")]
+        [StringLength(200, ErrorMessage = "Le nom ne peut pas dépasser 200 caractères.")]
+        public string NameFr { get; set; } = string.Empty;
+        [StringLength(300)]
+        public string? TaglineFr { get; set; }
+        [StringLength(3000)]
+        public string? DescriptionFr { get; set; }
+        public string? AccentColor { get; set; }
+        public int SortOrder { get; set; }
+        public bool IsPublished { get; set; }
+    }
+}
