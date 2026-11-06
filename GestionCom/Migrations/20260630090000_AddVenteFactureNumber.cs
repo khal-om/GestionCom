@@ -1,9 +1,13 @@
+using GestionCom.Data;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace GestionCom.Migrations
 {
+    [DbContext(typeof(AppDbContext))]
+    [Migration("20260630090000_AddVenteFactureNumber")]
     public partial class AddVenteFactureNumber : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
