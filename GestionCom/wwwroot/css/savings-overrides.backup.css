@@ -1,5 +1,0 @@
-/* Backup of temporary overrides (kept as backup file) */
-:root{ --test-accent: #1FA0A5; }
-button.ff-save-btn, .ff-shell button.ff-save-btn{ color:#fff!important; background:linear-gradient(135deg,var(--test-accent),#0B6A6E)!important; border-radius:10px!important; }
-input.ff-amount-input, .ff-shell input.ff-amount-input{ color:#0C2A33!important; }
-.quote-text.rtl{ direction:rtl!important; text-align:right!important }

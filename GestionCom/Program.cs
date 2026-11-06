@@ -1,6 +1,5 @@
 using GestionCom.Components;
 using GestionCom.Data;
-using GestionCom.Features.Savings;
 using GestionCom.Services;
 using GestionCom.Services.Auth;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -47,11 +46,6 @@ builder.Services.AddScoped<ProduitQueryService>();
 builder.Services.AddScoped<StockMovementService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<PasswordService>();
-
-builder.Services.AddScoped<SavingsService>();
-
-// QuoteService used by the Savings component; register its interface
-builder.Services.AddSingleton<IQuoteService, QuoteService>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
