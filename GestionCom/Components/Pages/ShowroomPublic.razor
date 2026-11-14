@@ -10,229 +10,425 @@
 @attribute [AllowAnonymous]
 @rendermode InteractiveServer
 
-<PageTitle>FedNad — Kemon & Actyva</PageTitle>
+<PageTitle>FedNad — La boutique capillaire</PageTitle>
 
-<div class="fednad-showroom">
-    <div class="showroom-announcement">L'EXPERTISE CAPILLAIRE PROFESSIONNELLE · SÉLECTION FEDNAD</div>
+<HeadContent>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet" />
+</HeadContent>
 
-    <header class="showroom-site-header">
-        <a class="showroom-wordmark" href="/vitrine" aria-label="FedNad, accueil">
-            <span class="showroom-wordmark-main">FEDNAD</span>
-            <span class="showroom-wordmark-sub">BEAUTÉ PROFESSIONNELLE</span>
+<div class="fd-shop">
+    <div class="fd-topline">
+        <span>FEDNAD · BEAUTÉ PROFESSIONNELLE</span>
+        <span>LES UNIVERS KEMON & ACTYVA</span>
+        <a href="#panier">Mon panier <b>@CartCount</b></a>
+    </div>
+
+    <header class="fd-header">
+        <a class="fd-logo" href="/vitrine">
+            <span>FED<span>N</span>AD</span>
+            <small>HAIRCARE BOUTIQUE</small>
         </a>
-        <nav class="showroom-main-nav" aria-label="Navigation principale">
-            <a href="#marques">Nos marques</a>
-            <a href="#selection">La sélection</a>
-            <a href="#apropos">Notre expertise</a>
+
+        <nav>
+            <a href="#boutique">La boutique</a>
+            <a href="#selection">Nos essentiels</a>
+            <a href="#panier">Mon panier</a>
         </nav>
-        <a class="showroom-contact-link" href="#contact">Nous contacter <span aria-hidden="true">↗</span></a>
+
+        <a class="fd-header-cta" href="#selection">Explorer la sélection <span>↗</span></a>
     </header>
 
     <main>
-        <section class="showroom-hero">
-            <div class="showroom-hero-copy">
-                <p class="showroom-kicker">LE SOIN CAPILLAIRE, AUTREMENT</p>
-                <h1>Révélez la<br /><em>beauté</em> de vos cheveux.</h1>
-                <p class="showroom-hero-description">Découvrez l'univers Kemon & Actyva : des soins professionnels pensés pour révéler le meilleur de chaque chevelure.</p>
-                <div class="showroom-hero-actions">
-                    <a class="showroom-button showroom-button-dark" href="#marques">Explorer les marques <span aria-hidden="true">↘</span></a>
-                    <a class="showroom-quiet-link" href="#selection">Découvrir la sélection</a>
-                </div>
-                <div class="showroom-hero-note"><span class="showroom-note-rule"></span> L'expertise professionnelle, sélectionnée par FedNad.</div>
+        <section class="fd-boutique-hero">
+            <div class="fd-hero-glow"></div>
+            <div class="fd-hero-arch fd-arch-one"></div>
+            <div class="fd-hero-arch fd-arch-two"></div>
+            <div class="fd-hero-arch fd-arch-three"></div>
+
+            <div class="fd-hero-top">
+                <span>VOTRE NOUVEAU RENDEZ-VOUS BEAUTÉ</span>
+                <span>01 — 03</span>
             </div>
-            <div class="showroom-hero-art" aria-label="Composition graphique élégante aux tons naturels">
-                <div class="showroom-art-orbit showroom-art-orbit-one"></div>
-                <div class="showroom-art-orbit showroom-art-orbit-two"></div>
-                <div class="showroom-art-disc"></div>
-                <div class="showroom-art-label"><span>RITUELS</span><strong>de soin</strong><span>PROFESSIONNELS</span></div>
-                <div class="showroom-art-caption">KEMON <span>·</span> ACTYVA</div>
+
+            <div class="fd-hero-center">
+                <p>LE SOIN PROFESSIONNEL PREND UNE AUTRE DIMENSION</p>
+                <h1>A little more <em>glow.</em></h1>
+                <span>Découvrez une sélection de soins capillaires choisis pour vous.</span>
+                <a href="#selection">ENTRER DANS LA BOUTIQUE <b>↓</b></a>
+            </div>
+
+            <div class="fd-hero-shelf">
+                <div class="fd-shelf-light"></div>
+                <div class="fd-shelf-products">
+                    <div class="fd-deco-bottle fd-bottle-tall"><i></i><span>K</span></div>
+                    <div class="fd-deco-bottle fd-bottle-short"><i></i><span>A</span></div>
+                    <div class="fd-deco-bottle fd-bottle-wide"><i></i><span>ACTYVA</span></div>
+                    <div class="fd-deco-bottle fd-bottle-pink"><i></i><span>KEMON</span></div>
+                    <div class="fd-deco-bottle fd-bottle-green"><i></i><span>A</span></div>
+                    <div class="fd-deco-bottle fd-bottle-small"><i></i><span>K</span></div>
+                </div>
+                <div class="fd-shelf-front"></div>
+            </div>
+
+            <div class="fd-hero-bottom">
+                <span>DES RITUELS QUI VOUS RESSEMBLENT</span>
+                <span>SCROLL TO DISCOVER ↓</span>
             </div>
         </section>
 
-        <section class="showroom-brand-section" id="marques">
-            <div class="showroom-section-heading">
-                <div><p class="showroom-kicker">DEUX UNIVERS, UNE MÊME EXIGENCE</p><h2>Des marques qui ont<br /><em>du sens.</em></h2></div>
-                <p>Une sélection de marques professionnelles et de soins adaptés à vos envies, vos habitudes et la nature de vos cheveux.</p>
-            </div>
-            <div class="showroom-brand-grid">
-                @if (brands.Count == 0)
-                {
-                    <a class="showroom-brand-card showroom-brand-kemon" href="#selection"><span class="showroom-brand-index">01 / LA COULEUR & LE SOIN</span><span class="showroom-brand-name">Kemon</span><span class="showroom-brand-description">L'expression de la beauté professionnelle.</span><span class="showroom-brand-explore">Découvrir <span aria-hidden="true">↗</span></span></a>
-                    <a class="showroom-brand-card showroom-brand-actyva" href="#selection"><span class="showroom-brand-index">02 / LES RITUELS CAPILLAIRES</span><span class="showroom-brand-name">Actyva</span><span class="showroom-brand-description">Des rituels ciblés pour le bien-être des cheveux.</span><span class="showroom-brand-explore">Découvrir <span aria-hidden="true">↗</span></span></a>
-                }
-                else
-                {
-                    @foreach (var brand in brands)
-                    {
-                        var isKemon = brand.Slug.Equals("kemon", StringComparison.OrdinalIgnoreCase);
-                        <a class="showroom-brand-card @(isKemon ? "showroom-brand-kemon" : "showroom-brand-actyva")" href="#selection" @onclick="() => selectedBrandSlug = brand.Slug">
-                            <span class="showroom-brand-index">@(isKemon ? "01 / L'EXPERTISE PROFESSIONNELLE" : "02 / LES RITUELS CAPILLAIRES")</span>
-                            <span class="showroom-brand-name">@brand.NameFr</span>
-                            <span class="showroom-brand-description">@(string.IsNullOrWhiteSpace(brand.TaglineFr) ? (isKemon ? "L'expression de la beauté professionnelle." : "Des rituels ciblés pour le bien-être des cheveux.") : brand.TaglineFr)</span>
-                            <span class="showroom-brand-explore">Découvrir <span aria-hidden="true">↗</span></span>
-                        </a>
-                    }
-                }
-            </div>
+        <section class="fd-intro-strip" id="boutique">
+            <div class="fd-intro-star">✳</div>
+            <p>La beauté de vos cheveux mérite <strong>une attention particulière.</strong></p>
+            <span>KEMON <i>×</i> ACTYVA</span>
         </section>
 
-        <section class="showroom-selection-section" id="selection">
-            <div class="showroom-section-heading showroom-selection-heading">
-                <div><p class="showroom-kicker">LA SÉLECTION FEDNAD</p><h2>Les essentiels<br /><em>à découvrir.</em></h2></div>
-                <p>Retrouvez ici les produits sélectionnés par notre équipe. Pour toute question ou disponibilité, contactez-nous directement.</p>
+        <section class="fd-counter-section" id="selection">
+            <div class="fd-counter-heading">
+                <div>
+                    <span class="fd-eyebrow">THE HAIRCARE EDIT · FEDNAD</span>
+                    <h2>Find your<br /><em>hair ritual.</em></h2>
+                </div>
+                <div class="fd-counter-description">
+                    <p>Explorez notre sélection de soins professionnels. Chaque produit a sa place sur notre comptoir — trouvez celui qui vous correspond.</p>
+                    <span>FAITES DÉFILER POUR EXPLORER <b>→</b></span>
+                </div>
             </div>
 
-            <div class="showroom-catalogue-tools">
-                <label class="showroom-search-box"><span aria-hidden="true">⌕</span><input type="search" placeholder="Rechercher un produit…" aria-label="Rechercher un produit" @bind="searchText" @bind:event="oninput" /></label>
-                <div class="showroom-brand-filters" aria-label="Filtrer par marque">
-                    <button type="button" class="@(selectedBrandSlug is null ? "is-active" : "")" @onclick="() => selectedBrandSlug = null">Tout</button>
-                    @foreach (var brand in brands)
-                    {
-                        <button type="button" class="@(selectedBrandSlug == brand.Slug ? "is-active" : "")" @onclick="() => selectedBrandSlug = brand.Slug">@brand.NameFr</button>
-                    }
-                </div>
+            <div class="fd-filter-row">
+                <button class="@(selectedBrandSlug is null ? "active" : "")"
+                        @onclick="() => SelectBrand(null)">TOUS LES PRODUITS</button>
+                @foreach (var brand in brands)
+                {
+                    <button class="@(selectedBrandSlug == brand.Slug ? "active" : "")"
+                            @onclick="() => SelectBrand(brand.Slug)">
+                        @brand.NameFr
+                    </button>
+                }
+                <span class="fd-product-count">@FilteredProducts.Count() ARTICLES</span>
             </div>
 
             @if (isLoading)
             {
-                <div class="showroom-catalogue-message">Préparation de la sélection…</div>
+                <div class="fd-empty-state">Préparation de la boutique…</div>
             }
             else if (!FilteredProducts.Any())
             {
-                <div class="showroom-catalogue-empty"><span class="showroom-empty-symbol">✳</span><h3>@(products.Count == 0 ? "La sélection arrive bientôt." : "Aucun produit ne correspond à votre recherche.")</h3><p>@(products.Count == 0 ? "Notre catalogue est en préparation. Revenez bientôt pour découvrir les produits Kemon & Actyva." : "Essayez un autre terme ou choisissez une autre marque.")</p></div>
+                <div class="fd-empty-state">
+                    <span>✳</span>
+                    <h3>La sélection se prépare.</h3>
+                    <p>Les produits seront bientôt disponibles dans notre boutique.</p>
+                </div>
             }
             else
             {
-                <div class="showroom-product-grid">
-                    @foreach (var product in FilteredProducts)
-                    {
-                        var primaryImage = product.Images.OrderByDescending(i => i.IsPrimary).ThenBy(i => i.SortOrder).FirstOrDefault();
-                        <article class="showroom-public-product" @key="product.Id">
-                            <div class="showroom-public-product-image-wrap">
-                                @if (primaryImage is not null && !string.IsNullOrWhiteSpace(primaryImage.ImagePath))
-                                {
-                                    <img class="showroom-public-product-image" src="@primaryImage.ImagePath" alt="@(primaryImage.AltTextFr ?? product.NameFr)" loading="lazy" />
-                                }
-                                else
-                                {
-                                    <div class="showroom-product-image-placeholder"><span>@product.Brand.NameFr</span><strong>@product.NameFr</strong></div>
-                                }
-                                @if (product.IsNew) { <span class="showroom-product-badge">NOUVEAUTÉ</span> }
-                                @if (!product.IsAvailable) { <span class="showroom-product-unavailable">Disponibilité à confirmer</span> }
-                            </div>
-                            <div class="showroom-public-product-meta"><span>@product.Brand.NameFr</span>@if (product.Range is not null) { <span> / @product.Range.NameFr</span> }</div>
-                            <h3>@product.NameFr</h3>
-                            @if (!string.IsNullOrWhiteSpace(product.ShortDescriptionFr))
-                            {
-                                <p class="showroom-public-product-description">@product.ShortDescriptionFr</p>
-                            }
-                            <div class="showroom-public-product-bottom"><strong>@product.PriceTnd.ToString("0.00", CultureInfo.GetCultureInfo("fr-TN")) <span>TND</span></strong><button type="button" class="showroom-product-details-button" @onclick="() => selectedProduct = product">Voir le produit <span aria-hidden="true">↗</span></button></div>
-                        </article>
-                    }
+                <div class="fd-belt-shell">
+                    <div class="fd-belt-lights"></div>
+                    <div class="fd-belt-track">
+                        @foreach (var product in BeltProducts.Concat(BeltProducts))
+                        {
+                            var image = product.Images
+                                .OrderByDescending(x => x.IsPrimary)
+                                .ThenBy(x => x.SortOrder)
+                                .FirstOrDefault();
+
+                            <article class="fd-belt-product" @key="product.Id">
+                                <button type="button" class="fd-product-visual"
+                                        @onclick="() => OpenProduct(product)"
+                                        aria-label="Voir @product.NameFr">
+                                    @if (image is not null && !string.IsNullOrWhiteSpace(image.ImagePath))
+                                    {
+                                        <img src="@image.ImagePath"
+                                             alt="@(image.AltTextFr ?? product.NameFr)"
+                                             loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <div class="fd-product-placeholder">
+                                            <span>@product.Brand.NameFr</span>
+                                            <strong>@product.NameFr</strong>
+                                        </div>
+                                    }
+                                    @if (product.IsNew)
+                                    {
+                                        <span class="fd-new-tag">NEW DROP</span>
+                                    }
+                                    <span class="fd-view-product">VOIR LE PRODUIT ↗</span>
+                                </button>
+
+                                <div class="fd-product-plaque">
+                                    <span class="fd-product-brand">@product.Brand.NameFr</span>
+                                    <h3>@product.NameFr</h3>
+                                    @if (!string.IsNullOrWhiteSpace(product.Size))
+                                    {
+                                        <small>@product.Size</small>
+                                    }
+                                    <div class="fd-product-price-row">
+                                        <strong>@FormatPrice(product.PriceTnd) <small>TND</small></strong>
+                                        <button type="button"
+                                                title="Ajouter au panier"
+                                                @onclick="() => AddToCart(product)">
+                                            +
+                                        </button>
+                                    </div>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                </div>
+
+                <div class="fd-belt-caption">
+                    <span><i></i> LE COMPTOIR FEDNAD</span>
+                    <span>Survolez les produits pour les découvrir · Cliquez pour les détails</span>
                 </div>
             }
-            <p class="showroom-catalogue-disclaimer">Les prix sont affichés à titre informatif. Pour confirmer la disponibilité d'un produit ou obtenir un conseil, contactez FedNad.</p>
         </section>
 
-        <section class="showroom-expertise-section" id="apropos">
-            <div class="showroom-expertise-mark">F.</div>
-            <div><p class="showroom-kicker">LE CONSEIL AVANT TOUT</p><h2>Le bon soin commence<br />par <em>la bonne écoute.</em></h2><p>Vous hésitez entre plusieurs produits ? Notre équipe vous accompagne pour identifier les soins adaptés à vos besoins et à votre routine.</p><a class="showroom-button showroom-button-light" href="#contact">Parlons de vos cheveux <span aria-hidden="true">↗</span></a></div>
+        <section class="fd-ritual-banner">
+            <div class="fd-ritual-decoration">F.</div>
+            <div class="fd-ritual-copy">
+                <span class="fd-eyebrow">YOUR HAIR. YOUR RULES.</span>
+                <h2>Every day deserves<br /><em>a little glow.</em></h2>
+                <p>Kemon et Actyva : deux univers, une même passion pour la beauté et le soin des cheveux.</p>
+                <a href="#selection">TROUVER MON RITUEL <span>↗</span></a>
+            </div>
+            <div class="fd-ritual-orbit fd-orbit-a"></div>
+            <div class="fd-ritual-orbit fd-orbit-b"></div>
+            <div class="fd-ritual-sticker">GOOD<br />HAIR<br /><b>DAY!</b></div>
+        </section>
+
+        <section class="fd-cart-section" id="panier">
+            <div class="fd-cart-heading">
+                <div>
+                    <span class="fd-eyebrow">YOUR PICKS · YOUR RITUAL</span>
+                    <h2>Make it <em>your ritual.</em></h2>
+                </div>
+                <span class="fd-cart-counter">@CartCount ARTICLE(S)</span>
+            </div>
+
+            <div class="fd-cart-layout">
+                <div class="fd-cart-list">
+                    <div class="fd-cart-list-head">
+                        <span>VOTRE SÉLECTION</span>
+                        <span>QUANTITÉ / PRIX</span>
+                    </div>
+
+                    @if (!cart.Any())
+                    {
+                        <div class="fd-cart-empty">
+                            <span class="fd-empty-bag">✳</span>
+                            <div>
+                                <strong>Votre panier attend son premier coup de cœur.</strong>
+                                <p>Ajoutez vos produits préférés depuis le comptoir.</p>
+                            </div>
+                            <a href="#selection">DÉCOUVRIR LES PRODUITS ↗</a>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var item in cart)
+                        {
+                            var product = FindProduct(item.Key);
+                            if (product is not null)
+                            {
+                                var image = product.Images
+                                    .OrderByDescending(x => x.IsPrimary)
+                                    .ThenBy(x => x.SortOrder)
+                                    .FirstOrDefault();
+
+                                <div class="fd-cart-item" @key="item.Key">
+                                    <div class="fd-cart-thumb">
+                                        @if (image is not null)
+                                        {
+                                            <img src="@image.ImagePath" alt="" />
+                                        }
+                                        else
+                                        {
+                                            <span>@product.Brand.NameFr</span>
+                                        }
+                                    </div>
+                                    <div class="fd-cart-product-info">
+                                        <span>@product.Brand.NameFr</span>
+                                        <strong>@product.NameFr</strong>
+                                        <button type="button" @onclick="() => RemoveFromCart(product.Id)">RETIRER</button>
+                                    </div>
+                                    <div class="fd-quantity-control">
+                                        <button type="button" @onclick="() => ChangeQuantity(product.Id, -1)">−</button>
+                                        <span>@item.Value</span>
+                                        <button type="button" @onclick="() => ChangeQuantity(product.Id, 1)">+</button>
+                                    </div>
+                                    <strong class="fd-cart-line-total">@FormatPrice(product.PriceTnd * item.Value) <small>TND</small></strong>
+                                </div>
+                            }
+                        }
+                    }
+                </div>
+
+                <aside class="fd-cart-summary">
+                    <span class="fd-eyebrow">THE CHECKOUT CORNER</span>
+                    <h3>Your bag,<br /><em>your beauty.</em></h3>
+                    <div class="fd-summary-line"><span>Articles</span><strong>@CartCount</strong></div>
+                    <div class="fd-summary-line"><span>Sous-total</span><strong>@FormatPrice(CartTotal) TND</strong></div>
+                    <div class="fd-summary-total"><span>TOTAL ESTIMATIF</span><strong>@FormatPrice(CartTotal) <small>TND</small></strong></div>
+                    <button type="button" class="fd-checkout-button" disabled="@(!cart.Any())"
+                            @onclick="ShowCheckoutPreview">
+                        CONTINUER <span>→</span>
+                    </button>
+                    <p>Prototype de démonstration. Aucune commande ni aucun paiement ne seront effectués.</p>
+                </aside>
+            </div>
         </section>
     </main>
 
-    @if (selectedProduct is not null)
+    <footer class="fd-footer">
+        <div class="fd-footer-brand">
+            <a class="fd-logo fd-logo-footer" href="/vitrine">
+                <span>FED<span>N</span>AD</span>
+                <small>HAIRCARE BOUTIQUE</small>
+            </a>
+            <p>Professional haircare.<br /><em>Personal feeling.</em></p>
+        </div>
+        <div class="fd-footer-links">
+            <a href="#boutique">La boutique</a>
+            <a href="#selection">Les produits</a>
+            <a href="#panier">Mon panier</a>
+        </div>
+        <div class="fd-footer-bottom">
+            <span>© @DateTime.Now.Year FEDNAD · KEMON · ACTYVA</span>
+            <span>LA BEAUTÉ PROFESSIONNELLE, AUTREMENT.</span>
+        </div>
+    </footer>
+</div>
+
+@if (selectedProduct is not null)
 {
-    var detailImage = selectedProduct.Images.OrderByDescending(i => i.IsPrimary).ThenBy(i => i.SortOrder).FirstOrDefault();
-    <div class="showroom-detail-backdrop" @onclick="() => selectedProduct = null">
-        <section class="showroom-detail-panel" role="dialog" aria-modal="true" aria-label="Détails du produit" @onclick:stopPropagation="true">
-            <button type="button" class="showroom-detail-close" aria-label="Fermer" @onclick="() => selectedProduct = null">×</button>
-            <div class="showroom-detail-image">
-                @if (detailImage is not null && !string.IsNullOrWhiteSpace(detailImage.ImagePath))
+    var detailImage = selectedProduct.Images
+        .OrderByDescending(x => x.IsPrimary)
+        .ThenBy(x => x.SortOrder)
+        .FirstOrDefault();
+
+    <div class="fd-modal-backdrop" @onclick="CloseProduct">
+        <section class="fd-product-modal" role="dialog" aria-modal="true"
+                 aria-label="Détails du produit" @onclick:stopPropagation="true">
+            <button type="button" class="fd-modal-close" @onclick="CloseProduct">×</button>
+
+            <div class="fd-modal-image">
+                @if (detailImage is not null)
                 {
-                    <img src="@detailImage.ImagePath" alt="@(detailImage.AltTextFr ?? selectedProduct.NameFr)" />
+                    <img src="@detailImage.ImagePath"
+                         alt="@(detailImage.AltTextFr ?? selectedProduct.NameFr)" />
                 }
                 else
                 {
-                    <div class="showroom-product-image-placeholder"><span>@selectedProduct.Brand.NameFr</span><strong>@selectedProduct.NameFr</strong></div>
+                    <div class="fd-product-placeholder">
+                        <span>@selectedProduct.Brand.NameFr</span>
+                        <strong>@selectedProduct.NameFr</strong>
+                    </div>
                 }
             </div>
-            <div class="showroom-detail-content">
-                <p class="showroom-kicker">@selectedProduct.Brand.NameFr@if (selectedProduct.Range is not null) { <span> · @selectedProduct.Range.NameFr</span> }</p>
+
+            <div class="fd-modal-info">
+                <span class="fd-eyebrow">@selectedProduct.Brand.NameFr
+                    @if (selectedProduct.Range is not null)
+                    {
+                        <text> · @selectedProduct.Range.NameFr</text>
+                    }
+                </span>
                 <h2>@selectedProduct.NameFr</h2>
-                @if (!string.IsNullOrWhiteSpace(selectedProduct.Size)) { <p class="showroom-detail-size">@selectedProduct.Size</p> }
-                <p class="showroom-detail-price">@selectedProduct.PriceTnd.ToString("0.00", CultureInfo.GetCultureInfo("fr-TN")) TND</p>
-                @if (!string.IsNullOrWhiteSpace(selectedProduct.DescriptionFr)) { <p>@selectedProduct.DescriptionFr</p> }
-                @if (!string.IsNullOrWhiteSpace(selectedProduct.HairNeedFr)) { <h3>Besoin capillaire</h3><p>@selectedProduct.HairNeedFr</p> }
-                @if (!string.IsNullOrWhiteSpace(selectedProduct.HairTypeFr)) { <h3>Type de cheveux</h3><p>@selectedProduct.HairTypeFr</p> }
-                @if (!string.IsNullOrWhiteSpace(selectedProduct.HowToUseFr)) { <h3>Conseils d'utilisation</h3><p>@selectedProduct.HowToUseFr</p> }
-                @if (!string.IsNullOrWhiteSpace(selectedProduct.IngredientsFr)) { <h3>Ingrédients</h3><p>@selectedProduct.IngredientsFr</p> }
-                <div class="showroom-product-contact-actions">
-                    <a class="showroom-contact-action showroom-contact-phone" href="tel:+21600000000">Appeler <span aria-hidden="true">↗</span></a>
-                    <a class="showroom-contact-action showroom-contact-whatsapp" href="@GetWhatsAppLink(selectedProduct)" target="_blank" rel="noopener noreferrer">WhatsApp <span aria-hidden="true">↗</span></a>
-                    <a class="showroom-contact-action showroom-contact-email" href="@GetEmailLink(selectedProduct)">E-mail <span aria-hidden="true">↗</span></a>
-                </div>
-                <p class="showroom-contact-placeholder-note">Coordonnées de démonstration — à remplacer avant la mise en ligne.</p>
+                @if (!string.IsNullOrWhiteSpace(selectedProduct.Size))
+                {
+                    <span class="fd-modal-size">@selectedProduct.Size</span>
+                }
+                <strong class="fd-modal-price">@FormatPrice(selectedProduct.PriceTnd) TND</strong>
+
+                @if (!string.IsNullOrWhiteSpace(selectedProduct.DescriptionFr))
+                {
+                    <p>@selectedProduct.DescriptionFr</p>
+                }
+                @if (!string.IsNullOrWhiteSpace(selectedProduct.HairNeedFr))
+                {
+                    <h4>Besoin capillaire</h4>
+                    <p>@selectedProduct.HairNeedFr</p>
+                }
+                @if (!string.IsNullOrWhiteSpace(selectedProduct.HairTypeFr))
+                {
+                    <h4>Type de cheveux</h4>
+                    <p>@selectedProduct.HairTypeFr</p>
+                }
+                @if (!string.IsNullOrWhiteSpace(selectedProduct.HowToUseFr))
+                {
+                    <h4>Conseils d'utilisation</h4>
+                    <p>@selectedProduct.HowToUseFr</p>
+                }
+
+                <button type="button" class="fd-modal-add" @onclick="() => AddToCart(selectedProduct)">
+                    AJOUTER À MON PANIER <span>＋</span>
+                </button>
             </div>
         </section>
     </div>
 }
 
-<footer class="showroom-footer" id="contact">
-        <div class="showroom-footer-top">
-            <a class="showroom-wordmark showroom-wordmark-footer" href="/vitrine"><span class="showroom-wordmark-main">FEDNAD</span><span class="showroom-wordmark-sub">BEAUTÉ PROFESSIONNELLE</span></a>
-            <p>La beauté professionnelle,<br />choisie avec attention.</p>
-            <div class="showroom-footer-contact-list">
-                <a href="tel:+21600000000">Téléphone : +216 00 000 000</a>
-                <a href="https://wa.me/21600000000" target="_blank" rel="noopener noreferrer">WhatsApp : +216 00 000 000</a>
-                <a href="mailto:contact@fednad.example">contact@fednad.example</a>
-                <span class="showroom-contact-placeholder-note">Coordonnées de démonstration — à remplacer avant la mise en ligne.</span>
+@if (showCheckoutPreview)
+{
+    <div class="fd-modal-backdrop" @onclick="() => showCheckoutPreview = false">
+        <section class="fd-checkout-modal" role="dialog" aria-modal="true"
+                 aria-label="Aperçu de commande" @onclick:stopPropagation="true">
+            <button type="button" class="fd-modal-close" @onclick="() => showCheckoutPreview = false">×</button>
+            <span class="fd-eyebrow">THE NEXT STEP</span>
+            <h2>Almost <em>yours.</em></h2>
+            <p>La prochaine étape permettra de transmettre votre sélection à l'équipe FedNad.</p>
+            <div class="fd-checkout-preview-total">
+                <span>Votre sélection · @CartCount article(s)</span>
+                <strong>@FormatPrice(CartTotal) TND</strong>
             </div>
-        </div>
-        <div class="showroom-footer-bottom"><span>© @DateTime.Now.Year FedNad. Tous droits réservés.</span><span>Kemon · Actyva · FedNad</span></div>
-    </footer>
-</div>
+            <div class="fd-preview-fields">
+                <label>Nom et prénom<input disabled placeholder="Votre nom" /></label>
+                <label>Téléphone<input disabled placeholder="+216 ..." /></label>
+                <label>Adresse / Ville<input disabled placeholder="Votre adresse" /></label>
+            </div>
+            <div class="fd-preview-note">APERÇU UNIQUEMENT — LA COMMANDE EN LIGNE SERA ACTIVÉE PLUS TARD.</div>
+        </section>
+    </div>
+}
 
 @code {
     private List<ShowroomBrand> brands = new();
     private List<ShowroomProduct> products = new();
+    private readonly Dictionary<int, int> cart = new();
+
     private bool isLoading = true;
-    private string searchText = string.Empty;
+    private bool showCheckoutPreview;
     private string? selectedBrandSlug;
     private ShowroomProduct? selectedProduct;
 
-    private static string GetWhatsAppLink(ShowroomProduct product)
-    {
-        var message = $"Bonjour FedNad, je souhaite avoir des informations sur le produit : {product.NameFr}.";
-        return $"https://wa.me/21600000000?text={Uri.EscapeDataString(message)}";
-    }
+    private IEnumerable<ShowroomProduct> FilteredProducts =>
+        products.Where(product =>
+            selectedBrandSlug is null || product.Brand.Slug == selectedBrandSlug);
 
-    private static string GetEmailLink(ShowroomProduct product)
-    {
-        var subject = $"Demande d'information - {product.NameFr}";
-        return $"mailto:contact@fednad.example?subject={Uri.EscapeDataString(subject)}";
-    }
+    private List<ShowroomProduct> BeltProducts =>
+        FilteredProducts.ToList();
 
-    private IEnumerable<ShowroomProduct> FilteredProducts => products.Where(product =>
-        (selectedBrandSlug is null || product.Brand.Slug == selectedBrandSlug) &&
-        (string.IsNullOrWhiteSpace(searchText) ||
-         product.NameFr.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ||
-         (product.CategoryFr?.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ?? false) ||
-         (product.ShortDescriptionFr?.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ?? false) ||
-         (product.HairNeedFr?.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ?? false) ||
-         (product.HairTypeFr?.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ?? false) ||
-         (product.Range?.NameFr.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase) ?? false) ||
-         product.Brand.NameFr.Contains(searchText.Trim(), StringComparison.OrdinalIgnoreCase)));
+    private int CartCount => cart.Values.Sum();
+
+    private decimal CartTotal => cart.Sum(item =>
+    {
+        var product = FindProduct(item.Key);
+        return product is null ? 0m : product.PriceTnd * item.Value;
+    });
 
     protected override async Task OnInitializedAsync()
     {
         await using var db = await DbFactory.CreateDbContextAsync();
-        brands = await db.ShowroomBrands.AsNoTracking()
+
+        brands = await db.ShowroomBrands
+            .AsNoTracking()
             .Where(brand => brand.IsPublished)
             .OrderBy(brand => brand.SortOrder)
             .ThenBy(brand => brand.NameFr)
             .ToListAsync();
 
-        products = await db.ShowroomProducts.AsNoTracking()
+        products = await db.ShowroomProducts
+            .AsNoTracking()
             .Where(product => product.IsPublished && product.Brand.IsPublished)
             .Include(product => product.Brand)
             .Include(product => product.Range)
@@ -240,6 +436,61 @@
             .OrderBy(product => product.SortOrder)
             .ThenBy(product => product.NameFr)
             .ToListAsync();
+
         isLoading = false;
     }
+
+    private void SelectBrand(string? slug)
+    {
+        selectedBrandSlug = slug;
+    }
+
+    private void AddToCart(ShowroomProduct product)
+    {
+        cart[product.Id] = cart.TryGetValue(product.Id, out var quantity)
+            ? quantity + 1
+            : 1;
+
+        selectedProduct = null;
+    }
+
+    private void ChangeQuantity(int productId, int change)
+    {
+        if (!cart.TryGetValue(productId, out var quantity))
+            return;
+
+        var next = quantity + change;
+
+        if (next <= 0)
+            cart.Remove(productId);
+        else
+            cart[productId] = next;
+    }
+
+    private void RemoveFromCart(int productId)
+    {
+        cart.Remove(productId);
+    }
+
+    private ShowroomProduct? FindProduct(int id) =>
+        products.FirstOrDefault(product => product.Id == id);
+
+    private void OpenProduct(ShowroomProduct product)
+    {
+        selectedProduct = product;
+    }
+
+    private void CloseProduct()
+    {
+        selectedProduct = null;
+    }
+
+    private void ShowCheckoutPreview()
+    {
+        if (cart.Any())
+            showCheckoutPreview = true;
+    }
+
+    private static string FormatPrice(decimal price) =>
+        price.ToString("N2", CultureInfo.GetCultureInfo("fr-TN"));
 }

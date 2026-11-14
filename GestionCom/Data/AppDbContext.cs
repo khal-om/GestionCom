@@ -33,6 +33,7 @@ namespace GestionCom.Data
         public DbSet<ShowroomRoutineProduct> ShowroomRoutineProducts => Set<ShowroomRoutineProduct>();
         public DbSet<ShowroomSiteSetting> ShowroomSiteSettings => Set<ShowroomSiteSetting>();
         public DbSet<ShowroomNavigationItem> ShowroomNavigationItems => Set<ShowroomNavigationItem>();
+        public DbSet<ShowroomProductOption> ShowroomProductOptions => Set<ShowroomProductOption>();
 
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
@@ -233,6 +234,16 @@ namespace GestionCom.Data
                 entity.Property(x => x.Key).HasMaxLength(120).IsRequired();
                 entity.Property(x => x.LabelFr).HasMaxLength(160).IsRequired();
                 entity.Property(x => x.Url).HasMaxLength(500).IsRequired();
+            });
+
+            modelBuilder.Entity<ShowroomProductOption>(entity =>
+            {
+                entity.Property(x => x.OptionType).HasMaxLength(40).IsRequired();
+                entity.Property(x => x.ValueFr).HasMaxLength(160).IsRequired();
+                entity.Property(x => x.NormalizedValue).HasMaxLength(160).IsRequired();
+
+                entity.HasIndex(x => new { x.OptionType, x.NormalizedValue })
+                    .IsUnique();
             });
 
         }

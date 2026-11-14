@@ -1,16 +1,22 @@
 ﻿@using GestionCom.Components.Layout
+@using GestionCom.Components.Pages
 @using Microsoft.AspNetCore.Components.Authorization
+@inject NavigationManager Navigation
 
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(Program).Assembly">
         <Found Context="routeData">
-            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+            <AuthorizeRouteView RouteData="@GetEffectiveRouteData(routeData)"
+                                DefaultLayout="@typeof(MainLayout)">
                 <NotAuthorized>
                     <RedirectToLogin />
                 </NotAuthorized>
             </AuthorizeRouteView>
-            <FocusOnNavigate RouteData="@routeData" Selector="main.app-main-shell" />
+
+            <FocusOnNavigate RouteData="@routeData"
+                             Selector="main.app-main-shell" />
         </Found>
+
         <NotFound>
             <LayoutView Layout="@typeof(MainLayout)">
                 <p>Page non trouvée</p>
@@ -18,3 +24,22 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
+
+@code {
+    private RouteData GetEffectiveRouteData(RouteData routeData)
+    {
+        if (Uri.TryCreate(Navigation.Uri, UriKind.Absolute, out var currentUri)
+            && string.Equals(
+                currentUri.Host,
+                "shop.fednad.com",
+                StringComparison.OrdinalIgnoreCase)
+            && currentUri.AbsolutePath == "/")
+        {
+            return new RouteData(
+                typeof(ShowroomPublic),
+                new Dictionary<string, object?>());
+        }
+
+        return routeData;
+    }
+}

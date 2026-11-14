@@ -86,42 +86,85 @@
                         <div class="showroom-form-grid">
                             <div class="showroom-field">
                                 <label for="showroom-brand">Marque *</label>
-                                <InputSelect id="showroom-brand" class="showroom-input" @bind-Value="model.BrandId">
-                                    @foreach (var brand in brands)
-                                    {
-                                        <option value="@brand.Id">@brand.NameFr</option>
-                                    }
-                                </InputSelect>
+                                <div class="showroom-input-with-action">
+                                    <InputSelect id="showroom-brand" class="showroom-input"
+                                                 @bind-Value="model.BrandId"
+                                                 @bind-Value:after="OnBrandChangedAsync">
+                                        @foreach (var brand in brands)
+                                        {
+                                            <option value="@brand.Id">@brand.NameFr</option>
+                                        }
+                                    </InputSelect>
+                                    <button type="button" class="showroom-secondary-button"
+                                             @onclick='() => OpenLookupModal("Brand")'>
+                                        + Ajouter
+                                    </button>
+                                </div>
                             </div>
                             <div class="showroom-field">
                                 <label for="showroom-price">Prix public (TND) *</label>
                                 <InputNumber id="showroom-price" class="showroom-input" @bind-Value="model.PriceTnd" step="0.001" min="0" />
                             </div>
                             <div class="showroom-field">
-                                <label for="showroom-name-fr">Nom français *</label>
+                                <label for="showroom-name-fr">Nom *</label>
                                 <InputText id="showroom-name-fr" class="showroom-input" @bind-Value="model.NameFr" />
                             </div>
                             
                             <div class="showroom-field">
                                 <label for="showroom-range">Gamme</label>
-                                <InputText id="showroom-range" class="showroom-input" @bind-Value="model.RangeNameFr" placeholder="Ex. Bellessere" />
+                                <div class="showroom-input-with-action">
+                                    <InputSelect TValue="int?" id="showroom-range" class="showroom-input"
+                                                 @bind-Value="model.RangeId">
+                                        <option value="">Aucune gamme</option>
+                                        @foreach (var range in ranges.Where(r => r.BrandId == model.BrandId))
+                                        {
+                                            <option value="@range.Id">@range.NameFr</option>
+                                        }
+                                    </InputSelect>
+                                    <button type="button" class="showroom-secondary-button"
+                                             @onclick='() => OpenLookupModal("Range")'>
+                                        + Ajouter
+                                    </button>
+                                </div>
                             </div>
                             <div class="showroom-field">
                                 <label for="showroom-size">Contenance / format</label>
-                                <InputText id="showroom-size" class="showroom-input" @bind-Value="model.Size" placeholder="Ex. 250 ml" />
+                                <div class="showroom-input-with-action">
+                                    <InputSelect id="showroom-size" class="showroom-input" @bind-Value="model.Size">
+                                        <option value="">Choisir un format</option>
+                                        @foreach (var size in sizes)
+                                        {
+                                            <option value="@size">@size</option>
+                                        }
+                                    </InputSelect>
+                                    <button type="button" class="showroom-secondary-button"
+                                             @onclick='() => OpenLookupModal("Size")'>
+                                        + Ajouter
+                                    </button>
+                                </div>
                             </div>
                             <div class="showroom-field">
                                 <label for="showroom-category-fr">Catégorie (FR)</label>
                                 <InputText id="showroom-category-fr" class="showroom-input" @bind-Value="model.CategoryFr" placeholder="Ex. Shampooing" />
                             </div>
                             
-                            <div class="showroom-field">
-                                <label for="showroom-hair-fr">Besoin capillaire</label>
-                                <InputText id="showroom-hair-fr" class="showroom-input" @bind-Value="model.HairNeedFr" placeholder="Ex. Cheveux secs" />
-                            </div>
+                            
                             <div class="showroom-field">
                                 <label for="showroom-hair-type-fr">Type de cheveux</label>
-                                <InputText id="showroom-hair-type-fr" class="showroom-input" @bind-Value="model.HairTypeFr" placeholder="Ex. Tous types de cheveux" />
+                                <div class="showroom-input-with-action">
+                                    <InputSelect id="showroom-hair-type-fr" class="showroom-input"
+                                                 @bind-Value="model.HairTypeFr">
+                                        <option value="">Choisir un type</option>
+                                        @foreach (var hairType in hairTypes)
+                                        {
+                                            <option value="@hairType">@hairType</option>
+                                        }
+                                    </InputSelect>
+                                    <button type="button" class="showroom-secondary-button"
+                                             @onclick='() => OpenLookupModal("HairType")'>
+                                        + Ajouter
+                                    </button>
+                                </div>
                             </div>
                             
                         </div>
@@ -167,6 +210,47 @@
                     </EditForm>
                 </section>
             }
+
+            @if (isLookupModalOpen)
+            {
+                <div class="showroom-modal-backdrop">
+                    <section class="showroom-admin-panel showroom-lookup-modal">
+                        <div class="showroom-panel-heading">
+                            <h2>@LookupModalTitle</h2>
+                            <button type="button" class="showroom-close-button"
+                                    @onclick="CloseLookupModal" aria-label="Fermer">
+                                ×
+                            </button>
+                        </div>
+
+                        <div class="showroom-field">
+                            <label for="showroom-new-lookup-value">@LookupModalLabel</label>
+                            <input id="showroom-new-lookup-value"
+                                   class="showroom-input"
+                                   @bind="newLookupValue"
+                                   @bind:event="oninput"
+                                   maxlength="160"
+                                   autofocus />
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(lookupError))
+                        {
+                            <div class="showroom-alert is-error">@lookupError</div>
+                        }
+
+                        <div class="showroom-editor-actions">
+                            <button type="button" class="showroom-secondary-button"
+                                    @onclick="CloseLookupModal">
+                                Annuler
+                            </button>
+                            <button type="button" class="showroom-primary-button"
+                                    @onclick="SaveLookupAsync" disabled="@isLookupSaving">
+                                @(isLookupSaving ? "Enregistrement…" : "Ajouter")
+                            </button>
+                        </div>
+                    </section>
+                </div>
+            }
         </div>
     }
 </div>
@@ -175,6 +259,9 @@
     private const long MaxPhotoBytes = 5 * 1024 * 1024;
     private List<ShowroomProduct> products = new();
     private List<ShowroomBrand> brands = new();
+    private List<ShowroomRange> ranges = new();
+    private List<string> sizes = new();
+    private List<string> hairTypes = new();
     private ProductEditorModel model = new();
     private IBrowserFile? selectedPhoto;
     private string? selectedFileName;
@@ -185,7 +272,30 @@
     private bool isSaving;
     private bool isError;
     private bool isEditorOpen;
+    private bool isLookupModalOpen;
+    private bool isLookupSaving;
     private int? editingId;
+    private string? lookupType;
+    private string newLookupValue = string.Empty;
+    private string? lookupError;
+
+    private string LookupModalTitle => lookupType switch
+    {
+        "Brand" => "Ajouter une marque",
+        "Range" => "Ajouter une gamme",
+        "Size" => "Ajouter un format",
+        "HairType" => "Ajouter un type de cheveux",
+        _ => "Ajouter une valeur"
+    };
+
+    private string LookupModalLabel => lookupType switch
+    {
+        "Brand" => "Nom de la marque",
+        "Range" => "Nom de la gamme",
+        "Size" => "Format / contenance",
+        "HairType" => "Type de cheveux",
+        _ => "Nom"
+    };
 
     private IEnumerable<ShowroomProduct> FilteredProducts => products.Where(p =>
         string.IsNullOrWhiteSpace(searchText) ||
@@ -211,6 +321,10 @@
             await db.SaveChangesAsync();
             brands = await db.ShowroomBrands.AsNoTracking().OrderBy(b => b.SortOrder).ToListAsync();
         }
+        ranges = await db.ShowroomRanges.AsNoTracking().OrderBy(r => r.SortOrder).ThenBy(r => r.NameFr).ToListAsync();
+        var options = await db.ShowroomProductOptions.AsNoTracking().ToListAsync();
+        sizes = options.Where(o => o.OptionType == "Size").Select(o => o.ValueFr).OrderBy(v => v).ToList();
+        hairTypes = options.Where(o => o.OptionType == "HairType").Select(o => o.ValueFr).OrderBy(v => v).ToList();
         products = await db.ShowroomProducts.AsNoTracking()
             .Include(p => p.Brand).Include(p => p.Range).Include(p => p.Images)
             .OrderBy(p => p.SortOrder).ThenByDescending(p => p.CreatedAt).ToListAsync();
@@ -234,7 +348,7 @@
         editingId = id;
         model = new ProductEditorModel
         {
-            BrandId = product.BrandId, NameFr = product.NameFr, RangeNameFr = product.Range?.NameFr, 
+            BrandId = product.BrandId, NameFr = product.NameFr, RangeId = product.RangeId,
             PriceTnd = product.PriceTnd, Size = product.Size, CategoryFr = product.CategoryFr,
             HairNeedFr = product.HairNeedFr, HairTypeFr = product.HairTypeFr,
             ShortDescriptionFr = product.ShortDescriptionFr,
@@ -247,6 +361,148 @@
         selectedFileName = null;
         message = null;
         isEditorOpen = true;
+    }
+
+    private Task OnBrandChangedAsync()
+    {
+        if (model.RangeId.HasValue && ranges.All(r => r.Id != model.RangeId.Value || r.BrandId != model.BrandId))
+            model.RangeId = null;
+        return Task.CompletedTask;
+    }
+
+    private void OpenLookupModal(string type)
+    {
+        lookupType = type;
+        newLookupValue = string.Empty;
+        lookupError = null;
+        isLookupModalOpen = true;
+    }
+
+    private void CloseLookupModal()
+    {
+        isLookupModalOpen = false;
+        lookupType = null;
+        newLookupValue = string.Empty;
+        lookupError = null;
+    }
+
+    private async Task SaveLookupAsync()
+    {
+        var value = newLookupValue.Trim();
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            lookupError = "Saisissez une valeur.";
+            return;
+        }
+
+        if (value.Length > 160)
+        {
+            lookupError = "La valeur ne peut pas dépasser 160 caractères.";
+            return;
+        }
+
+        isLookupSaving = true;
+        lookupError = null;
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            switch (lookupType)
+            {
+                case "Brand":
+                {
+                    if (await db.ShowroomBrands.AnyAsync(b => b.NameFr.ToLower() == value.ToLower()))
+                    {
+                        lookupError = "Cette marque existe déjà.";
+                        return;
+                    }
+
+                    var brand = new ShowroomBrand
+                    {
+                        NameFr = value,
+                        Slug = await MakeUniqueEntitySlugAsync(db, value, "brand"),
+                        SortOrder = await db.ShowroomBrands.CountAsync() + 1,
+                        IsPublished = true,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    db.ShowroomBrands.Add(brand);
+                    await db.SaveChangesAsync();
+                    brands = await db.ShowroomBrands.AsNoTracking().OrderBy(b => b.SortOrder).ThenBy(b => b.NameFr).ToListAsync();
+                    model.BrandId = brand.Id;
+                    model.RangeId = null;
+                    break;
+                }
+                case "Range":
+                {
+                    if (model.BrandId <= 0)
+                    {
+                        lookupError = "Sélectionnez d’abord une marque.";
+                        return;
+                    }
+
+                    if (await db.ShowroomRanges.AnyAsync(r => r.BrandId == model.BrandId && r.NameFr.ToLower() == value.ToLower()))
+                    {
+                        lookupError = "Cette gamme existe déjà pour cette marque.";
+                        return;
+                    }
+
+                    var range = new ShowroomRange
+                    {
+                        BrandId = model.BrandId,
+                        NameFr = value,
+                        Slug = await MakeUniqueRangeSlugAsync(db, value, model.BrandId),
+                        SortOrder = await db.ShowroomRanges.CountAsync(r => r.BrandId == model.BrandId) + 1,
+                        IsPublished = true,
+                        CreatedAt = DateTime.UtcNow
+                    };
+                    db.ShowroomRanges.Add(range);
+                    await db.SaveChangesAsync();
+                    ranges = await db.ShowroomRanges.AsNoTracking().OrderBy(r => r.SortOrder).ThenBy(r => r.NameFr).ToListAsync();
+                    model.RangeId = range.Id;
+                    break;
+                }
+                case "Size":
+                case "HairType":
+                {
+                    var optionType = lookupType;
+                    var normalized = NormalizeLookupValue(value);
+                    if (await db.ShowroomProductOptions.AnyAsync(o => o.OptionType == optionType && o.NormalizedValue == normalized))
+                    {
+                        lookupError = "Cette valeur existe déjà.";
+                        return;
+                    }
+
+                    db.ShowroomProductOptions.Add(new ShowroomProductOption
+                    {
+                        OptionType = optionType,
+                        ValueFr = value,
+                        NormalizedValue = normalized,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                    await db.SaveChangesAsync();
+                    var values = await db.ShowroomProductOptions.AsNoTracking()
+                        .Where(o => o.OptionType == optionType).OrderBy(o => o.ValueFr)
+                        .Select(o => o.ValueFr).ToListAsync();
+                    if (optionType == "Size") sizes = values;
+                    else hairTypes = values;
+                    if (optionType == "Size") model.Size = value;
+                    else model.HairTypeFr = value;
+                    break;
+                }
+                default:
+                    lookupError = "Type de valeur non reconnu.";
+                    return;
+            }
+
+            CloseLookupModal();
+        }
+        catch (Exception ex)
+        {
+            lookupError = $"Ajout impossible : {ex.GetBaseException().Message}";
+        }
+        finally
+        {
+            isLookupSaving = false;
+        }
     }
 
     private void CancelEdit()
@@ -299,46 +555,16 @@
             }
 
             product.BrandId = model.BrandId;
-            if (string.IsNullOrWhiteSpace(model.RangeNameFr))
+            var range = model.RangeId.HasValue
+                ? await db.ShowroomRanges.FirstOrDefaultAsync(r => r.Id == model.RangeId.Value && r.BrandId == model.BrandId)
+                : null;
+            if (model.RangeId.HasValue && range is null)
             {
-                product.Range = null;
-                product.RangeId = null;
+                SetMessage("La gamme sélectionnée n’est pas valide pour cette marque.", true);
+                return;
             }
-            else
-            {
-                var rangeName = model.RangeNameFr.Trim();
-                var range = await db.ShowroomRanges.IgnoreQueryFilters()
-                    .FirstOrDefaultAsync(r => r.BrandId == model.BrandId && r.NameFr.ToLower() == rangeName.ToLower());
-                if (range is null)
-                {
-                    var rangeSlug = new string(rangeName.ToLowerInvariant()
-                        .Normalize(System.Text.NormalizationForm.FormD)
-                        .Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
-                        .Select(c => char.IsLetterOrDigit(c) ? c : '-').ToArray());
-                    while (rangeSlug.Contains("--")) rangeSlug = rangeSlug.Replace("--", "-");
-                    rangeSlug = rangeSlug.Trim('-');
-                    if (string.IsNullOrWhiteSpace(rangeSlug)) rangeSlug = "gamme";
-                    var stem = rangeSlug;
-                    var suffix = 2;
-                    while (await db.ShowroomRanges.IgnoreQueryFilters().AnyAsync(r => r.BrandId == model.BrandId && r.Slug == rangeSlug))
-                        rangeSlug = $"{stem}-{suffix++}";
-                    range = new ShowroomRange
-                    {
-                        BrandId = model.BrandId,
-                        NameFr = rangeName,
-                        Slug = rangeSlug,
-                        SortOrder = await db.ShowroomRanges.CountAsync(r => r.BrandId == model.BrandId) + 1,
-                        IsPublished = true,
-                        CreatedAt = DateTime.UtcNow
-                    };
-                    db.ShowroomRanges.Add(range);
-                }
-                else if (range.IsDeleted)
-                {
-                    range.IsDeleted = false;
-                }
-                product.Range = range;
-            }
+            product.Range = range;
+            product.RangeId = range?.Id;
             product.NameFr = model.NameFr.Trim();
             product.Slug = await MakeUniqueSlugAsync(db, model.NameFr, editingId);
             product.PriceTnd = model.PriceTnd;
@@ -429,6 +655,41 @@
         return candidate;
     }
 
+    private async Task<string> MakeUniqueEntitySlugAsync(AppDbContext db, string name, string fallback)
+    {
+        var stem = CreateSlug(name, fallback);
+        var candidate = stem;
+        var suffix = 2;
+        while (await db.ShowroomBrands.IgnoreQueryFilters().AnyAsync(b => b.Slug == candidate))
+            candidate = $"{stem}-{suffix++}";
+        return candidate;
+    }
+
+    private async Task<string> MakeUniqueRangeSlugAsync(AppDbContext db, string name, int brandId)
+    {
+        var stem = CreateSlug(name, "gamme");
+        var candidate = stem;
+        var suffix = 2;
+        while (await db.ShowroomRanges.IgnoreQueryFilters().AnyAsync(r => r.BrandId == brandId && r.Slug == candidate))
+            candidate = $"{stem}-{suffix++}";
+        return candidate;
+    }
+
+    private static string CreateSlug(string value, string fallback)
+    {
+        var slug = new string(value.Trim().ToLowerInvariant().Normalize(System.Text.NormalizationForm.FormD)
+            .Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
+            .Select(c => char.IsLetterOrDigit(c) ? c : '-').ToArray());
+        while (slug.Contains("--")) slug = slug.Replace("--", "-");
+        slug = slug.Trim('-');
+        return string.IsNullOrWhiteSpace(slug) ? fallback : slug;
+    }
+
+    private static string NormalizeLookupValue(string value) => new(value.Trim().ToLowerInvariant()
+        .Normalize(System.Text.NormalizationForm.FormD)
+        .Where(c => System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c) != System.Globalization.UnicodeCategory.NonSpacingMark)
+        .ToArray());
+
     private void SetMessage(string text, bool error)
     {
         message = text;
@@ -438,8 +699,8 @@
     private sealed class ProductEditorModel
     {
         public int BrandId { get; set; }
+        public int? RangeId { get; set; }
         public string NameFr { get; set; } = string.Empty;
-        public string? RangeNameFr { get; set; }
         public decimal PriceTnd { get; set; }
         public string? Size { get; set; }
         public string? CategoryFr { get; set; }

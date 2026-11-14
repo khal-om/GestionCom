@@ -146,10 +146,10 @@
                 <div class="vente-create-line-adder">
                     <div>
                         <label for="produit">Produit</label>
-                        <InputText id="product-search"
-                                   placeholder="Rechercher un produit..."
-                                   @bind-Value="productFilter"
-                                   @bind-Value:event="oninput" />
+                        <input id="product-search"
+                               placeholder="Rechercher un produit..."
+                               @bind="productFilter"
+                               @bind:event="oninput" />
 
                         <InputSelect id="produit" @bind-Value="selectedProduitId">
                             <option value="0">-- Sélectionner --</option>

@@ -150,6 +150,8 @@ app.UseAntiforgery();
 
 app.MapControllers();
 
+app.MapStaticAssets();
+
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

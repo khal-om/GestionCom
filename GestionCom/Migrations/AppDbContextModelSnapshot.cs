@@ -1026,6 +1026,49 @@ namespace GestionCom.Migrations
                     b.ToTable("ShowroomProductImages");
                 });
 
+            modelBuilder.Entity("GestionCom.Features.Showroom.Entities.ShowroomProductOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("CreatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("NormalizedValue")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)");
+
+                    b.Property<string>("OptionType")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("UpdatedBy")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ValueFr")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OptionType", "NormalizedValue")
+                        .IsUnique();
+
+                    b.ToTable("ShowroomProductOptions");
+                });
+
             modelBuilder.Entity("GestionCom.Features.Showroom.Entities.ShowroomRange", b =>
                 {
                     b.Property<int>("Id")
