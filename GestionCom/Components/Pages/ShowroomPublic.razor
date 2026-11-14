@@ -127,9 +127,12 @@
                     <div class="fn-carousel-controls">
                         <button type="button" class="fn-carousel-arrow" aria-label="Produits précédents" @onclick="() => ScrollProducts(-1)">←</button>
                         <button type="button" class="fn-carousel-arrow" aria-label="Produits suivants" @onclick="() => ScrollProducts(1)">→</button>
+                        <button type="button" class="fn-carousel-toggle" aria-pressed="@isAutoplayPaused" @onclick="ToggleProductAutoplay">
+                            @(isAutoplayPaused ? "▶ Reprendre" : "Ⅱ Pause")
+                        </button>
                     </div>
                 </div>
-                <div class="fn-product-track" @ref="productTrack" tabindex="0" aria-label="Défilement horizontal des produits">
+                <div class="fn-product-track" @ref="productTrack" tabindex="0" aria-label="Défilement horizontal automatique des produits. Survolez ou utilisez les commandes pour le contrôler.">
                     @foreach (var product in FilteredProducts)
                     {
                         var image = product.Images.OrderByDescending(x => x.IsPrimary).ThenBy(x => x.SortOrder).FirstOrDefault();
@@ -157,7 +160,7 @@
                         </article>
                     }
                 </div>
-                <div class="fn-carousel-footnote"><span>←</span> GLISSEZ POUR EXPLORER <span>→</span></div>
+                <div class="fn-carousel-footnote"><span>↔</span> DÉFILEMENT AUTOMATIQUE · SURVOLEZ POUR METTRE EN PAUSE</div>
             }
         </section>
 
@@ -292,6 +295,7 @@
     private string? selectedBrandSlug;
     private ShowroomProduct? selectedProduct;
     private ElementReference productTrack;
+    private bool isAutoplayPaused;
 
     private IEnumerable<ShowroomProduct> FilteredProducts =>
         products.Where(product =>
@@ -329,9 +333,21 @@
         isLoading = false;
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !isLoading)
+            await JS.InvokeVoidAsync("fednadShowroom.initProductAutoplay", productTrack, isAutoplayPaused);
+    }
+
     private async Task ScrollProducts(int direction)
     {
         await JS.InvokeVoidAsync("fednadShowroom.scrollProducts", productTrack, direction);
+    }
+
+    private async Task ToggleProductAutoplay()
+    {
+        isAutoplayPaused = !isAutoplayPaused;
+        await JS.InvokeVoidAsync("fednadShowroom.setAutoplayPaused", isAutoplayPaused);
     }
 
     private void SelectBrand(string? slug)
