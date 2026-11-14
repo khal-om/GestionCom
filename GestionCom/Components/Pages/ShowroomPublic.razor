@@ -4,6 +4,7 @@
 @using GestionCom.Features.Showroom.Entities
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
+@inject IDbContextFactory<AppDbContext> DbFactory
 @using Microsoft.AspNetCore.Components
 @layout GestionCom.Components.Layout.BlankLayout
 @attribute [AllowAnonymous]
