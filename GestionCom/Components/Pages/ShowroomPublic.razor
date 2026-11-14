@@ -85,7 +85,14 @@
             else
             {
                 <div class="fd-conveyor-label"><span><i></i> LE CONVOYEUR FEDNAD</span><span>TOUCHEZ UN PRODUIT POUR LE DÉCOUVRIR</span></div>
-                <div class="fd-belt-shell">
+                <div class="fd-belt-controls" aria-label="Navigation des produits">
+                    <span>PRENEZ LE TEMPS DE DÉCOUVRIR</span>
+                    <div>
+                        <button type="button" class="fd-belt-arrow" aria-label="Produits précédents" title="Produits précédents" @onclick="() => ScrollProducts(-1)">←</button>
+                        <button type="button" class="fd-belt-arrow" aria-label="Produits suivants" title="Produits suivants" @onclick="() => ScrollProducts(1)">→</button>
+                    </div>
+                </div>
+                <div class="fd-belt-shell" @ref="productTrack">
                     <div class="fd-belt-track">
                         @foreach (var product in BeltProducts)
                         {
@@ -114,31 +121,9 @@
                                 </div>
                             </article>
                         }
-                        @foreach (var product in BeltProducts)
-                        {
-                            var image = product.Images.OrderByDescending(x => x.IsPrimary).ThenBy(x => x.SortOrder).FirstOrDefault();
-                            <article class="fd-belt-product fd-belt-clone" aria-hidden="true">
-                                <div class="fd-product-visual">
-                                    @if (image is not null && !string.IsNullOrWhiteSpace(image.ImagePath))
-                                    {
-                                        <img src="@image.ImagePath" alt="" loading="lazy" />
-                                    }
-                                    else
-                                    {
-                                        <div class="fd-product-placeholder"><span>@product.Brand.NameFr</span><strong>@product.NameFr</strong></div>
-                                    }
-                                    @if (product.IsNew) { <span class="fd-new-tag">NOUVEAU</span> }
-                                </div>
-                                <div class="fd-product-plaque">
-                                    <span class="fd-product-brand">@product.Brand.NameFr</span><h3>@product.NameFr</h3>
-                                    @if (!string.IsNullOrWhiteSpace(product.Size)) { <small>@product.Size</small> }
-                                    <div class="fd-product-price-row"><strong>@FormatPrice(product.PriceTnd) <small>TND</small></strong><span class="fd-clone-plus">+</span></div>
-                                </div>
-                            </article>
-                        }
                     </div>
                 </div>
-                <div class="fd-belt-caption"><span>FAITES DÉFILER LE COMPTOIR</span><span>La sélection évolue au fil de vos découvertes.</span></div>
+                <div class="fd-belt-caption"><span>GLISSEZ OU UTILISEZ LES FLÈCHES</span><span>Revenez en arrière à tout moment pour retrouver un produit.</span></div>
             }
         </section>
 

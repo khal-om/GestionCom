@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1800 1000" role="img" aria-labelledby="title desc">
-<title id="title">FedNad haircare boutique</title><desc id="desc">A warm, richly colored haircare boutique with illuminated arched product niches, walnut shelving and a display counter.</desc>
+<title id="title">FedNad haircare boutique</title><desc id="desc">A refined haircare boutique with a balanced palette of petrol, walnut, ivory and muted clay with illuminated arched product niches, walnut shelving and a display counter.</desc>
 <defs>
- <linearGradient id="wall" x2="0" y2="1"><stop stop-color="#987C7D"/><stop offset="1" stop-color="#765363"/></linearGradient>
- <linearGradient id="floor" x2="0" y2="1"><stop stop-color="#6B5650"/><stop offset="1" stop-color="#493B3C"/></linearGradient>
- <linearGradient id="arch" x2="0" y2="1"><stop stop-color="#E8D8C9"/><stop offset=".18" stop-color="#B98D82"/><stop offset="1" stop-color="#A66F75"/></linearGradient>
- <linearGradient id="wood" x2="0" y2="1"><stop stop-color="#8C6A5D"/><stop offset="1" stop-color="#59484A"/></linearGradient>
- <radialGradient id="glow"><stop stop-color="#F7EBDD" stop-opacity=".9"/><stop offset="1" stop-color="#F7EBDD" stop-opacity="0"/></radialGradient>
+ <linearGradient id="wall" x2="0" y2="1"><stop stop-color="#42666A"/><stop offset="1" stop-color="#244B50"/></linearGradient>
+ <linearGradient id="floor" x2="0" y2="1"><stop stop-color="#5A4940"/><stop offset="1" stop-color="#262A2B"/></linearGradient>
+ <linearGradient id="arch" x2="0" y2="1"><stop stop-color="#F6F3ED"/><stop offset=".18" stop-color="#C58E72"/><stop offset="1" stop-color="#B8755B"/></linearGradient>
+ <linearGradient id="wood" x2="0" y2="1"><stop stop-color="#8B6C54"/><stop offset="1" stop-color="#423C37"/></linearGradient>
+ <radialGradient id="glow"><stop stop-color="#F7F3E9" stop-opacity=".9"/><stop offset="1" stop-color="#F7F3E9" stop-opacity="0"/></radialGradient>
  <filter id="blur"><feGaussianBlur stdDeviation="35"/></filter>
  <filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feGaussianBlur in="SourceAlpha" stdDeviation="18"/><feOffset dy="14"/><feComponentTransfer><feFuncA type="linear" slope=".3"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 </defs>
@@ -14,42 +14,42 @@
 <path d="M0 770H1800V1000H0Z" fill="url(#floor)"/>
 <path d="M0 820L1800 760" stroke="#B99A8A" stroke-opacity=".25" stroke-width="4"/>
 <!-- back wall panels -->
-<g opacity=".28" fill="none" stroke="#D8BDA7" stroke-width="3"><path d="M40 0V770M1760 0V770M40 760H1760"/><path d="M75 40H1725"/></g>
+<g opacity=".28" fill="none" stroke="#C7AD7B" stroke-width="3"><path d="M40 0V770M1760 0V770M40 760H1760"/><path d="M75 40H1725"/></g>
 <!-- left arch -->
 <g filter="url(#shadow)">
- <path d="M115 620V250Q115 75 290 75Q465 75 465 250V620Z" fill="#765363" stroke="#C6A995" stroke-width="9"/>
+ <path d="M115 620V250Q115 75 290 75Q465 75 465 250V620Z" fill="#244B50" stroke="#C6A995" stroke-width="9"/>
  <path d="M145 620V255Q145 110 290 110Q435 110 435 255V620Z" fill="url(#arch)"/>
- <path d="M145 390H435V408H145Z" fill="#765363"/><path d="M145 525H435V544H145Z" fill="#765363"/>
+ <path d="M145 390H435V408H145Z" fill="#244B50"/><path d="M145 525H435V544H145Z" fill="#244B50"/>
 </g>
 <!-- middle arch -->
 <g filter="url(#shadow)">
- <path d="M535 660V220Q535 30 725 30Q915 30 915 220V660Z" fill="#765363" stroke="#D8BDA7" stroke-width="10"/>
+ <path d="M535 660V220Q535 30 725 30Q915 30 915 220V660Z" fill="#244B50" stroke="#C7AD7B" stroke-width="10"/>
  <path d="M568 660V225Q568 65 725 65Q882 65 882 225V660Z" fill="url(#arch)"/>
- <path d="M568 395H882V415H568Z" fill="#765363"/><path d="M568 530H882V550H568Z" fill="#765363"/>
+ <path d="M568 395H882V415H568Z" fill="#244B50"/><path d="M568 530H882V550H568Z" fill="#244B50"/>
 </g>
 <!-- right arch -->
 <g filter="url(#shadow)">
- <path d="M990 620V250Q990 75 1165 75Q1340 75 1340 250V620Z" fill="#765363" stroke="#C6A995" stroke-width="9"/>
+ <path d="M990 620V250Q990 75 1165 75Q1340 75 1340 250V620Z" fill="#244B50" stroke="#C6A995" stroke-width="9"/>
  <path d="M1020 620V255Q1020 110 1165 110Q1310 110 1310 255V620Z" fill="url(#arch)"/>
- <path d="M1020 390H1310V408H1020Z" fill="#765363"/><path d="M1020 525H1310V544H1020Z" fill="#765363"/>
+ <path d="M1020 390H1310V408H1020Z" fill="#244B50"/><path d="M1020 525H1310V544H1020Z" fill="#244B50"/>
 </g>
 <!-- right edge shelving -->
-<g opacity=".95"><rect x="1400" y="120" width="330" height="530" rx="8" fill="#765363" stroke="#C6A995" stroke-width="7"/><path d="M1400 295H1730M1400 470H1730" stroke="#C6A995" stroke-width="12"/></g>
+<g opacity=".95"><rect x="1400" y="120" width="330" height="530" rx="8" fill="#244B50" stroke="#C6A995" stroke-width="7"/><path d="M1400 295H1730M1400 470H1730" stroke="#C6A995" stroke-width="12"/></g>
 <!-- products -->
 <g filter="url(#shadow)">
- <g transform="translate(185 270)"><rect x="0" y="22" width="45" height="100" rx="9" fill="#E8D8C9"/><rect x="12" y="0" width="21" height="25" rx="3" fill="#765363"/><rect x="8" y="60" width="29" height="34" fill="#A66F75"/><rect x="57" y="38" width="55" height="84" rx="8" fill="#F7F2EA"/><rect x="69" y="16" width="30" height="24" rx="3" fill="#765363"/><rect x="65" y="72" width="39" height="25" fill="#B98D82"/><rect x="130" y="15" width="48" height="107" rx="8" fill="#A66F75"/><rect x="142" y="-5" width="24" height="22" fill="#D8BDA7"/></g>
- <g transform="translate(610 210)"><rect x="0" y="35" width="54" height="125" rx="10" fill="#F7F2EA"/><rect x="12" y="10" width="30" height="27" rx="3" fill="#765363"/><rect x="8" y="82" width="38" height="33" fill="#A66F75"/><rect x="72" y="15" width="48" height="145" rx="9" fill="#A66F75"/><rect x="83" y="-8" width="26" height="24" fill="#D8BDA7"/><rect x="140" y="52" width="60" height="108" rx="10" fill="#D8BDA7"/><rect x="155" y="30" width="30" height="24" fill="#765363"/><rect x="150" y="95" width="40" height="27" fill="#A66F75"/></g>
- <g transform="translate(1060 270)"><rect x="0" y="22" width="48" height="100" rx="9" fill="#F7F2EA"/><rect x="11" y="0" width="26" height="24" fill="#765363"/><rect x="8" y="65" width="32" height="25" fill="#bd5366"/><rect x="65" y="40" width="54" height="82" rx="8" fill="#B98D82"/><rect x="78" y="18" width="28" height="24" fill="#765363"/><rect x="73" y="75" width="38" height="22" fill="#E8D8C9"/><rect x="137" y="12" width="48" height="110" rx="8" fill="#F7F2EA"/><rect x="148" y="-9" width="26" height="23" fill="#765363"/></g>
- <g transform="translate(1460 180)"><rect x="0" y="25" width="46" height="105" rx="9" fill="#E8D8C9"/><rect x="11" y="4" width="24" height="22" fill="#765363"/><rect x="62" y="48" width="52" height="82" rx="8" fill="#A66F75"/><rect x="75" y="27" width="26" height="22" fill="#D8BDA7"/><rect x="132" y="14" width="45" height="116" rx="8" fill="#D8BDA7"/><rect x="143" y="-8" width="24" height="23" fill="#765363"/></g>
+ <g transform="translate(185 270)"><rect x="0" y="22" width="45" height="100" rx="9" fill="#F6F3ED"/><rect x="12" y="0" width="21" height="25" rx="3" fill="#244B50"/><rect x="8" y="60" width="29" height="34" fill="#B8755B"/><rect x="57" y="38" width="55" height="84" rx="8" fill="#F6F3ED"/><rect x="69" y="16" width="30" height="24" rx="3" fill="#244B50"/><rect x="65" y="72" width="39" height="25" fill="#C58E72"/><rect x="130" y="15" width="48" height="107" rx="8" fill="#B8755B"/><rect x="142" y="-5" width="24" height="22" fill="#C7AD7B"/></g>
+ <g transform="translate(610 210)"><rect x="0" y="35" width="54" height="125" rx="10" fill="#F6F3ED"/><rect x="12" y="10" width="30" height="27" rx="3" fill="#244B50"/><rect x="8" y="82" width="38" height="33" fill="#B8755B"/><rect x="72" y="15" width="48" height="145" rx="9" fill="#B8755B"/><rect x="83" y="-8" width="26" height="24" fill="#C7AD7B"/><rect x="140" y="52" width="60" height="108" rx="10" fill="#C7AD7B"/><rect x="155" y="30" width="30" height="24" fill="#244B50"/><rect x="150" y="95" width="40" height="27" fill="#B8755B"/></g>
+ <g transform="translate(1060 270)"><rect x="0" y="22" width="48" height="100" rx="9" fill="#F6F3ED"/><rect x="11" y="0" width="26" height="24" fill="#244B50"/><rect x="8" y="65" width="32" height="25" fill="#bd5366"/><rect x="65" y="40" width="54" height="82" rx="8" fill="#C58E72"/><rect x="78" y="18" width="28" height="24" fill="#244B50"/><rect x="73" y="75" width="38" height="22" fill="#F6F3ED"/><rect x="137" y="12" width="48" height="110" rx="8" fill="#F6F3ED"/><rect x="148" y="-9" width="26" height="23" fill="#244B50"/></g>
+ <g transform="translate(1460 180)"><rect x="0" y="25" width="46" height="105" rx="9" fill="#F6F3ED"/><rect x="11" y="4" width="24" height="22" fill="#244B50"/><rect x="62" y="48" width="52" height="82" rx="8" fill="#B8755B"/><rect x="75" y="27" width="26" height="22" fill="#C7AD7B"/><rect x="132" y="14" width="45" height="116" rx="8" fill="#C7AD7B"/><rect x="143" y="-8" width="24" height="23" fill="#244B50"/></g>
 </g>
 <!-- floating warm light spots -->
-<g fill="#F7EBDD" opacity=".7"><circle cx="290" cy="105" r="7"/><circle cx="725" cy="62" r="8"/><circle cx="1165" cy="105" r="7"/></g>
+<g fill="#F7F3E9" opacity=".7"><circle cx="290" cy="105" r="7"/><circle cx="725" cy="62" r="8"/><circle cx="1165" cy="105" r="7"/></g>
 <!-- counter -->
-<g filter="url(#shadow)"><path d="M120 690H1680L1600 860H200Z" fill="url(#wood)"/><path d="M120 690H1680L1650 735H150Z" fill="#D8BDA7"/><path d="M200 860H1600V925H200Z" fill="#59484A"/><path d="M230 880H1570" stroke="#A98C7E" stroke-width="4" opacity=".7"/></g>
+<g filter="url(#shadow)"><path d="M120 690H1680L1600 860H200Z" fill="url(#wood)"/><path d="M120 690H1680L1650 735H150Z" fill="#C7AD7B"/><path d="M200 860H1600V925H200Z" fill="#423C37"/><path d="M230 880H1570" stroke="#A98C7E" stroke-width="4" opacity=".7"/></g>
 <!-- counter products -->
-<g transform="translate(560 600)" filter="url(#shadow)"><rect x="0" y="12" width="62" height="95" rx="9" fill="#F7F2EA"/><rect x="15" y="-8" width="32" height="22" fill="#765363"/><rect x="82" y="28" width="70" height="79" rx="9" fill="#A66F75"/><rect x="101" y="8" width="32" height="22" fill="#D8BDA7"/><rect x="175" y="4" width="58" height="103" rx="9" fill="#D8BDA7"/><rect x="190" y="-18" width="28" height="23" fill="#765363"/><rect x="260" y="22" width="60" height="85" rx="9" fill="#F7F2EA"/><rect x="275" y="1" width="30" height="23" fill="#A66F75"/></g>
+<g transform="translate(560 600)" filter="url(#shadow)"><rect x="0" y="12" width="62" height="95" rx="9" fill="#F6F3ED"/><rect x="15" y="-8" width="32" height="22" fill="#244B50"/><rect x="82" y="28" width="70" height="79" rx="9" fill="#B8755B"/><rect x="101" y="8" width="32" height="22" fill="#C7AD7B"/><rect x="175" y="4" width="58" height="103" rx="9" fill="#C7AD7B"/><rect x="190" y="-18" width="28" height="23" fill="#244B50"/><rect x="260" y="22" width="60" height="85" rx="9" fill="#F6F3ED"/><rect x="275" y="1" width="30" height="23" fill="#B8755B"/></g>
 <!-- branding on counter -->
-<text x="900" y="820" fill="#F7F2EA" font-family="Georgia,serif" font-size="34" letter-spacing="12" text-anchor="middle">FEDNAD</text>
-<text x="900" y="850" fill="#D8BDA7" font-family="Arial,sans-serif" font-size="11" letter-spacing="7" text-anchor="middle">HAIRCARE BOUTIQUE</text>
+<text x="900" y="820" fill="#F6F3ED" font-family="Georgia,serif" font-size="34" letter-spacing="12" text-anchor="middle">FEDNAD</text>
+<text x="900" y="850" fill="#C7AD7B" font-family="Arial,sans-serif" font-size="11" letter-spacing="7" text-anchor="middle">HAIRCARE BOUTIQUE</text>
 <rect width="1800" height="1000" fill="none" stroke="#E6DCD2" stroke-opacity=".22" stroke-width="18"/>
 </svg>
