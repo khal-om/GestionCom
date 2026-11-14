@@ -4,16 +4,12 @@ window.fednadShowroom = (() => {
     let lastTime = 0;
     let direction = 1;
     let userPaused = false;
-    let hoverPaused = false;
     let focusPaused = false;
-    let reducedMotion = false;
-    let motionOverride = false;
-    let resumeTimer = 0;
+    let touchPaused = false;
     let listeners = null;
-    const speed = 24;
+    const speed = 32;
 
-    const isPaused = () =>
-        userPaused || hoverPaused || focusPaused || (reducedMotion && !motionOverride);
+    const isPaused = () => userPaused || focusPaused || touchPaused;
 
     const stopFrame = () => {
         if (frameId) cancelAnimationFrame(frameId);
@@ -31,21 +27,21 @@ window.fednadShowroom = (() => {
         if (!isPaused() && maxScroll > 2 && !document.hidden) {
             if (lastTime) {
                 const elapsed = Math.min((time - lastTime) / 1000, 0.05);
-                track.scrollLeft += direction * speed * elapsed;
-
-                if (track.scrollLeft >= maxScroll - 1) {
+                const next = track.scrollLeft + direction * speed * elapsed;
+                if (next >= maxScroll) {
                     track.scrollLeft = maxScroll;
                     direction = -1;
-                } else if (track.scrollLeft <= 1) {
+                } else if (next <= 0) {
                     track.scrollLeft = 0;
                     direction = 1;
+                } else {
+                    track.scrollLeft = next;
                 }
             }
             lastTime = time;
         } else {
             lastTime = 0;
         }
-
         frameId = requestAnimationFrame(tick);
     };
 
@@ -54,12 +50,8 @@ window.fednadShowroom = (() => {
     };
 
     const pauseForManualControl = () => {
-        if (resumeTimer) clearTimeout(resumeTimer);
-        hoverPaused = true;
-        resumeTimer = setTimeout(() => {
-            hoverPaused = false;
-            start();
-        }, 2200);
+        touchPaused = true;
+        window.setTimeout(() => { touchPaused = false; start(); }, 1100);
     };
 
     const scrollProducts = (element, amount) => {
@@ -69,21 +61,19 @@ window.fednadShowroom = (() => {
         const styles = window.getComputedStyle(element);
         const gap = parseFloat(styles.columnGap || styles.gap || "0");
         const distance = card ? card.getBoundingClientRect().width + gap : element.clientWidth * 0.8;
-        element.scrollBy({
-            left: amount * distance,
-            behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
-        });
+        element.scrollBy({ left: amount * distance, behavior: "smooth" });
         direction = amount > 0 ? 1 : -1;
     };
 
     const initProductAutoplay = (element, initiallyPaused) => {
         if (!element) return false;
-        if (track === element && listeners) return !isPaused();
+        if (track === element && listeners) {
+            start();
+            return !userPaused;
+        }
 
         stopFrame();
         if (track && listeners) {
-            track.removeEventListener("pointerenter", listeners.pointerenter);
-            track.removeEventListener("pointerleave", listeners.pointerleave);
             track.removeEventListener("focusin", listeners.focusin);
             track.removeEventListener("focusout", listeners.focusout);
             track.removeEventListener("touchstart", listeners.touchstart);
@@ -92,14 +82,9 @@ window.fednadShowroom = (() => {
 
         track = element;
         userPaused = !!initiallyPaused;
-        hoverPaused = false;
         focusPaused = false;
-        reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        motionOverride = false;
-
+        touchPaused = false;
         listeners = {
-            pointerenter: () => { hoverPaused = true; },
-            pointerleave: () => { hoverPaused = false; start(); },
             focusin: () => { focusPaused = true; },
             focusout: (event) => {
                 if (!element.contains(event.relatedTarget)) {
@@ -107,23 +92,20 @@ window.fednadShowroom = (() => {
                     start();
                 }
             },
-            touchstart: () => { hoverPaused = true; },
+            touchstart: () => { touchPaused = true; },
             touchend: () => {
-                setTimeout(() => { hoverPaused = false; start(); }, 900);
+                window.setTimeout(() => { touchPaused = false; start(); }, 1100);
             }
         };
-
-        Object.entries(listeners).forEach(([name, handler]) => {
-            element.addEventListener(name, handler, { passive: name.startsWith("touch") });
-        });
+        Object.entries(listeners).forEach(([name, handler]) =>
+            element.addEventListener(name, handler, { passive: name.startsWith("touch") }));
 
         start();
-        return !isPaused();
+        return !userPaused;
     };
 
     const setAutoplayPaused = (paused) => {
         userPaused = !!paused;
-        if (!userPaused) motionOverride = true;
         if (userPaused) stopFrame();
         else start();
     };

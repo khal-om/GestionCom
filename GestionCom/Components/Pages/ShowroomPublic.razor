@@ -37,6 +37,19 @@
         </a>
     </header>
 
+    @if (!string.IsNullOrWhiteSpace(cartToastProduct))
+    {
+        <div class="fn-cart-toast" role="status" aria-live="polite">
+            <span class="fn-cart-toast-mark">✓</span>
+            <span class="fn-cart-toast-copy">
+                <strong>Ajouté au panier</strong>
+                <span>@cartToastProduct</span>
+            </span>
+            <a href="#panier">Voir le panier</a>
+            <button type="button" class="fn-cart-toast-close" aria-label="Fermer la confirmation" @onclick="DismissCartToast">×</button>
+        </div>
+    }
+
     <main>
         <section class="fn-hero">
             <div class="fn-hero-copy">
@@ -296,6 +309,7 @@
     private ShowroomProduct? selectedProduct;
     private ElementReference productTrack;
     private bool isAutoplayPaused;
+    private string? cartToastProduct;
 
     private IEnumerable<ShowroomProduct> FilteredProducts =>
         products.Where(product =>
@@ -333,17 +347,13 @@
         isLoading = false;
     }
 
-    private bool productAutoplayInitialized;
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!isLoading && !productAutoplayInitialized)
+        if (!isLoading && products.Count > 0)
         {
-            productAutoplayInitialized = true;
             var isRunning = await JS.InvokeAsync<bool>(
                 "fednadShowroom.initProductAutoplay", productTrack, isAutoplayPaused);
             isAutoplayPaused = !isRunning;
-            StateHasChanged();
         }
     }
 
@@ -369,7 +379,13 @@
             ? quantity + 1
             : 1;
 
+        cartToastProduct = product.NameFr;
         selectedProduct = null;
+    }
+
+    private void DismissCartToast()
+    {
+        cartToastProduct = null;
     }
 
     private void ChangeQuantity(int productId, int change)
