@@ -42,18 +42,10 @@
 
     <main>
         <section class="fd-boutique-hero">
-            @if (products.FirstOrDefault(p => p.Images.Any(i => !string.IsNullOrWhiteSpace(i.ImagePath))) is { } heroProduct)
-            {
-                var heroImage = heroProduct.Images
-                    .OrderByDescending(x => x.IsPrimary)
-                    .ThenBy(x => x.SortOrder)
-                    .First(x => !string.IsNullOrWhiteSpace(x.ImagePath));
-
-                <img class="fd-hero-photo"
-                     src="@heroImage.ImagePath"
-                     alt="@(heroImage.AltTextFr ?? heroProduct.NameFr)"
-                     fetchpriority="high" />
-            }
+            <img class="fd-hero-photo"
+                 src="/images/showroom-hero.jpg"
+                 alt="Univers de soins capillaires professionnels FedNad"
+                 fetchpriority="high" />
             <div class="fd-hero-overlay"></div>
             <div class="fd-hero-content">
                 <span class="fd-hero-kicker">L'EXPERTISE CAPILLAIRE PROFESSIONNELLE</span>
