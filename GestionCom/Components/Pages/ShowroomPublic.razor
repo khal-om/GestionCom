@@ -5,7 +5,9 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components
+@using Microsoft.JSInterop
 @inject IDbContextFactory<AppDbContext> DbFactory
+@inject IJSRuntime JS
 @layout GestionCom.Components.Layout.BlankLayout
 @attribute [AllowAnonymous]
 @rendermode InteractiveServer
@@ -26,53 +28,34 @@
     <header class="fd-header">
         <a class="fd-logo" href="/vitrine">
             <span>FED<span>N</span>AD</span>
-            <small>HAIRCARE BOUTIQUE</small>
+            <small>SOINS CAPILLAIRES</small>
         </a>
 
         <nav>
-            <a href="#boutique">La boutique</a>
-            <a href="#selection">Nos essentiels</a>
+            <a href="#boutique">Nos univers</a>
+            <a href="#selection">Notre sélection</a>
             <a href="#panier">Mon panier</a>
         </nav>
 
-        <a class="fd-header-cta" href="#selection">Explorer la sélection <span>↗</span></a>
+        <a class="fd-header-cta" href="#selection">Découvrir nos soins <span>↗</span></a>
     </header>
 
     <main>
         <section class="fd-boutique-hero">
-            <div class="fd-hero-glow"></div>
-            <div class="fd-hero-arch fd-arch-one"></div>
-            <div class="fd-hero-arch fd-arch-two"></div>
-            <div class="fd-hero-arch fd-arch-three"></div>
-
-            <div class="fd-hero-top">
-                <span>VOTRE NOUVEAU RENDEZ-VOUS BEAUTÉ</span>
-                <span>01 — 03</span>
+            <img class="fd-hero-photo"
+                 src="https://images.unsplash.com/photo-1744118343793-5b4edb8ef776?auto=format&amp;fit=crop&amp;fm=jpg&amp;q=85&amp;w=2400"
+                 alt="Présentation élégante de soins capillaires professionnels"
+                 fetchpriority="high" />
+            <div class="fd-hero-overlay"></div>
+            <div class="fd-hero-content">
+                <span class="fd-hero-kicker">L'EXPERTISE CAPILLAIRE PROFESSIONNELLE</span>
+                <h1>La beauté de vos cheveux,<br /><em>révélée.</em></h1>
+                <p>Découvrez les univers Kemon et Actyva : des soins professionnels pour révéler toute la beauté de vos cheveux.</p>
+                <a href="#selection" class="fd-hero-button">DÉCOUVRIR NOS SOINS <span>↓</span></a>
             </div>
-
-            <div class="fd-hero-center">
-                <p>LE SOIN PROFESSIONNEL PREND UNE AUTRE DIMENSION</p>
-                <h1>A little more <em>glow.</em></h1>
-                <span>Découvrez une sélection de soins capillaires choisis pour vous.</span>
-                <a href="#selection">ENTRER DANS LA BOUTIQUE <b>↓</b></a>
-            </div>
-
-            <div class="fd-hero-shelf">
-                <div class="fd-shelf-light"></div>
-                <div class="fd-shelf-products">
-                    <div class="fd-deco-bottle fd-bottle-tall"><i></i><span>K</span></div>
-                    <div class="fd-deco-bottle fd-bottle-short"><i></i><span>A</span></div>
-                    <div class="fd-deco-bottle fd-bottle-wide"><i></i><span>ACTYVA</span></div>
-                    <div class="fd-deco-bottle fd-bottle-pink"><i></i><span>KEMON</span></div>
-                    <div class="fd-deco-bottle fd-bottle-green"><i></i><span>A</span></div>
-                    <div class="fd-deco-bottle fd-bottle-small"><i></i><span>K</span></div>
-                </div>
-                <div class="fd-shelf-front"></div>
-            </div>
-
             <div class="fd-hero-bottom">
-                <span>DES RITUELS QUI VOUS RESSEMBLENT</span>
-                <span>SCROLL TO DISCOVER ↓</span>
+                <span>FEDNAD · KEMON · ACTYVA</span>
+                <span>LA BEAUTÉ PROFESSIONNELLE</span>
             </div>
         </section>
 
@@ -85,12 +68,12 @@
         <section class="fd-counter-section" id="selection">
             <div class="fd-counter-heading">
                 <div>
-                    <span class="fd-eyebrow">THE HAIRCARE EDIT · FEDNAD</span>
-                    <h2>Find your<br /><em>hair ritual.</em></h2>
+                    <span class="fd-eyebrow">LA SÉLECTION CAPILLAIRE · FEDNAD</span>
+                    <h2>Trouvez votre<br /><em>rituel capillaire.</em></h2>
                 </div>
                 <div class="fd-counter-description">
                     <p>Explorez notre sélection de soins professionnels. Chaque produit a sa place sur notre comptoir — trouvez celui qui vous correspond.</p>
-                    <span>FAITES DÉFILER POUR EXPLORER <b>→</b></span>
+                    <span>EXPLOREZ NOTRE SÉLECTION <b>→</b></span>
                 </div>
             </div>
 
@@ -121,10 +104,19 @@
             }
             else
             {
-                <div class="fd-belt-shell">
-                    <div class="fd-belt-lights"></div>
+                <div class="fd-belt-controls">
+                    <span>EXPLOREZ NOTRE SÉLECTION</span>
+                    <div>
+                        <button type="button" aria-label="Produits précédents"
+                                @onclick="() => ScrollProducts(-1)">←</button>
+                        <button type="button" aria-label="Produits suivants"
+                                @onclick="() => ScrollProducts(1)">→</button>
+                    </div>
+                </div>
+
+                <div class="fd-belt-shell" @ref="productTrack">
                     <div class="fd-belt-track">
-                        @foreach (var product in BeltProducts.Concat(BeltProducts))
+                        @foreach (var product in BeltProducts)
                         {
                             var image = product.Images
                                 .OrderByDescending(x => x.IsPrimary)
@@ -137,9 +129,7 @@
                                         aria-label="Voir @product.NameFr">
                                     @if (image is not null && !string.IsNullOrWhiteSpace(image.ImagePath))
                                     {
-                                        <img src="@image.ImagePath"
-                                             alt="@(image.AltTextFr ?? product.NameFr)"
-                                             loading="lazy" />
+                                        <img src="@image.ImagePath" alt="@(image.AltTextFr ?? product.NameFr)" loading="lazy" />
                                     }
                                     else
                                     {
@@ -150,11 +140,10 @@
                                     }
                                     @if (product.IsNew)
                                     {
-                                        <span class="fd-new-tag">NEW DROP</span>
+                                        <span class="fd-new-tag">NOUVEAUTÉ</span>
                                     }
                                     <span class="fd-view-product">VOIR LE PRODUIT ↗</span>
                                 </button>
-
                                 <div class="fd-product-plaque">
                                     <span class="fd-product-brand">@product.Brand.NameFr</span>
                                     <h3>@product.NameFr</h3>
@@ -164,11 +153,8 @@
                                     }
                                     <div class="fd-product-price-row">
                                         <strong>@FormatPrice(product.PriceTnd) <small>TND</small></strong>
-                                        <button type="button"
-                                                title="Ajouter au panier"
-                                                @onclick="() => AddToCart(product)">
-                                            +
-                                        </button>
+                                        <button type="button" title="Ajouter au panier"
+                                                @onclick="() => AddToCart(product)">+</button>
                                     </div>
                                 </div>
                             </article>
@@ -178,7 +164,7 @@
 
                 <div class="fd-belt-caption">
                     <span><i></i> LE COMPTOIR FEDNAD</span>
-                    <span>Survolez les produits pour les découvrir · Cliquez pour les détails</span>
+                    <span>Faites défiler pour explorer · Sélectionnez un produit pour en savoir plus</span>
                 </div>
             }
         </section>
@@ -186,8 +172,8 @@
         <section class="fd-ritual-banner">
             <div class="fd-ritual-decoration">F.</div>
             <div class="fd-ritual-copy">
-                <span class="fd-eyebrow">YOUR HAIR. YOUR RULES.</span>
-                <h2>Every day deserves<br /><em>a little glow.</em></h2>
+                <span class="fd-eyebrow">VOS CHEVEUX, VOTRE STYLE.</span>
+                <h2>Chaque jour mérite<br /><em>son rituel.</em></h2>
                 <p>Kemon et Actyva : deux univers, une même passion pour la beauté et le soin des cheveux.</p>
                 <a href="#selection">TROUVER MON RITUEL <span>↗</span></a>
             </div>
@@ -199,8 +185,8 @@
         <section class="fd-cart-section" id="panier">
             <div class="fd-cart-heading">
                 <div>
-                    <span class="fd-eyebrow">YOUR PICKS · YOUR RITUAL</span>
-                    <h2>Make it <em>your ritual.</em></h2>
+                    <span class="fd-eyebrow">VOTRE SÉLECTION · VOTRE RITUEL</span>
+                    <h2>Créez <em>votre rituel.</em></h2>
                 </div>
                 <span class="fd-cart-counter">@CartCount ARTICLE(S)</span>
             </div>
@@ -264,14 +250,14 @@
                 </div>
 
                 <aside class="fd-cart-summary">
-                    <span class="fd-eyebrow">THE CHECKOUT CORNER</span>
-                    <h3>Your bag,<br /><em>your beauty.</em></h3>
+                    <span class="fd-eyebrow">VOTRE ESPACE COMMANDE</span>
+                    <h3>Votre sélection,<br /><em>votre beauté.</em></h3>
                     <div class="fd-summary-line"><span>Articles</span><strong>@CartCount</strong></div>
                     <div class="fd-summary-line"><span>Sous-total</span><strong>@FormatPrice(CartTotal) TND</strong></div>
                     <div class="fd-summary-total"><span>TOTAL ESTIMATIF</span><strong>@FormatPrice(CartTotal) <small>TND</small></strong></div>
                     <button type="button" class="fd-checkout-button" disabled="@(!cart.Any())"
                             @onclick="ShowCheckoutPreview">
-                        CONTINUER <span>→</span>
+                        POURSUIVRE <span>→</span>
                     </button>
                     <p>Prototype de démonstration. Aucune commande ni aucun paiement ne seront effectués.</p>
                 </aside>
@@ -285,7 +271,7 @@
                 <span>FED<span>N</span>AD</span>
                 <small>HAIRCARE BOUTIQUE</small>
             </a>
-            <p>Professional haircare.<br /><em>Personal feeling.</em></p>
+            <p>Le soin professionnel.<br /><em>Une attention personnelle.</em></p>
         </div>
         <div class="fd-footer-links">
             <a href="#boutique">La boutique</a>
@@ -374,8 +360,8 @@
         <section class="fd-checkout-modal" role="dialog" aria-modal="true"
                  aria-label="Aperçu de commande" @onclick:stopPropagation="true">
             <button type="button" class="fd-modal-close" @onclick="() => showCheckoutPreview = false">×</button>
-            <span class="fd-eyebrow">THE NEXT STEP</span>
-            <h2>Almost <em>yours.</em></h2>
+            <span class="fd-eyebrow">LA PROCHAINE ÉTAPE</span>
+            <h2>Bientôt <em>à vous.</em></h2>
             <p>La prochaine étape permettra de transmettre votre sélection à l'équipe FedNad.</p>
             <div class="fd-checkout-preview-total">
                 <span>Votre sélection · @CartCount article(s)</span>
@@ -392,6 +378,13 @@
 }
 
 @code {
+    private ElementReference productTrack;
+
+    private async Task ScrollProducts(int direction)
+    {
+        await JS.InvokeVoidAsync("fednadShowroom.scrollProducts", productTrack, direction);
+    }
+
     private List<ShowroomBrand> brands = new();
     private List<ShowroomProduct> products = new();
     private readonly Dictionary<int, int> cart = new();
