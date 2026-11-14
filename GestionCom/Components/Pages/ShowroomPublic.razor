@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.EntityFrameworkCore
 @inject IDbContextFactory<AppDbContext> DbFactory
+@inject Microsoft.JSInterop.IJSRuntime JS
 @using Microsoft.AspNetCore.Components
 @layout GestionCom.Components.Layout.BlankLayout
 @attribute [AllowAnonymous]
@@ -12,7 +13,7 @@
 
 <PageTitle>FedNad — Soins professionnels pour vos cheveux</PageTitle>
 <HeadContent>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 </HeadContent>
 
 <div class="fn-store">
@@ -121,7 +122,14 @@
             }
             else
             {
-                <div class="fn-product-grid">
+                <div class="fn-carousel-heading">
+                    <div><span class="fn-carousel-kicker">À DÉCOUVRIR</span><p>Faites défiler la sélection à votre rythme.</p></div>
+                    <div class="fn-carousel-controls">
+                        <button type="button" class="fn-carousel-arrow" aria-label="Produits précédents" @onclick="() => ScrollProducts(-1)">←</button>
+                        <button type="button" class="fn-carousel-arrow" aria-label="Produits suivants" @onclick="() => ScrollProducts(1)">→</button>
+                    </div>
+                </div>
+                <div class="fn-product-track" @ref="productTrack" tabindex="0" aria-label="Défilement horizontal des produits">
                     @foreach (var product in FilteredProducts)
                     {
                         var image = product.Images.OrderByDescending(x => x.IsPrimary).ThenBy(x => x.SortOrder).FirstOrDefault();
@@ -136,7 +144,7 @@
                                     <span class="fn-product-placeholder"><b>@product.Brand.NameFr</b><strong>@product.NameFr</strong></span>
                                 }
                                 @if (product.IsNew) { <span class="fn-new-label">NOUVEAU</span> }
-                                <span class="fn-quick-view">Voir le produit ↗</span>
+                                <span class="fn-quick-view">Découvrir le soin ↗</span>
                             </button>
                             <div class="fn-product-info">
                                 <div class="fn-product-brandline"><span>@product.Brand.NameFr</span>@if (!string.IsNullOrWhiteSpace(product.Size)) { <small>@product.Size</small> }</div>
@@ -149,6 +157,7 @@
                         </article>
                     }
                 </div>
+                <div class="fn-carousel-footnote"><span>←</span> GLISSEZ POUR EXPLORER <span>→</span></div>
             }
         </section>
 
@@ -282,6 +291,7 @@
     private bool showCheckoutPreview;
     private string? selectedBrandSlug;
     private ShowroomProduct? selectedProduct;
+    private ElementReference productTrack;
 
     private IEnumerable<ShowroomProduct> FilteredProducts =>
         products.Where(product =>
@@ -317,6 +327,11 @@
             .ToListAsync();
 
         isLoading = false;
+    }
+
+    private async Task ScrollProducts(int direction)
+    {
+        await JS.InvokeVoidAsync("fednadShowroom.scrollProducts", productTrack, direction);
     }
 
     private void SelectBrand(string? slug)

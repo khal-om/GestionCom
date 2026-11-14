@@ -1,19 +1,16 @@
 window.fednadShowroom = {
     scrollProducts: (element, direction) => {
         if (!element) return;
+        const card = element.querySelector(".fn-product-card");
+        if (!card) return;
 
-        const firstCard = element.querySelector(".fd-belt-product");
-        const track = element.querySelector(".fd-belt-track");
-        if (!firstCard) return;
+        const styles = window.getComputedStyle(element);
+        const gap = parseFloat(styles.columnGap || styles.gap || "0");
+        const distance = card.getBoundingClientRect().width + gap;
 
-        const cardWidth = firstCard.getBoundingClientRect().width;
-        const gap = track ? parseFloat(getComputedStyle(track).columnGap || "0") : 0;
-
-        // Move exactly one card so visitors can browse forwards and backwards
-        // without skipping products.
         element.scrollBy({
-            left: direction * (cardWidth + gap),
-            behavior: "smooth"
+            left: direction * distance,
+            behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
         });
     }
 };
