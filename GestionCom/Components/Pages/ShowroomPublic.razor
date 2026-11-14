@@ -14,9 +14,7 @@
 
 <PageTitle>FedNad — La boutique capillaire</PageTitle>
 
-<HeadContent>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet" />
-</HeadContent>
+<HeadContent><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet" /></HeadContent>
 
 <div class="fd-shop">
     <div class="fd-topline">
@@ -42,144 +40,117 @@
 
     <main>
         <section class="fd-boutique-hero">
-            <img class="fd-hero-photo"
-                 src="/images/showroom-hero.jpg"
-                 alt="Univers de soins capillaires professionnels FedNad"
+            <img class="fd-hero-photo" src="/images/fednad-boutique.svg"
+                 alt="Illustration de la boutique FedNad, avec ses arches lumineuses et son comptoir de soins capillaires"
                  fetchpriority="high" />
-            <div class="fd-hero-overlay"></div>
+            <div class="fd-hero-shade"></div>
             <div class="fd-hero-content">
-                <span class="fd-hero-kicker">L'EXPERTISE CAPILLAIRE PROFESSIONNELLE</span>
-                <h1>La beauté de vos cheveux,<br /><em>révélée.</em></h1>
-                <p>Découvrez les univers Kemon et Actyva : des soins professionnels pour révéler toute la beauté de vos cheveux.</p>
-                <a href="#selection" class="fd-hero-button">DÉCOUVRIR NOS SOINS <span>↓</span></a>
+                <span class="fd-hero-kicker"><i></i> FEDNAD · BEAUTÉ CAPILLAIRE</span>
+                <h1>Le beau geste.<br /><em>Le bon rituel.</em></h1>
+                <p>Deux maisons expertes, Kemon et Actyva. Une sélection de soins professionnels pensée pour révéler vos cheveux.</p>
+                <a href="#selection" class="fd-hero-button">ENTRER DANS LA BOUTIQUE <span>↘</span></a>
             </div>
-            <div class="fd-hero-bottom">
-                <span>FEDNAD · KEMON · ACTYVA</span>
-                <span>LA BEAUTÉ PROFESSIONNELLE</span>
-            </div>
+            <div class="fd-hero-stamp"><span>LE COMPTOIR</span><strong>F.</strong><span>DEPUIS FEDNAD</span></div>
+            <div class="fd-hero-bottom"><span>KEMON <b>×</b> ACTYVA</span><span>SOINS PROFESSIONNELS · TUNISIE</span></div>
         </section>
 
         <section class="fd-intro-strip" id="boutique">
-            <div class="fd-intro-star">✳</div>
-            <p>La beauté de vos cheveux mérite <strong>une attention particulière.</strong></p>
-            <span>KEMON <i>×</i> ACTYVA</span>
+            <span>LE SOIN</span><i>✳</i><span>LA TEXTURE</span><i>✳</i><span>LE GESTE</span><i>✳</i><span>VOTRE RITUEL</span><i>✳</i><span>LE SOIN</span>
         </section>
 
         <section class="fd-counter-section" id="selection">
             <div class="fd-counter-heading">
                 <div>
-                    <span class="fd-eyebrow">LA SÉLECTION CAPILLAIRE · FEDNAD</span>
-                    <h2>Trouvez votre<br /><em>rituel capillaire.</em></h2>
+                    <span class="fd-eyebrow">LE COMPTOIR FEDNAD <i></i> SÉLECTION CURATÉE</span>
+                    <h2>Vos essentiels.<br /><em>Vos beaux cheveux.</em></h2>
                 </div>
-                <div class="fd-counter-description">
-                    <p>Explorez notre sélection de soins professionnels. Chaque produit a sa place sur notre comptoir — trouvez celui qui vous correspond.</p>
-                    <span>EXPLOREZ NOTRE SÉLECTION <b>→</b></span>
-                </div>
+                <p>Parcourez les soins Kemon et Actyva, découvrez les textures et composez votre rituel, un produit à la fois.</p>
             </div>
-
             <div class="fd-filter-row">
-                <button class="@(selectedBrandSlug is null ? "active" : "")"
-                        @onclick="() => SelectBrand(null)">TOUS LES PRODUITS</button>
+                <button class="@(selectedBrandSlug is null ? "active" : "")" @onclick="() => SelectBrand(null)">TOUT LE COMPTOIR</button>
                 @foreach (var brand in brands)
                 {
-                    <button class="@(selectedBrandSlug == brand.Slug ? "active" : "")"
-                            @onclick="() => SelectBrand(brand.Slug)">
-                        @brand.NameFr
-                    </button>
+                    <button class="@(selectedBrandSlug == brand.Slug ? "active" : "")" @onclick="() => SelectBrand(brand.Slug)">@brand.NameFr</button>
                 }
-                <span class="fd-product-count">@FilteredProducts.Count() ARTICLES</span>
+                <span class="fd-product-count">@FilteredProducts.Count() RÉFÉRENCES</span>
             </div>
-
             @if (isLoading)
             {
-                <div class="fd-empty-state">Préparation de la boutique…</div>
+                <div class="fd-empty-state">Le comptoir se prépare…</div>
             }
             else if (!FilteredProducts.Any())
             {
-                <div class="fd-empty-state">
-                    <span>✳</span>
-                    <h3>La sélection se prépare.</h3>
-                    <p>Les produits seront bientôt disponibles dans notre boutique.</p>
-                </div>
+                <div class="fd-empty-state"><span>✳</span><h3>Le comptoir se prépare.</h3><p>Nos soins seront bientôt disponibles.</p></div>
             }
             else
             {
-                <div class="fd-belt-controls">
-                    <span>EXPLOREZ NOTRE SÉLECTION</span>
-                    <div>
-                        <button type="button" aria-label="Produits précédents"
-                                @onclick="() => ScrollProducts(-1)">←</button>
-                        <button type="button" aria-label="Produits suivants"
-                                @onclick="() => ScrollProducts(1)">→</button>
-                    </div>
-                </div>
-
-                <div class="fd-belt-shell" @ref="productTrack">
+                <div class="fd-conveyor-label"><span><i></i> LE CONVOYEUR FEDNAD</span><span>TOUCHEZ UN PRODUIT POUR LE DÉCOUVRIR</span></div>
+                <div class="fd-belt-shell">
                     <div class="fd-belt-track">
                         @foreach (var product in BeltProducts)
                         {
-                            var image = product.Images
-                                .OrderByDescending(x => x.IsPrimary)
-                                .ThenBy(x => x.SortOrder)
-                                .FirstOrDefault();
-
+                            var image = product.Images.OrderByDescending(x => x.IsPrimary).ThenBy(x => x.SortOrder).FirstOrDefault();
                             <article class="fd-belt-product" @key="product.Id">
-                                <button type="button" class="fd-product-visual"
-                                        @onclick="() => OpenProduct(product)"
-                                        aria-label="Voir @product.NameFr">
+                                <button type="button" class="fd-product-visual" @onclick="() => OpenProduct(product)" aria-label="Découvrir @product.NameFr">
                                     @if (image is not null && !string.IsNullOrWhiteSpace(image.ImagePath))
                                     {
                                         <img src="@image.ImagePath" alt="@(image.AltTextFr ?? product.NameFr)" loading="lazy" />
                                     }
                                     else
                                     {
-                                        <div class="fd-product-placeholder">
-                                            <span>@product.Brand.NameFr</span>
-                                            <strong>@product.NameFr</strong>
-                                        </div>
+                                        <div class="fd-product-placeholder"><span>@product.Brand.NameFr</span><strong>@product.NameFr</strong></div>
                                     }
-                                    @if (product.IsNew)
-                                    {
-                                        <span class="fd-new-tag">NOUVEAUTÉ</span>
-                                    }
-                                    <span class="fd-view-product">VOIR LE PRODUIT ↗</span>
+                                    @if (product.IsNew) { <span class="fd-new-tag">NOUVEAU</span> }
+                                    <span class="fd-view-product">DÉCOUVRIR <b>↗</b></span>
                                 </button>
                                 <div class="fd-product-plaque">
                                     <span class="fd-product-brand">@product.Brand.NameFr</span>
                                     <h3>@product.NameFr</h3>
-                                    @if (!string.IsNullOrWhiteSpace(product.Size))
-                                    {
-                                        <small>@product.Size</small>
-                                    }
+                                    @if (!string.IsNullOrWhiteSpace(product.Size)) { <small>@product.Size</small> }
                                     <div class="fd-product-price-row">
                                         <strong>@FormatPrice(product.PriceTnd) <small>TND</small></strong>
-                                        <button type="button" title="Ajouter au panier"
-                                                @onclick="() => AddToCart(product)">+</button>
+                                        <button type="button" title="Ajouter au panier" @onclick="() => AddToCart(product)">+</button>
                                     </div>
+                                </div>
+                            </article>
+                        }
+                        @foreach (var product in BeltProducts)
+                        {
+                            var image = product.Images.OrderByDescending(x => x.IsPrimary).ThenBy(x => x.SortOrder).FirstOrDefault();
+                            <article class="fd-belt-product fd-belt-clone" aria-hidden="true">
+                                <div class="fd-product-visual">
+                                    @if (image is not null && !string.IsNullOrWhiteSpace(image.ImagePath))
+                                    {
+                                        <img src="@image.ImagePath" alt="" loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <div class="fd-product-placeholder"><span>@product.Brand.NameFr</span><strong>@product.NameFr</strong></div>
+                                    }
+                                    @if (product.IsNew) { <span class="fd-new-tag">NOUVEAU</span> }
+                                </div>
+                                <div class="fd-product-plaque">
+                                    <span class="fd-product-brand">@product.Brand.NameFr</span><h3>@product.NameFr</h3>
+                                    @if (!string.IsNullOrWhiteSpace(product.Size)) { <small>@product.Size</small> }
+                                    <div class="fd-product-price-row"><strong>@FormatPrice(product.PriceTnd) <small>TND</small></strong><span class="fd-clone-plus">+</span></div>
                                 </div>
                             </article>
                         }
                     </div>
                 </div>
-
-                <div class="fd-belt-caption">
-                    <span><i></i> LE COMPTOIR FEDNAD</span>
-                    <span>Faites défiler pour explorer · Sélectionnez un produit pour en savoir plus</span>
-                </div>
+                <div class="fd-belt-caption"><span>FAITES DÉFILER LE COMPTOIR</span><span>La sélection évolue au fil de vos découvertes.</span></div>
             }
         </section>
 
-        <section class="fd-ritual-banner">
-            <div class="fd-ritual-decoration">F.</div>
-            <div class="fd-ritual-copy">
-                <span class="fd-eyebrow">VOS CHEVEUX, VOTRE STYLE.</span>
-                <h2>Chaque jour mérite<br /><em>son rituel.</em></h2>
-                <p>Kemon et Actyva : deux univers, une même passion pour la beauté et le soin des cheveux.</p>
-                <a href="#selection">TROUVER MON RITUEL <span>↗</span></a>
+        <section class="fd-atelier">
+            <div class="fd-atelier-mark">F.</div>
+            <div class="fd-atelier-copy">
+                <span class="fd-eyebrow">KEMON × ACTYVA · L'EXPERTISE EN DEUX UNIVERS</span>
+                <h2>Un rituel qui<br /><em>vous ressemble.</em></h2>
+                <p>Des soins ciblés, des gestes simples et des formules professionnelles : choisissez les essentiels qui accompagnent vos cheveux au quotidien.</p>
+                <a href="#selection">TROUVER MES ESSENTIELS <b>↗</b></a>
             </div>
-            <div class="fd-ritual-orbit fd-orbit-a"></div>
-            <div class="fd-ritual-orbit fd-orbit-b"></div>
-            <div class="fd-ritual-sticker">GOOD<br />HAIR<br /><b>DAY!</b></div>
+            <div class="fd-atelier-art" aria-hidden="true"><div class="fd-atelier-arch"><span>F</span></div><div class="fd-atelier-orbit"></div><div class="fd-atelier-tag">GOOD<br />HAIR<br /><b>ENERGY</b></div></div>
         </section>
 
         <section class="fd-cart-section" id="panier">
