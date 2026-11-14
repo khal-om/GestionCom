@@ -78,60 +78,121 @@
 
         <section class="showroom-selection-section" id="selection">
             <div class="showroom-section-heading showroom-selection-heading">
-                <div><p class="showroom-kicker">LA SÉLECTION FEDNAD</p><h2>Les essentiels<br /><em>à découvrir.</em></h2></div>
-                <p>Retrouvez ici les produits sélectionnés par notre équipe. Pour toute question ou disponibilité, contactez-nous directement.</p>
-            </div>
-
-            <div class="showroom-catalogue-tools">
-                <label class="showroom-search-box"><span aria-hidden="true">⌕</span><input type="search" placeholder="Rechercher un produit…" aria-label="Rechercher un produit" @bind="searchText" @bind:event="oninput" /></label>
-                <div class="showroom-brand-filters" aria-label="Filtrer par marque">
-                    <button type="button" class="@(selectedBrandSlug is null ? "is-active" : "")" @onclick="() => selectedBrandSlug = null">Tout</button>
-                    @foreach (var brand in brands)
-                    {
-                        <button type="button" class="@(selectedBrandSlug == brand.Slug ? "is-active" : "")" @onclick="() => selectedBrandSlug = brand.Slug">@brand.NameFr</button>
-                    }
+                <div>
+                    <p class="showroom-kicker">LA SÉLECTION FEDNAD</p>
+                    <h2>Les essentiels<br /><em>à découvrir.</em></h2>
                 </div>
+                <p>Une sélection de soins professionnels Kemon & Actyva, choisis pour accompagner chaque rituel capillaire.</p>
             </div>
 
             @if (isLoading)
             {
                 <div class="showroom-catalogue-message">Préparation de la sélection…</div>
             }
-            else if (!FilteredProducts.Any())
+            else if (!products.Any())
             {
-                <div class="showroom-catalogue-empty"><span class="showroom-empty-symbol">✳</span><h3>@(products.Count == 0 ? "La sélection arrive bientôt." : "Aucun produit ne correspond à votre recherche.")</h3><p>@(products.Count == 0 ? "Notre catalogue est en préparation. Revenez bientôt pour découvrir les produits Kemon & Actyva." : "Essayez un autre terme ou choisissez une autre marque.")</p></div>
+                <div class="showroom-catalogue-empty">
+                    <span class="showroom-empty-symbol">✳</span>
+                    <h3>La sélection arrive bientôt.</h3>
+                    <p>Notre catalogue est en préparation. Revenez bientôt pour découvrir les produits Kemon & Actyva.</p>
+                </div>
             }
             else
             {
-                <div class="showroom-product-grid">
-                    @foreach (var product in FilteredProducts)
-                    {
-                        var primaryImage = product.Images.OrderByDescending(i => i.IsPrimary).ThenBy(i => i.SortOrder).FirstOrDefault();
-                        <article class="showroom-public-product" @key="product.Id">
-                            <div class="showroom-public-product-image-wrap">
-                                @if (primaryImage is not null && !string.IsNullOrWhiteSpace(primaryImage.ImagePath))
-                                {
-                                    <img class="showroom-public-product-image" src="@primaryImage.ImagePath" alt="@(primaryImage.AltTextFr ?? product.NameFr)" loading="lazy" />
-                                }
-                                else
-                                {
-                                    <div class="showroom-product-image-placeholder"><span>@product.Brand.NameFr</span><strong>@product.NameFr</strong></div>
-                                }
-                                @if (product.IsNew) { <span class="showroom-product-badge">NOUVEAUTÉ</span> }
-                                @if (!product.IsAvailable) { <span class="showroom-product-unavailable">Disponibilité à confirmer</span> }
-                            </div>
-                            <div class="showroom-public-product-meta"><span>@product.Brand.NameFr</span>@if (product.Range is not null) { <span> / @product.Range.NameFr</span> }</div>
-                            <h3>@product.NameFr</h3>
-                            @if (!string.IsNullOrWhiteSpace(product.ShortDescriptionFr))
-                            {
-                                <p class="showroom-public-product-description">@product.ShortDescriptionFr</p>
-                            }
-                            <div class="showroom-public-product-bottom"><strong>@product.PriceTnd.ToString("0.00", CultureInfo.GetCultureInfo("fr-TN")) <span>TND</span></strong><button type="button" class="showroom-product-details-button" @onclick="() => selectedProduct = product">Voir le produit <span aria-hidden="true">↗</span></button></div>
-                        </article>
-                    }
+                <div class="showroom-conveyor-intro">
+                    <span>LE CHOIX DE NOS EXPERTS</span>
+                    <span>FAITES DÉFILER LA SÉLECTION <span aria-hidden="true">→</span></span>
                 </div>
+                <div class="showroom-conveyor-window">
+                    <div class="showroom-conveyor-track">
+                        @foreach (var product in products)
+                        {
+                            var primaryImage = product.Images.OrderByDescending(i => i.IsPrimary).ThenBy(i => i.SortOrder).FirstOrDefault();
+                            <article class="showroom-conveyor-product">
+                                <div class="showroom-conveyor-product-image">
+                                    @if (primaryImage is not null && !string.IsNullOrWhiteSpace(primaryImage.ImagePath))
+                                    {
+                                        <img src="@primaryImage.ImagePath" alt="@(primaryImage.AltTextFr ?? product.NameFr)" loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <div class="showroom-product-image-placeholder"><span>@product.Brand.NameFr</span><strong>@product.NameFr</strong></div>
+                                    }
+                                    @if (product.IsNew) { <span class="showroom-product-badge">NOUVEAUTÉ</span> }
+                                </div>
+                                <div class="showroom-public-product-meta"><span>@product.Brand.NameFr</span>@if (product.Range is not null) { <span> / @product.Range.NameFr</span> }</div>
+                                <h3>@product.NameFr</h3>
+                                <div class="showroom-conveyor-product-bottom">
+                                    <strong>@product.PriceTnd.ToString("0.00", CultureInfo.GetCultureInfo("fr-TN")) <span>TND</span></strong>
+                                    <button type="button" class="showroom-add-mock-button">Ajouter au panier <span aria-hidden="true">＋</span></button>
+                                </div>
+                            </article>
+                        }
+                        @foreach (var product in products)
+                        {
+                            var primaryImage = product.Images.OrderByDescending(i => i.IsPrimary).ThenBy(i => i.SortOrder).FirstOrDefault();
+                            <article class="showroom-conveyor-product" aria-hidden="true">
+                                <div class="showroom-conveyor-product-image">
+                                    @if (primaryImage is not null && !string.IsNullOrWhiteSpace(primaryImage.ImagePath))
+                                    {
+                                        <img src="@primaryImage.ImagePath" alt="" loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <div class="showroom-product-image-placeholder"><span>@product.Brand.NameFr</span><strong>@product.NameFr</strong></div>
+                                    }
+                                </div>
+                                <div class="showroom-public-product-meta"><span>@product.Brand.NameFr</span></div>
+                                <h3>@product.NameFr</h3>
+                                <div class="showroom-conveyor-product-bottom">
+                                    <strong>@product.PriceTnd.ToString("0.00", CultureInfo.GetCultureInfo("fr-TN")) <span>TND</span></strong>
+                                    <span class="showroom-add-mock-button">Ajouter au panier <span aria-hidden="true">＋</span></span>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                </div>
+                <p class="showroom-conveyor-note">Une sélection présentée à titre de démonstration. Les commandes seront bientôt disponibles.</p>
             }
-            <p class="showroom-catalogue-disclaimer">Les prix sont affichés à titre informatif. Pour confirmer la disponibilité d'un produit ou obtenir un conseil, contactez FedNad.</p>
+
+            <div class="showroom-order-preview" aria-label="Aperçu du panier et de la commande">
+                <div class="showroom-order-preview-heading">
+                    <div><p class="showroom-kicker">VOTRE SÉLECTION</p><h2>Un rituel qui<br /><em>vous ressemble.</em></h2></div>
+                    <span class="showroom-cart-count">02 ARTICLES</span>
+                </div>
+                <div class="showroom-order-preview-grid">
+                    <div class="showroom-cart-mock">
+                        <div class="showroom-cart-mock-title"><span>Votre panier</span><span>Modifier <span aria-hidden="true">↗</span></span></div>
+                        <div class="showroom-cart-mock-item">
+                            <div class="showroom-cart-mock-image showroom-cart-image-one"><span>K</span></div>
+                            <div class="showroom-cart-mock-info"><span>KEMON · SOIN</span><strong>Votre soin essentiel</strong><small>Format professionnel · 250 ml</small><b>À partir de 00,00 TND</b></div>
+                            <span class="showroom-cart-quantity">× 1</span>
+                        </div>
+                        <div class="showroom-cart-mock-item">
+                            <div class="showroom-cart-mock-image showroom-cart-image-two"><span>A</span></div>
+                            <div class="showroom-cart-mock-info"><span>ACTYVA · RITUEL</span><strong>Votre rituel quotidien</strong><small>Format professionnel · 200 ml</small><b>À partir de 00,00 TND</b></div>
+                            <span class="showroom-cart-quantity">× 1</span>
+                        </div>
+                        <div class="showroom-cart-mock-total"><span>Total estimatif</span><strong>00,00 TND</strong></div>
+                        <div class="showroom-cart-mock-button">Passer à la commande <span aria-hidden="true">→</span></div>
+                        <p>Aucun paiement en ligne. Votre demande sera confirmée par notre équipe.</p>
+                    </div>
+                    <div class="showroom-checkout-mock">
+                        <div class="showroom-checkout-mock-top"><span>ÉTAPE 02</span><span>VOS COORDONNÉES</span></div>
+                        <h3>Finaliser votre<br /><em>commande.</em></h3>
+                        <p>Indiquez-nous comment vous contacter pour donner suite à votre sélection.</p>
+                        <div class="showroom-mock-form-grid">
+                            <label>Nom et prénom<input type="text" placeholder="Votre nom" disabled /></label>
+                            <label>Téléphone<input type="tel" placeholder="+216 —" disabled /></label>
+                            <label class="showroom-mock-form-wide">Adresse e-mail<input type="email" placeholder="vous@exemple.com" disabled /></label>
+                            <label class="showroom-mock-form-wide">Adresse / Ville<input type="text" placeholder="Votre adresse" disabled /></label>
+                            <label class="showroom-mock-form-wide">Un message (facultatif)<textarea placeholder="Une précision concernant votre commande…" disabled></textarea></label>
+                        </div>
+                        <div class="showroom-checkout-mock-submit">Confirmer ma demande <span aria-hidden="true">→</span></div>
+                        <small>Prototype visuel · Formulaire non fonctionnel</small>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <section class="showroom-expertise-section" id="apropos">
