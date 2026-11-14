@@ -333,10 +333,18 @@
         isLoading = false;
     }
 
+    private bool productAutoplayInitialized;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !isLoading)
-            await JS.InvokeVoidAsync("fednadShowroom.initProductAutoplay", productTrack, isAutoplayPaused);
+        if (!isLoading && !productAutoplayInitialized)
+        {
+            productAutoplayInitialized = true;
+            var isRunning = await JS.InvokeAsync<bool>(
+                "fednadShowroom.initProductAutoplay", productTrack, isAutoplayPaused);
+            isAutoplayPaused = !isRunning;
+            StateHasChanged();
+        }
     }
 
     private async Task ScrollProducts(int direction)

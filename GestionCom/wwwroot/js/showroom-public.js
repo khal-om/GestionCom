@@ -7,10 +7,13 @@ window.fednadShowroom = (() => {
     let hoverPaused = false;
     let focusPaused = false;
     let reducedMotion = false;
+    let motionOverride = false;
     let resumeTimer = 0;
-    const speed = 25;
+    let listeners = null;
+    const speed = 24;
 
-    const isPaused = () => userPaused || hoverPaused || focusPaused || reducedMotion;
+    const isPaused = () =>
+        userPaused || hoverPaused || focusPaused || (reducedMotion && !motionOverride);
 
     const stopFrame = () => {
         if (frameId) cancelAnimationFrame(frameId);
@@ -24,12 +27,14 @@ window.fednadShowroom = (() => {
             return;
         }
 
-        if (!isPaused() && track.scrollWidth > track.clientWidth + 2) {
+        const maxScroll = track.scrollWidth - track.clientWidth;
+        if (!isPaused() && maxScroll > 2 && !document.hidden) {
             if (lastTime) {
-                const max = track.scrollWidth - track.clientWidth;
-                track.scrollLeft += direction * speed * Math.min((time - lastTime) / 1000, 0.05);
-                if (track.scrollLeft >= max - 1) {
-                    track.scrollLeft = max;
+                const elapsed = Math.min((time - lastTime) / 1000, 0.05);
+                track.scrollLeft += direction * speed * elapsed;
+
+                if (track.scrollLeft >= maxScroll - 1) {
+                    track.scrollLeft = maxScroll;
                     direction = -1;
                 } else if (track.scrollLeft <= 1) {
                     track.scrollLeft = 0;
@@ -72,30 +77,55 @@ window.fednadShowroom = (() => {
     };
 
     const initProductAutoplay = (element, initiallyPaused) => {
-        if (!element) return;
-        if (track && track !== element) stopFrame();
+        if (!element) return false;
+        if (track === element && listeners) return !isPaused();
+
+        stopFrame();
+        if (track && listeners) {
+            track.removeEventListener("pointerenter", listeners.pointerenter);
+            track.removeEventListener("pointerleave", listeners.pointerleave);
+            track.removeEventListener("focusin", listeners.focusin);
+            track.removeEventListener("focusout", listeners.focusout);
+            track.removeEventListener("touchstart", listeners.touchstart);
+            track.removeEventListener("touchend", listeners.touchend);
+        }
+
         track = element;
         userPaused = !!initiallyPaused;
+        hoverPaused = false;
+        focusPaused = false;
         reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        element.addEventListener("pointerenter", () => { hoverPaused = true; });
-        element.addEventListener("pointerleave", () => { hoverPaused = false; start(); });
-        element.addEventListener("focusin", () => { focusPaused = true; });
-        element.addEventListener("focusout", (event) => {
-            if (!element.contains(event.relatedTarget)) {
-                focusPaused = false;
-                start();
+        motionOverride = false;
+
+        listeners = {
+            pointerenter: () => { hoverPaused = true; },
+            pointerleave: () => { hoverPaused = false; start(); },
+            focusin: () => { focusPaused = true; },
+            focusout: (event) => {
+                if (!element.contains(event.relatedTarget)) {
+                    focusPaused = false;
+                    start();
+                }
+            },
+            touchstart: () => { hoverPaused = true; },
+            touchend: () => {
+                setTimeout(() => { hoverPaused = false; start(); }, 900);
             }
+        };
+
+        Object.entries(listeners).forEach(([name, handler]) => {
+            element.addEventListener(name, handler, { passive: name.startsWith("touch") });
         });
-        element.addEventListener("touchstart", () => { hoverPaused = true; }, { passive: true });
-        element.addEventListener("touchend", () => {
-            setTimeout(() => { hoverPaused = false; start(); }, 900);
-        }, { passive: true });
+
         start();
+        return !isPaused();
     };
 
     const setAutoplayPaused = (paused) => {
         userPaused = !!paused;
-        if (!userPaused) start();
+        if (!userPaused) motionOverride = true;
+        if (userPaused) stopFrame();
+        else start();
     };
 
     return { scrollProducts, initProductAutoplay, setAutoplayPaused };
