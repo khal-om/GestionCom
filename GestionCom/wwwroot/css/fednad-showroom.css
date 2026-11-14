@@ -69,7 +69,7 @@
 .fn-hero-note { color:#8A827C; font-size:7px; font-weight:800; letter-spacing:.14em; }
 .fn-hero-index { display:flex; align-items:center; gap:13px; margin-top:48px; color:#8A827C; font-size:7px; font-weight:800; letter-spacing:.15em; }
 .fn-hero-index strong { color:var(--fn-sage); font:600 14px 'Cormorant Garamond',serif; }
-.fn-hero-visual { min-height:390px; position:relative; display:flex; align-items:center; justify-content:center; }\n.fn-hero-visual::before { content:\"\"; position:absolute; inset:0 12%; border-radius:46% 46% 4px 4px; background-image:url(\"https://kemon.de/cdn/shop/files/Menue-Icons_female_13102_1600x.jpg?v=1624641913\"); background-size:cover; background-position:center 28%; opacity:.34; }
+.fn-hero-visual { min-height:390px; position:relative; display:flex; align-items:center; justify-content:center; }
 .fn-visual-orbit { position:absolute; width:380px; height:380px; border:1px solid rgba(25,25,25,.10); border-radius:50%; }
 .fn-orbit-two { width:290px; height:290px; border-color:rgba(25,25,25,.08); }
 .fn-visual-label { position:absolute; z-index:1; top:4%; right:2%; color:#8A827C; font-size:7px; font-weight:800; line-height:1.6; letter-spacing:.18em; text-align:right; }
@@ -240,7 +240,7 @@
 }
 .fn-footer-logo .fn-wordmark-icon { background:var(--fn-terracotta); color:#fff; }
 .fn-footer p { color:#68625E; font-size:10px; line-height:1.7; }
-.fn-footer p strong { color:#fff; }
+.fn-footer p strong { color:#191919; }
 .fn-footer-links { display:flex; gap:18px; }
 .fn-footer-links a { color:#68625E; font-size:8px; font-weight:800; }
 .fn-footer-links a:hover { color:var(--fn-terracotta-dark); }
