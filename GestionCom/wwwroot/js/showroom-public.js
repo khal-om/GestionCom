@@ -1,114 +1,87 @@
 window.fednadShowroom = (() => {
-    let frameId = 0;
+    let frame = 0;
     let track = null;
-    let lastTime = 0;
+    let previousTime = 0;
     let direction = 1;
-    let userPaused = false;
-    let focusPaused = false;
-    let touchPaused = false;
-    let listeners = null;
-    const speed = 32;
+    let pausedByUser = false;
+    let pausedByFocus = false;
+    let resizeObserver = null;
+    const speed = 42; // pixels per second
 
-    const isPaused = () => userPaused || focusPaused || touchPaused;
-
-    const stopFrame = () => {
-        if (frameId) cancelAnimationFrame(frameId);
-        frameId = 0;
-        lastTime = 0;
+    const stop = () => {
+        if (frame) window.cancelAnimationFrame(frame);
+        frame = 0;
+        previousTime = 0;
     };
 
-    const tick = (time) => {
-        if (!track || !track.isConnected) {
-            stopFrame();
-            return;
-        }
-
-        const maxScroll = track.scrollWidth - track.clientWidth;
-        if (!isPaused() && maxScroll > 2 && !document.hidden) {
-            if (lastTime) {
-                const elapsed = Math.min((time - lastTime) / 1000, 0.05);
-                const next = track.scrollLeft + direction * speed * elapsed;
-                if (next >= maxScroll) {
-                    track.scrollLeft = maxScroll;
-                    direction = -1;
-                } else if (next <= 0) {
-                    track.scrollLeft = 0;
-                    direction = 1;
-                } else {
-                    track.scrollLeft = next;
-                }
+    const step = (time) => {
+        if (!track || !track.isConnected) { stop(); return; }
+        const max = track.scrollWidth - track.clientWidth;
+        if (!pausedByUser && !pausedByFocus && max > 4 && !document.hidden) {
+            if (previousTime) {
+                const delta = Math.min((time - previousTime) / 1000, 0.05) * speed;
+                let next = track.scrollLeft + direction * delta;
+                if (next >= max) { next = max; direction = -1; }
+                if (next <= 0) { next = 0; direction = 1; }
+                track.scrollLeft = next;
             }
-            lastTime = time;
+            previousTime = time;
         } else {
-            lastTime = 0;
+            previousTime = 0;
         }
-        frameId = requestAnimationFrame(tick);
+        frame = window.requestAnimationFrame(step);
     };
 
     const start = () => {
-        if (!frameId && track) frameId = requestAnimationFrame(tick);
-    };
-
-    const pauseForManualControl = () => {
-        touchPaused = true;
-        window.setTimeout(() => { touchPaused = false; start(); }, 1100);
-    };
-
-    const scrollProducts = (element, amount) => {
-        if (!element) return;
-        pauseForManualControl();
-        const card = element.querySelector(".fn-product-card");
-        const styles = window.getComputedStyle(element);
-        const gap = parseFloat(styles.columnGap || styles.gap || "0");
-        const distance = card ? card.getBoundingClientRect().width + gap : element.clientWidth * 0.8;
-        element.scrollBy({ left: amount * distance, behavior: "smooth" });
-        direction = amount > 0 ? 1 : -1;
+        if (!frame && track) frame = window.requestAnimationFrame(step);
     };
 
     const initProductAutoplay = (element, initiallyPaused) => {
         if (!element) return false;
-        if (track === element && listeners) {
-            start();
-            return !userPaused;
-        }
-
-        stopFrame();
-        if (track && listeners) {
-            track.removeEventListener("focusin", listeners.focusin);
-            track.removeEventListener("focusout", listeners.focusout);
-            track.removeEventListener("touchstart", listeners.touchstart);
-            track.removeEventListener("touchend", listeners.touchend);
-        }
-
-        track = element;
-        userPaused = !!initiallyPaused;
-        focusPaused = false;
-        touchPaused = false;
-        listeners = {
-            focusin: () => { focusPaused = true; },
-            focusout: (event) => {
+        if (track !== element) {
+            stop();
+            if (resizeObserver) resizeObserver.disconnect();
+            track = element;
+            pausedByUser = !!initiallyPaused;
+            pausedByFocus = false;
+            element.style.width = "100%";
+            element.style.maxWidth = "100%";
+            element.style.minWidth = "0";
+            element.style.overflowX = "auto";
+            element.style.flexWrap = "nowrap";
+            Array.from(element.children).forEach(card => {
+                card.style.flexShrink = "0";
+            });
+            element.addEventListener("focusin", () => { pausedByFocus = true; });
+            element.addEventListener("focusout", event => {
                 if (!element.contains(event.relatedTarget)) {
-                    focusPaused = false;
+                    pausedByFocus = false;
                     start();
                 }
-            },
-            touchstart: () => { touchPaused = true; },
-            touchend: () => {
-                window.setTimeout(() => { touchPaused = false; start(); }, 1100);
-            }
-        };
-        Object.entries(listeners).forEach(([name, handler]) =>
-            element.addEventListener(name, handler, { passive: name.startsWith("touch") }));
-
+            });
+            resizeObserver = new ResizeObserver(() => start());
+            resizeObserver.observe(element);
+            if (element.firstElementChild) resizeObserver.observe(element.firstElementChild);
+        }
         start();
-        return !userPaused;
+        return !pausedByUser;
     };
 
     const setAutoplayPaused = (paused) => {
-        userPaused = !!paused;
-        if (userPaused) stopFrame();
+        pausedByUser = !!paused;
+        if (pausedByUser) stop();
         else start();
     };
 
-    return { scrollProducts, initProductAutoplay, setAutoplayPaused };
+    const scrollProducts = (element, amount) => {
+        if (!element) return;
+        const card = element.querySelector(".fn-product-card");
+        const styles = window.getComputedStyle(element);
+        const gap = parseFloat(styles.columnGap || styles.gap || "0");
+        const distance = card ? card.getBoundingClientRect().width + gap : element.clientWidth * .8;
+        element.scrollBy({ left: amount * distance, behavior: "smooth" });
+        direction = amount > 0 ? 1 : -1;
+    };
+
+    return { initProductAutoplay, setAutoplayPaused, scrollProducts };
 })();
