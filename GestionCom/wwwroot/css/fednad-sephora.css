@@ -1088,3 +1088,357 @@
         transition-duration:.01ms!important;
     }
 }
+
+
+/* FINAL ART DIRECTION — Sephora-like monochrome.
+   This block intentionally wins over legacy showroom !important declarations. */
+.fn-store.fn-sephora {
+    --shop-black:#111111!important;
+    --shop-text:#171717!important;
+    --shop-muted:#666666!important;
+    --shop-line:#dedede!important;
+    --shop-soft:#f5f5f5!important;
+    --shop-white:#ffffff!important;
+    --shop-accent:#111111!important;
+    --shop-accent-hover:#333333!important;
+    color:#171717!important;
+    background:#ffffff!important;
+    font-family:'Inter','Helvetica Neue',Arial,sans-serif!important;
+    font-size:14px!important;
+    line-height:1.55!important;
+    letter-spacing:0!important;
+}
+.fn-store.fn-sephora,
+.fn-store.fn-sephora * {
+    font-family:'Inter','Helvetica Neue',Arial,sans-serif!important;
+}
+.fn-store.fn-sephora p { color:#626262!important; }
+.fn-store.fn-sephora h1,
+.fn-store.fn-sephora h2,
+.fn-store.fn-sephora h3,
+.fn-store.fn-sephora h4,
+.fn-store.fn-sephora strong { color:#111111!important; }
+.fn-store.fn-sephora .fn-announcement {
+    min-height:34px!important;
+    background:#111111!important;
+    color:#ffffff!important;
+    letter-spacing:.11em!important;
+    font-size:9px!important;
+}
+.fn-store.fn-sephora .fn-announcement span,
+.fn-store.fn-sephora .fn-announcement b { color:#ffffff!important; }
+.fn-store.fn-sephora .fn-header {
+    min-height:78px!important;
+    background:#ffffff!important;
+    color:#111111!important;
+    border-bottom:1px solid #dedede!important;
+    box-shadow:none!important;
+}
+.fn-store.fn-sephora .fn-wordmark-icon {
+    background:#111111!important;
+    color:#ffffff!important;
+    border-radius:0!important;
+}
+.fn-store.fn-sephora .fn-wordmark-text,
+.fn-store.fn-sephora .fn-wordmark-text small {
+    color:#111111!important;
+}
+.fn-store.fn-sephora .fn-wordmark-text {
+    font-size:27px!important;
+    font-weight:800!important;
+    letter-spacing:-1.5px!important;
+}
+.fn-store.fn-sephora .fn-wordmark-text small {
+    font-size:8px!important;
+    letter-spacing:1.45px!important;
+}
+.fn-store.fn-sephora .fn-nav a,
+.fn-store.fn-sephora .fn-cart-link {
+    color:#171717!important;
+    font-weight:600!important;
+}
+.fn-store.fn-sephora .fn-nav a::after { background:#111111!important; }
+.fn-store.fn-sephora .fn-cart-link {
+    border-color:#111111!important;
+}
+.fn-store.fn-sephora .fn-cart-link b {
+    background:#111111!important;
+    color:#ffffff!important;
+}
+.fn-store.fn-sephora .fn-breadcrumb {
+    color:#777777!important;
+}
+.fn-store.fn-sephora .fn-breadcrumb strong { color:#171717!important; }
+.fn-store.fn-sephora .fn-product-detail {
+    gap:clamp(34px,5vw,76px)!important;
+    padding-top:8px!important;
+    padding-bottom:66px!important;
+}
+.fn-store.fn-sephora .fn-gallery-main {
+    min-height:clamp(480px,49vw,650px)!important;
+    background:#f5f5f5!important;
+    border:0!important;
+    border-radius:0!important;
+}
+.fn-store.fn-sephora .fn-gallery-main>img {
+    width:100%!important;
+    height:100%!important;
+    max-height:620px!important;
+    object-fit:contain!important;
+}
+.fn-store.fn-sephora .fn-gallery-thumb {
+    background:#f5f5f5!important;
+    border:1px solid #e1e1e1!important;
+    border-radius:0!important;
+}
+.fn-store.fn-sephora .fn-gallery-thumb.is-active,
+.fn-store.fn-sephora .fn-gallery-thumb:hover {
+    border:2px solid #111111!important;
+}
+.fn-store.fn-sephora .fn-product-eyebrow {
+    color:#555555!important;
+    letter-spacing:.08em!important;
+}
+.fn-store.fn-sephora .fn-product-panel h1 {
+    color:#111111!important;
+    font-size:clamp(30px,3vw,43px)!important;
+    font-weight:700!important;
+    line-height:1.12!important;
+    letter-spacing:-1.4px!important;
+}
+.fn-store.fn-sephora .fn-product-short-description,
+.fn-store.fn-sephora .fn-product-description {
+    color:#555555!important;
+    line-height:1.8!important;
+}
+.fn-store.fn-sephora .fn-product-price,
+.fn-store.fn-sephora .fn-product-price small { color:#111111!important; }
+.fn-store.fn-sephora .fn-product-availability.is-available { color:#277346!important; }
+.fn-store.fn-sephora .fn-product-size { color:#666666!important; }
+.fn-store.fn-sephora .fn-detail-add-button,
+.fn-store.fn-sephora .fn-primary-button,
+.fn-store.fn-sephora .fn-checkout-button,
+.fn-store.fn-sephora .fn-modal-add {
+    border:1px solid #111111!important;
+    border-radius:0!important;
+    background:#111111!important;
+    color:#ffffff!important;
+    box-shadow:none!important;
+    font-weight:700!important;
+}
+.fn-store.fn-sephora .fn-detail-add-button:hover:not(:disabled),
+.fn-store.fn-sephora .fn-primary-button:hover:not(:disabled),
+.fn-store.fn-sephora .fn-checkout-button:hover:not(:disabled),
+.fn-store.fn-sephora .fn-modal-add:hover {
+    border-color:#333333!important;
+    background:#333333!important;
+    color:#ffffff!important;
+}
+.fn-store.fn-sephora .fn-product-service-note {
+    border:1px solid #e2e2e2!important;
+    border-radius:0!important;
+    background:#fafafa!important;
+    color:#555555!important;
+}
+.fn-store.fn-sephora .fn-product-meta {
+    border-color:#dedede!important;
+}
+.fn-store.fn-sephora .fn-product-meta>div {
+    border-color:#dedede!important;
+}
+.fn-store.fn-sephora .fn-product-meta span { color:#777777!important; }
+.fn-store.fn-sephora .fn-product-meta strong { color:#222222!important; }
+.fn-store.fn-sephora .fn-product-information {
+    border-color:#dedede!important;
+    background:#ffffff!important;
+}
+.fn-store.fn-sephora .fn-information-heading>span,
+.fn-store.fn-sephora .fn-section-kicker,
+.fn-store.fn-sephora .fn-carousel-kicker { color:#555555!important; }
+.fn-store.fn-sephora .fn-information-heading h2 { color:#111111!important; }
+.fn-store.fn-sephora .fn-info-accordion,
+.fn-store.fn-sephora .fn-info-accordion:last-of-type { border-color:#dedede!important; }
+.fn-store.fn-sephora .fn-info-accordion summary { color:#171717!important; }
+.fn-store.fn-sephora .fn-info-accordion summary::after { color:#111111!important; }
+.fn-store.fn-sephora .fn-accordion-content,
+.fn-store.fn-sephora .fn-accordion-content p { color:#555555!important; }
+.fn-store.fn-sephora .fn-accordion-content strong { color:#222222!important; }
+.fn-store.fn-sephora .fn-catalog {
+    background:#f5f5f5!important;
+    color:#171717!important;
+}
+.fn-store.fn-sephora .fn-section-heading h2 { color:#111111!important; }
+.fn-store.fn-sephora .fn-section-heading h2 span { color:#777777!important; }
+.fn-store.fn-sephora .fn-section-heading>p { color:#5f5f5f!important; }
+.fn-store.fn-sephora .fn-section-kicker i { background:#111111!important; }
+.fn-store.fn-sephora .fn-catalog-toolbar {
+    border-color:#d8d8d8!important;
+}
+.fn-store.fn-sephora .fn-filters button {
+    border:1px solid #cfcfcf!important;
+    border-radius:0!important;
+    background:#ffffff!important;
+    color:#222222!important;
+}
+.fn-store.fn-sephora .fn-filters button:hover,
+.fn-store.fn-sephora .fn-filters button.is-active {
+    border-color:#111111!important;
+    background:#111111!important;
+    color:#ffffff!important;
+}
+.fn-store.fn-sephora .fn-result-count,
+.fn-store.fn-sephora .fn-carousel-heading p,
+.fn-store.fn-sephora .fn-carousel-footnote { color:#666666!important; }
+.fn-store.fn-sephora .fn-carousel-arrow,
+.fn-store.fn-sephora .fn-carousel-toggle {
+    border:1px solid #bdbdbd!important;
+    border-radius:0!important;
+    background:#ffffff!important;
+    color:#111111!important;
+}
+.fn-store.fn-sephora .fn-carousel-arrow:hover,
+.fn-store.fn-sephora .fn-carousel-toggle:hover {
+    border-color:#111111!important;
+    background:#111111!important;
+    color:#ffffff!important;
+}
+.fn-store.fn-sephora .fn-product-card {
+    border:1px solid #e1e1e1!important;
+    border-radius:0!important;
+    background:#ffffff!important;
+    box-shadow:none!important;
+}
+.fn-store.fn-sephora .fn-product-card:hover {
+    transform:translateY(-2px)!important;
+    box-shadow:0 7px 20px rgba(0,0,0,.07)!important;
+}
+.fn-store.fn-sephora .fn-product-image {
+    background:#f1f1f1!important;
+    border-radius:0!important;
+}
+.fn-store.fn-sephora .fn-product-name,
+.fn-store.fn-sephora .fn-product-bottom>strong,
+.fn-store.fn-sephora .fn-product-brandline { color:#171717!important; }
+.fn-store.fn-sephora .fn-product-brandline span,
+.fn-store.fn-sephora .fn-product-brandline small { color:#666666!important; }
+.fn-store.fn-sephora .fn-product-name:hover { color:#111111!important; }
+.fn-store.fn-sephora .fn-add-button {
+    border:1px solid #111111!important;
+    border-radius:0!important;
+    background:#111111!important;
+    color:#ffffff!important;
+}
+.fn-store.fn-sephora .fn-add-button:hover:not(:disabled) {
+    background:#333333!important;
+    color:#ffffff!important;
+}
+.fn-store.fn-sephora .fn-new-label {
+    background:#111111!important;
+    color:#ffffff!important;
+}
+.fn-store.fn-sephora .fn-quick-view {
+    border:1px solid #111111!important;
+    border-radius:0!important;
+    background:#ffffff!important;
+    color:#111111!important;
+}
+.fn-store.fn-sephora .fn-brand-strip {
+    display:grid!important;
+    grid-template-columns:1fr auto 1fr!important;
+    align-items:center!important;
+    gap:28px!important;
+    padding:55px 6%!important;
+    border-top:1px solid #dedede!important;
+    border-bottom:1px solid #dedede!important;
+    background:#ffffff!important;
+    color:#111111!important;
+}
+.fn-store.fn-sephora .fn-brand-strip>div>span { color:#666666!important; }
+.fn-store.fn-sephora .fn-brand-strip h2 { color:#111111!important; }
+.fn-store.fn-sephora .fn-brand-wordmarks strong { color:#111111!important; }
+.fn-store.fn-sephora .fn-brand-wordmarks>span { color:#999999!important; }
+.fn-store.fn-sephora .fn-brand-strip>p { color:#666666!important; }
+.fn-store.fn-sephora .fn-cart-section {
+    background:#ffffff!important;
+    color:#171717!important;
+}
+.fn-store.fn-sephora .fn-cart-title h2 { color:#111111!important; }
+.fn-store.fn-sephora .fn-cart-total-count { color:#666666!important; }
+.fn-store.fn-sephora .fn-cart-empty,
+.fn-store.fn-sephora .fn-cart-item {
+    border-color:#dedede!important;
+    background:#ffffff!important;
+}
+.fn-store.fn-sephora .fn-cart-product small,
+.fn-store.fn-sephora .fn-cart-product button { color:#666666!important; }
+.fn-store.fn-sephora .fn-cart-product strong,
+.fn-store.fn-sephora .fn-line-total { color:#111111!important; }
+.fn-store.fn-sephora .fn-quantity button {
+    border:1px solid #dedede!important;
+    border-radius:0!important;
+    background:#f5f5f5!important;
+    color:#111111!important;
+}
+.fn-store.fn-sephora .fn-order-summary {
+    border:1px solid #dedede!important;
+    border-radius:0!important;
+    background:#f7f7f7!important;
+    color:#111111!important;
+}
+.fn-store.fn-sephora .fn-summary-total { border-color:#111111!important; }
+.fn-store.fn-sephora .fn-summary-total span { color:#666666!important; }
+.fn-store.fn-sephora .fn-summary-total strong { color:#111111!important; }
+.fn-store.fn-sephora .fn-footer {
+    background:#111111!important;
+    color:#ffffff!important;
+}
+.fn-store.fn-sephora .fn-footer .fn-wordmark-icon {
+    background:#ffffff!important;
+    color:#111111!important;
+}
+.fn-store.fn-sephora .fn-footer .fn-wordmark-text,
+.fn-store.fn-sephora .fn-footer .fn-wordmark-text small,
+.fn-store.fn-sephora .fn-footer>p,
+.fn-store.fn-sephora .fn-footer>p strong,
+.fn-store.fn-sephora .fn-footer-links a { color:#ffffff!important; }
+.fn-store.fn-sephora .fn-footer>small { border-color:#444444!important; color:#cccccc!important; }
+.fn-store.fn-sephora .fn-cart-toast {
+    border:1px solid #dedede!important;
+    border-radius:0!important;
+    background:#ffffff!important;
+    color:#111111!important;
+}
+.fn-store.fn-sephora .fn-cart-toast-mark { background:#111111!important; color:#ffffff!important; }
+.fn-store.fn-sephora .fn-cart-toast-copy strong,
+.fn-store.fn-sephora .fn-cart-toast-copy span { color:#111111!important; }
+.fn-store.fn-sephora .fn-cart-toast a { color:#111111!important; text-decoration:underline!important; }
+.fn-store.fn-sephora .fn-cart-toast-close { background:#f1f1f1!important; color:#111111!important; }
+.fn-store.fn-sephora .fn-product-modal,
+.fn-store.fn-sephora .fn-checkout-modal {
+    border-radius:0!important;
+    background:#ffffff!important;
+    color:#111111!important;
+}
+.fn-store.fn-sephora .fn-modal-product-image { background:#f5f5f5!important; }
+.fn-store.fn-sephora .fn-modal-product-info,
+.fn-store.fn-sephora .fn-modal-product-info h2,
+.fn-store.fn-sephora .fn-modal-price,
+.fn-store.fn-sephora .fn-checkout-modal h2 { color:#111111!important; }
+.fn-store.fn-sephora .fn-modal-product-info p,
+.fn-store.fn-sephora .fn-checkout-modal p { color:#5f5f5f!important; }
+.fn-store.fn-sephora button:focus-visible,
+.fn-store.fn-sephora a:focus-visible,
+.fn-store.fn-sephora summary:focus-visible {
+    outline:2px solid #111111!important;
+    outline-offset:3px!important;
+}
+@media(max-width:760px) {
+    .fn-store.fn-sephora .fn-header { background:#ffffff!important; }
+    .fn-store.fn-sephora .fn-product-detail { padding-bottom:42px!important; }
+    .fn-store.fn-sephora .fn-gallery-main { min-height:clamp(320px,90vw,480px)!important; }
+    .fn-store.fn-sephora .fn-brand-strip {
+        grid-template-columns:1fr!important;
+        gap:14px!important;
+        padding:36px 20px!important;
+    }
+}
