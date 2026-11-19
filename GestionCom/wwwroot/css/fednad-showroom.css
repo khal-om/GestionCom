@@ -1179,12 +1179,12 @@
 }
 
 
-/* Product packshots: fit the complete source image inside the card.
-   Keep intrinsic proportions instead of forcing both dimensions to 100%. */
+/* Keep conveyor product photography fully visible and proportional. */
 .fn-product-image {
-    box-sizing:border-box!important;
-    display:grid!important;
-    place-items:center!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    padding:14px!important;
 }
 .fn-product-image img {
     display:block!important;
@@ -1193,10 +1193,6 @@
     max-width:100%!important;
     max-height:100%!important;
     object-fit:contain!important;
-    object-position:center center!important;
     padding:0!important;
-    transform:none!important;
-}
-.fn-product-card:hover .fn-product-image img {
-    transform:none!important;
+    mix-blend-mode:normal!important;
 }
