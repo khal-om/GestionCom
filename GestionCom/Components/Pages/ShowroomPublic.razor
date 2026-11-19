@@ -52,14 +52,15 @@
     }
 
     <main>
-        <div class="fn-breadcrumb">
-            <a href="/vitrine">Accueil</a><span>/</span><a href="#selection">Cheveux</a><span>/</span>
-            <span>@(selectedProduct?.CategoryFr ?? "Soins professionnels")</span>
-            @if (selectedProduct is not null)
-            {
+        @if (selectedProduct is not null)
+        {
+            <div class="fn-breadcrumb">
+                <button type="button" class="fn-back-to-selection" @onclick="CloseProduct">← Retour à la sélection</button>
+                <span>/</span><a href="#selection">Cheveux</a><span>/</span>
+                <span>@(selectedProduct.CategoryFr ?? "Soins professionnels")</span>
                 <span>/</span><strong>@selectedProduct.NameFr</strong>
-            }
-        </div>
+            </div>
+        }
 
         @if (isLoading)
         {
@@ -210,6 +211,50 @@
                 {
                     <p class="fn-no-information">Les informations détaillées de ce produit seront bientôt disponibles.</p>
                 }
+            </section>
+        }
+        else if (products.Count > 0)
+        {
+            <section class="fn-home-hero" aria-label="Bienvenue chez FedNad">
+                <div class="fn-home-hero-copy">
+                    <span class="fn-home-eyebrow"><i></i> BEAUTÉ CAPILLAIRE PROFESSIONNELLE</span>
+                    <h1>Vos cheveux.<br /><em>Votre moment.</em></h1>
+                    <p>Découvrez les rituels de soin Kemon et Actyva : des essentiels professionnels pour révéler la beauté de vos cheveux, au quotidien.</p>
+                    <div class="fn-home-hero-actions">
+                        <a href="#selection" class="fn-home-primary">Explorer la sélection <span>→</span></a>
+                        <a href="#maisons" class="fn-home-secondary">Découvrir nos marques</a>
+                    </div>
+                    <div class="fn-home-hero-note"><span>✦</span> L'EXPERTISE DES SOINS PROFESSIONNELS, CHEZ VOUS</div>
+                </div>
+                <div class="fn-home-hero-visual">
+                    <div class="fn-home-hero-orbit fn-home-hero-orbit-one"></div>
+                    <div class="fn-home-hero-orbit fn-home-hero-orbit-two"></div>
+                    <div class="fn-home-hero-stamp">BEAUTÉ<br /><b>EN SOI</b><span>✦</span></div>
+                    <div class="fn-home-product-grid">
+                        @foreach (var heroProduct in products.Take(3))
+                        {
+                            var heroImage = heroProduct.Images.OrderByDescending(x => x.IsPrimary).ThenBy(x => x.SortOrder).FirstOrDefault();
+                            <button type="button" class="fn-home-product-tile" @onclick="() => OpenProduct(heroProduct)" aria-label="Découvrir @heroProduct.NameFr">
+                                <span class="fn-home-product-photo">
+                                    @if (heroImage is not null && !string.IsNullOrWhiteSpace(heroImage.ImagePath))
+                                    {
+                                        <img src="@heroImage.ImagePath" alt="@heroProduct.NameFr" />
+                                    }
+                                    else
+                                    {
+                                        <span class="fn-home-product-fallback">@heroProduct.Brand.NameFr</span>
+                                    }
+                                </span>
+                                <span class="fn-home-product-caption"><b>@heroProduct.Brand.NameFr</b><span>@heroProduct.NameFr</span></span>
+                            </button>
+                        }
+                    </div>
+                </div>
+            </section>
+            <section class="fn-home-brand-ribbon" aria-label="Nos marques">
+                <span>LE MEILLEUR DU SOIN PROFESSIONNEL</span>
+                <strong>KEMON</strong><i>✦</i><strong>ACTYVA</strong>
+                <span>LA BEAUTÉ DES CHEVEUX, AUTREMENT</span>
             </section>
         }
         else
@@ -435,9 +480,6 @@
             .ThenBy(product => product.NameFr)
             .ToListAsync();
 
-        selectedProduct = products.FirstOrDefault(product => product.IsFeatured)
-            ?? products.FirstOrDefault();
-
         isLoading = false;
     }
 
@@ -513,6 +555,12 @@
     private void OpenProduct(ShowroomProduct product)
     {
         selectedProduct = product;
+        selectedImageIndex = 0;
+    }
+
+    private void CloseProduct()
+    {
+        selectedProduct = null;
         selectedImageIndex = 0;
     }
 
