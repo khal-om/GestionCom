@@ -74,12 +74,13 @@
                     <div class="fn-gallery-thumbnails" aria-label="Autres photos du produit">
                         @for (var i = 0; i < galleryImages.Count; i++)
                         {
-                            var image = galleryImages[i];
+                            var imageIndex = i;
+                            var image = galleryImages[imageIndex];
                             <button type="button"
-                                    class="fn-gallery-thumb @(selectedImageIndex == i ? "is-active" : "")"
-                                    aria-label="Afficher la photo @(i + 1)"
-                                    aria-pressed="@(selectedImageIndex == i)"
-                                    @onclick="() => SelectProductImage(i)">
+                                    class="fn-gallery-thumb @(selectedImageIndex == imageIndex ? "is-active" : "")"
+                                    aria-label="Afficher la photo @(imageIndex + 1)"
+                                    aria-pressed="@(selectedImageIndex == imageIndex)"
+                                    @onclick="() => SelectProductImage(imageIndex)">
                                 <img src="@image.ImagePath" alt="@(image.AltTextFr ?? selectedProduct.NameFr)" />
                             </button>
                         }
