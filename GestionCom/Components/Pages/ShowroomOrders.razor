@@ -1,0 +1,217 @@
+@page "/showroom/commandes"
+@using GestionCom.Data
+@using GestionCom.Features.Showroom.Entities
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.Forms
+@inject IDbContextFactory<AppDbContext> DbFactory
+@attribute [Authorize(Roles = "Admin")]
+@rendermode InteractiveServer
+
+<PageTitle>Commandes showroom</PageTitle>
+<div class="showroom-admin-page showroom-orders-page">
+    <header class="showroom-admin-heading">
+        <div><p class="showroom-eyebrow">BOUTIQUE PUBLIQUE · SHOP.FEDNAD.COM</p><h1>Commandes</h1><p>Suivez les demandes reçues depuis le showroom. Ces commandes restent indépendantes du stock et des ventes GestionCom.</p></div>
+        <div class="showroom-orders-count"><strong>@orders.Count</strong><span>commande(s)</span></div>
+    </header>
+    @if (!string.IsNullOrWhiteSpace(message)) { <div class="showroom-alert @(isError ? "is-error" : "is-success")">@message</div> }
+    @if (isLoading) { <div class="showroom-empty-state">Chargement des commandes…</div> }
+    else
+    {
+        <div class="showroom-orders-toolbar">
+            <input class="showroom-search" placeholder="N° de commande, client, téléphone…" @bind="searchText" @bind:event="oninput" aria-label="Rechercher une commande" />
+            <select class="showroom-search showroom-order-status-filter" @bind="statusFilter" aria-label="Filtrer par statut">
+                <option value="">Tous les statuts</option>
+                @foreach (var status in Statuses) { <option value="@status">@status</option> }
+            </select>
+            <span>@FilteredOrders.Count() résultat(s)</span>
+        </div>
+        <div class="showroom-orders-layout">
+            <section class="showroom-admin-panel showroom-orders-list-panel">
+                <div class="showroom-panel-heading"><div><h2>Demandes reçues</h2><span>Les plus récentes en premier</span></div></div>
+                @if (!FilteredOrders.Any()) { <div class="showroom-empty-state">Aucune commande ne correspond à votre recherche.</div> }
+                else
+                {
+                    <div class="showroom-orders-list">
+                        @foreach (var order in FilteredOrders)
+                        {
+                            <button type="button" class="showroom-order-row @(selectedOrder?.Id == order.Id ? "is-selected" : "")" @onclick="() => SelectOrderAsync(order.Id)" @key="order.Id">
+                                <span class="showroom-order-row-top"><strong>@order.OrderNumber</strong><small>@order.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small></span>
+                                <span class="showroom-order-customer">@order.CustomerName</span>
+                                <span class="showroom-order-row-bottom"><span class="showroom-order-status status-@StatusCss(order.Status)">@order.Status</span><strong>@FormatPrice(order.TotalTnd) TND</strong></span>
+                            </button>
+                        }
+                    </div>
+                }
+            </section>
+            <section class="showroom-admin-panel showroom-order-editor-panel">
+                @if (selectedOrder is null) { <div class="showroom-empty-state showroom-order-select-prompt"><strong>Sélectionnez une commande</strong><span>Les coordonnées du client et le détail de sa sélection apparaîtront ici.</span></div> }
+                else
+                {
+                    <div class="showroom-panel-heading">
+                        <div><h2>@selectedOrder.OrderNumber</h2><span>Reçue le @selectedOrder.CreatedAt.ToLocalTime().ToString("dd MMMM yyyy à HH:mm")</span></div>
+                        <span class="showroom-order-status status-@StatusCss(selectedOrder.Status)">@selectedOrder.Status</span>
+                    </div>
+                    <EditForm Model="selectedOrder" OnValidSubmit="SaveOrderAsync" class="showroom-editor-form showroom-order-form">
+                        <DataAnnotationsValidator />
+                        <div class="showroom-order-section">
+                            <h3>Suivi de la commande</h3>
+                            <div class="showroom-field"><label for="order-status">Statut</label><InputSelect id="order-status" class="showroom-input" @bind-Value="selectedOrder.Status">@foreach (var status in Statuses) { <option value="@status">@status</option> }</InputSelect></div>
+                        </div>
+                        <div class="showroom-order-section">
+                            <h3>Coordonnées du client</h3>
+                            <div class="showroom-form-grid">
+                                <div class="showroom-field"><label>Nom et prénom</label><InputText class="showroom-input" @bind-Value="selectedOrder.CustomerName" maxlength="180" /></div>
+                                <div class="showroom-field"><label>E-mail</label><InputText class="showroom-input" @bind-Value="selectedOrder.Email" maxlength="254" /></div>
+                                <div class="showroom-field"><label>Téléphone</label><InputText class="showroom-input" @bind-Value="selectedOrder.Phone" maxlength="40" /></div>
+                                <div class="showroom-field"><label>Adresse</label><InputText class="showroom-input" @bind-Value="selectedOrder.Address" maxlength="240" /></div>
+                                <div class="showroom-field"><label>Code postal</label><InputText class="showroom-input" @bind-Value="selectedOrder.PostalCode" maxlength="32" /></div>
+                                <div class="showroom-field"><label>Ville</label><InputText class="showroom-input" @bind-Value="selectedOrder.City" maxlength="120" /></div>
+                                <div class="showroom-field"><label>Pays</label><InputText class="showroom-input" @bind-Value="selectedOrder.Country" maxlength="120" /></div>
+                            </div>
+                        </div>
+                        <div class="showroom-order-section">
+                            <div class="showroom-order-section-heading"><h3>Produits commandés</h3><span>Modifiez les quantités ou retirez un article.</span></div>
+                            @if (selectedOrder.Items.Count == 0) { <p class="showroom-order-empty-lines">Aucun article dans cette commande.</p> }
+                            else
+                            {
+                                <div class="showroom-order-lines">
+                                    @foreach (var item in selectedOrder.Items)
+                                    {
+                                        <div class="showroom-order-line" @key="item.Id">
+                                            <div class="showroom-order-line-info"><strong>@item.ProductNameFr</strong><span>@item.BrandNameFr @if (!string.IsNullOrWhiteSpace(item.Size)) { <text>· @item.Size</text> }</span><small>@FormatPrice(item.UnitPriceTnd) TND / unité</small></div>
+                                            <label class="showroom-order-quantity">Qté <InputNumber @bind-Value="item.Quantity" min="1" max="99" /></label>
+                                            <strong class="showroom-order-line-total">@FormatPrice(item.UnitPriceTnd * item.Quantity) TND</strong>
+                                            <button type="button" class="showroom-text-button showroom-delete-button" @onclick="() => RemoveItem(item)">Retirer</button>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            <div class="showroom-order-total"><span>Total recalculé</span><strong>@FormatPrice(SelectedTotal) TND</strong></div>
+                        </div>
+                        <div class="showroom-order-section"><h3>Note interne</h3><div class="showroom-field"><label for="order-admin-note">Visible uniquement dans GestionCom</label><InputTextArea id="order-admin-note" class="showroom-input" @bind-Value="selectedOrder.AdminNote" rows="3" /></div></div>
+                        <div class="showroom-editor-actions showroom-order-actions">
+                            <button type="button" class="showroom-secondary-button showroom-danger-outline" @onclick="() => confirmDelete = true">Supprimer</button>
+                            <button type="submit" class="showroom-primary-button" disabled="@isSaving">@(isSaving ? "Enregistrement…" : "Enregistrer les modifications")</button>
+                        </div>
+                    </EditForm>
+                    @if (confirmDelete)
+                    {
+                        <div class="showroom-delete-confirm"><div><strong>Supprimer définitivement cette commande ?</strong><span>Cette action supprimera également ses lignes de produits et ne peut pas être annulée.</span></div><div class="showroom-editor-actions"><button type="button" class="showroom-secondary-button" @onclick="() => confirmDelete = false">Annuler</button><button type="button" class="showroom-primary-button showroom-confirm-delete" @onclick="DeleteOrderAsync" disabled="@isSaving">Confirmer la suppression</button></div></div>
+                    }
+                }
+            </section>
+        </div>
+    }
+</div>
+
+@code {
+    private static readonly string[] Statuses = { "Nouvelle", "Confirmée", "En préparation", "Expédiée", "Terminée", "Annulée" };
+    private List<ShowroomOrder> orders = new();
+    private ShowroomOrder? selectedOrder;
+    private bool isLoading = true, isSaving, isError, confirmDelete;
+    private string searchText = string.Empty, statusFilter = string.Empty;
+    private string? message;
+
+    private IEnumerable<ShowroomOrder> FilteredOrders => orders.Where(order =>
+        (string.IsNullOrWhiteSpace(statusFilter) || order.Status == statusFilter) &&
+        (string.IsNullOrWhiteSpace(searchText) || order.OrderNumber.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+         order.CustomerName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+         order.Phone.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+         order.Email.Contains(searchText, StringComparison.OrdinalIgnoreCase)));
+    private decimal SelectedTotal => selectedOrder?.Items.Sum(item => item.UnitPriceTnd * item.Quantity) ?? 0m;
+
+    protected override async Task OnInitializedAsync() => await LoadOrdersAsync();
+
+    private async Task LoadOrdersAsync()
+    {
+        await using var db = await DbFactory.CreateDbContextAsync();
+        orders = await db.ShowroomOrders.AsNoTracking().OrderByDescending(order => order.CreatedAt).ToListAsync();
+        isLoading = false;
+    }
+
+    private async Task SelectOrderAsync(int id)
+    {
+        confirmDelete = false;
+        await using var db = await DbFactory.CreateDbContextAsync();
+        selectedOrder = await db.ShowroomOrders.AsNoTracking().Include(order => order.Items).FirstOrDefaultAsync(order => order.Id == id);
+        message = null;
+    }
+
+    private void RemoveItem(ShowroomOrderItem item) => selectedOrder?.Items.Remove(item);
+
+    private async Task SaveOrderAsync()
+    {
+        if (selectedOrder is null || isSaving) return;
+        if (!Statuses.Contains(selectedOrder.Status) || string.IsNullOrWhiteSpace(selectedOrder.CustomerName) ||
+            string.IsNullOrWhiteSpace(selectedOrder.Email) || !selectedOrder.Email.Contains('@') ||
+            string.IsNullOrWhiteSpace(selectedOrder.Phone) || string.IsNullOrWhiteSpace(selectedOrder.Address) ||
+            string.IsNullOrWhiteSpace(selectedOrder.PostalCode) || string.IsNullOrWhiteSpace(selectedOrder.City) ||
+            string.IsNullOrWhiteSpace(selectedOrder.Country) || selectedOrder.Items.Count == 0 ||
+            selectedOrder.Items.Any(item => item.Quantity < 1 || item.Quantity > 99))
+        {
+            SetMessage("Vérifiez les coordonnées, le statut et les quantités. Une commande doit contenir au moins un article.", true);
+            return;
+        }
+
+        isSaving = true;
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var entity = await db.ShowroomOrders.Include(order => order.Items).FirstOrDefaultAsync(order => order.Id == selectedOrder.Id);
+            if (entity is null) { SetMessage("Cette commande n'existe plus.", true); return; }
+
+            entity.CustomerName = selectedOrder.CustomerName.Trim();
+            entity.Email = selectedOrder.Email.Trim();
+            entity.Phone = selectedOrder.Phone.Trim();
+            entity.Address = selectedOrder.Address.Trim();
+            entity.PostalCode = selectedOrder.PostalCode.Trim();
+            entity.City = selectedOrder.City.Trim();
+            entity.Country = selectedOrder.Country.Trim();
+            entity.Status = selectedOrder.Status;
+            entity.AdminNote = string.IsNullOrWhiteSpace(selectedOrder.AdminNote) ? null : selectedOrder.AdminNote.Trim();
+            entity.UpdatedAt = DateTime.UtcNow;
+
+            var retainedIds = selectedOrder.Items.Where(item => item.Id > 0).Select(item => item.Id).ToHashSet();
+            db.ShowroomOrderItems.RemoveRange(entity.Items.Where(item => !retainedIds.Contains(item.Id)));
+            foreach (var editedItem in selectedOrder.Items)
+            {
+                var item = entity.Items.FirstOrDefault(existing => existing.Id == editedItem.Id);
+                if (item is not null) item.Quantity = editedItem.Quantity;
+            }
+            entity.TotalTnd = entity.Items.Where(item => retainedIds.Contains(item.Id)).Sum(item => item.UnitPriceTnd * item.Quantity);
+            await db.SaveChangesAsync();
+            SetMessage("Commande mise à jour.", false);
+            await LoadOrdersAsync();
+            await SelectOrderAsync(entity.Id);
+        }
+        catch (Exception ex) { SetMessage($"Enregistrement impossible : {ex.GetBaseException().Message}", true); }
+        finally { isSaving = false; }
+    }
+
+    private async Task DeleteOrderAsync()
+    {
+        if (selectedOrder is null || isSaving) return;
+        isSaving = true;
+        try
+        {
+            await using var db = await DbFactory.CreateDbContextAsync();
+            var entity = await db.ShowroomOrders.FirstOrDefaultAsync(order => order.Id == selectedOrder.Id);
+            if (entity is not null) { db.ShowroomOrders.Remove(entity); await db.SaveChangesAsync(); }
+            selectedOrder = null;
+            confirmDelete = false;
+            await LoadOrdersAsync();
+            SetMessage("Commande supprimée.", false);
+        }
+        catch (Exception ex) { SetMessage($"Suppression impossible : {ex.GetBaseException().Message}", true); }
+        finally { isSaving = false; }
+    }
+
+    private void SetMessage(string text, bool error) { message = text; isError = error; }
+    private static string StatusCss(string status) => status switch
+    {
+        "Nouvelle" => "new", "Confirmée" => "confirmed", "En préparation" => "preparing",
+        "Expédiée" => "shipped", "Terminée" => "done", "Annulée" => "cancelled", _ => "new"
+    };
+    private static string FormatPrice(decimal price) => price.ToString("N2", System.Globalization.CultureInfo.GetCultureInfo("fr-TN"));
+}

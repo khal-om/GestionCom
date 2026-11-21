@@ -1,5 +1,6 @@
 @page "/vitrine"
 @using System.Globalization
+@using System.ComponentModel.DataAnnotations
 @using GestionCom.Data
 @using GestionCom.Features.Showroom.Entities
 @using Microsoft.AspNetCore.Authorization
@@ -240,7 +241,7 @@
                     <div class="fn-summary-row"><span>Sous-total</span><strong>@FormatPrice(CartTotal) TND</strong></div>
                     <div class="fn-summary-total"><span>TOTAL ESTIMATIF</span><strong>@FormatPrice(CartTotal) <small>TND</small></strong></div>
                     <button type="button" class="fn-checkout-button" disabled="@(!cart.Any())" @onclick="ShowCheckoutPreview">Continuer <span>→</span></button>
-                    <p>Prototype de démonstration. Aucune commande ni aucun paiement ne seront effectués.</p>
+                    <p>Votre demande sera transmise à l'équipe FedNad. Aucun paiement en ligne ne sera demandé.</p>
                 </aside>
             </div>
         </section>
@@ -290,19 +291,65 @@
 
 @if (showCheckoutPreview)
 {
-    <div class="fn-modal-backdrop" @onclick="() => showCheckoutPreview = false">
-        <section class="fn-checkout-modal" role="dialog" aria-modal="true" aria-label="Aperçu de commande" @onclick:stopPropagation="true">
-            <button type="button" class="fn-modal-close" aria-label="Fermer" @onclick="() => showCheckoutPreview = false">×</button>
-            <span class="fn-section-kicker">LA PROCHAINE ÉTAPE</span>
-            <h2>Votre sélection est prête.</h2>
-            <p>La prochaine étape permettra de transmettre votre sélection à l'équipe FedNad.</p>
-            <div class="fn-checkout-total"><span>@CartCount article(s)</span><strong>@FormatPrice(CartTotal) TND</strong></div>
-            <div class="fn-preview-fields">
-                <label>Nom et prénom<input disabled placeholder="Votre nom" /></label>
-                <label>Téléphone<input disabled placeholder="+216 ..." /></label>
-                <label>Adresse / Ville<input disabled placeholder="Votre adresse" /></label>
-            </div>
-            <div class="fn-preview-note">APERÇU UNIQUEMENT — LA COMMANDE EN LIGNE SERA ACTIVÉE PLUS TARD.</div>
+    <div class="fn-modal-backdrop" @onclick="CloseCheckout">
+        <section class="fn-checkout-modal fn-real-checkout" role="dialog" aria-modal="true" aria-label="Finaliser la commande" @onclick:stopPropagation="true">
+            <button type="button" class="fn-modal-close" aria-label="Fermer" @onclick="CloseCheckout">×</button>
+            @if (!string.IsNullOrWhiteSpace(submittedOrderNumber))
+            {
+                <span class="fn-section-kicker">COMMANDE ENREGISTRÉE</span>
+                <h2>Merci pour votre confiance.</h2>
+                <p>Votre demande a bien été transmise à l'équipe FedNad. Conservez votre numéro de commande :</p>
+                <div class="fn-order-confirmation-number">@submittedOrderNumber</div>
+                <p class="fn-order-confirmation-note">L'équipe FedNad pourra vous contacter au numéro indiqué pour confirmer les détails.</p>
+                <button type="button" class="fn-checkout-button" @onclick="CloseCheckout">Continuer la visite <span>→</span></button>
+            }
+            else
+            {
+                <span class="fn-section-kicker">VOTRE COMMANDE</span>
+                <h2>Où pouvons-nous vous joindre ?</h2>
+                <p>Renseignez vos coordonnées et votre adresse. Aucun paiement en ligne ne sera effectué.</p>
+                <div class="fn-checkout-total"><span>@CartCount article(s)</span><strong>@FormatPrice(CartTotal) TND</strong></div>
+                @if (!string.IsNullOrWhiteSpace(checkoutError))
+                {
+                    <div class="fn-checkout-error" role="alert">@checkoutError</div>
+                }
+                <EditForm Model="checkoutModel" OnValidSubmit="SubmitOrderAsync" class="fn-checkout-form">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    <div class="fn-checkout-fields">
+                        <label>Nom et prénom *
+                            <InputText @bind-Value="checkoutModel.CustomerName" maxlength="180" autocomplete="name" placeholder="Votre nom complet" />
+                            <ValidationMessage For="() => checkoutModel.CustomerName" />
+                        </label>
+                        <label>E-mail *
+                            <InputText @bind-Value="checkoutModel.Email" maxlength="254" type="email" autocomplete="email" placeholder="nom@exemple.com" />
+                            <ValidationMessage For="() => checkoutModel.Email" />
+                        </label>
+                        <label>Téléphone *
+                            <InputText @bind-Value="checkoutModel.Phone" maxlength="40" autocomplete="tel" placeholder="+216 ..." />
+                            <ValidationMessage For="() => checkoutModel.Phone" />
+                        </label>
+                        <label>Adresse *
+                            <InputText @bind-Value="checkoutModel.Address" maxlength="240" autocomplete="street-address" placeholder="Rue et numéro" />
+                            <ValidationMessage For="() => checkoutModel.Address" />
+                        </label>
+                        <label>Code postal *
+                            <InputText @bind-Value="checkoutModel.PostalCode" maxlength="32" autocomplete="postal-code" placeholder="Code postal" />
+                            <ValidationMessage For="() => checkoutModel.PostalCode" />
+                        </label>
+                        <label>Ville *
+                            <InputText @bind-Value="checkoutModel.City" maxlength="120" autocomplete="address-level2" placeholder="Ville" />
+                            <ValidationMessage For="() => checkoutModel.City" />
+                        </label>
+                        <label>Pays *
+                            <InputText @bind-Value="checkoutModel.Country" maxlength="120" autocomplete="country-name" />
+                            <ValidationMessage For="() => checkoutModel.Country" />
+                        </label>
+                    </div>
+                    <button type="submit" class="fn-checkout-button" disabled="@isSubmitting">@(isSubmitting ? "Envoi en cours…" : "Confirmer la commande") <span>→</span></button>
+                    <p class="fn-checkout-privacy">Vos coordonnées seront utilisées uniquement pour traiter cette commande.</p>
+                </EditForm>
+            }
         </section>
     </div>
 }
@@ -314,6 +361,10 @@
 
     private bool isLoading = true;
     private bool showCheckoutPreview;
+    private bool isSubmitting;
+    private string? checkoutError;
+    private string? submittedOrderNumber;
+    private CheckoutModel checkoutModel = new();
     private string? selectedBrandSlug;
     private ShowroomProduct? selectedProduct;
     private ElementReference productTrack;
@@ -384,9 +435,13 @@
 
     private void AddToCart(ShowroomProduct product)
     {
-        cart[product.Id] = cart.TryGetValue(product.Id, out var quantity)
-            ? quantity + 1
-            : 1;
+        var current = cart.TryGetValue(product.Id, out var quantity) ? quantity : 0;
+        if (current >= 99)
+        {
+            cartToastProduct = "Quantité maximale atteinte (99).";
+            return;
+        }
+        cart[product.Id] = current + 1;
 
         cartToastProduct = product.NameFr;
         selectedProduct = null;
@@ -406,7 +461,7 @@
 
         if (next <= 0)
             cart.Remove(productId);
-        else
+        else if (next <= 99)
             cart[productId] = next;
     }
 
@@ -430,8 +485,131 @@
 
     private void ShowCheckoutPreview()
     {
-        if (cart.Any())
-            showCheckoutPreview = true;
+        if (!cart.Any()) return;
+        checkoutError = null;
+        submittedOrderNumber = null;
+        checkoutModel = new CheckoutModel();
+        showCheckoutPreview = true;
+    }
+
+    private void CloseCheckout()
+    {
+        showCheckoutPreview = false;
+        checkoutError = null;
+    }
+
+    private async Task SubmitOrderAsync()
+    {
+        if (isSubmitting || cart.Count == 0) return;
+        isSubmitting = true;
+        checkoutError = null;
+        try
+        {
+            for (var attempt = 0; attempt < 3; attempt++)
+            {
+                await using var db = await DbFactory.CreateDbContextAsync();
+                var ids = cart.Keys.ToList();
+                var currentProducts = await db.ShowroomProducts.AsNoTracking()
+                    .Include(p => p.Brand)
+                    .Where(p => ids.Contains(p.Id) && p.IsPublished && p.IsAvailable && p.Brand.IsPublished)
+                    .ToListAsync();
+
+                if (currentProducts.Count != ids.Count)
+                {
+                    checkoutError = "Un ou plusieurs produits de votre panier ne sont plus disponibles. Actualisez la page et vérifiez votre sélection.";
+                    return;
+                }
+                if (cart.Values.Any(q => q < 1 || q > 99))
+                {
+                    checkoutError = "Une quantité sélectionnée n'est pas valide.";
+                    return;
+                }
+
+                var now = DateTime.UtcNow;
+                var order = new ShowroomOrder
+                {
+                    OrderNumber = $"CMD-{now:yyyyMMdd}-{Guid.NewGuid():N}"[..29].ToUpperInvariant(),
+                    CustomerName = checkoutModel.CustomerName.Trim(),
+                    Email = checkoutModel.Email.Trim(),
+                    Phone = checkoutModel.Phone.Trim(),
+                    Address = checkoutModel.Address.Trim(),
+                    PostalCode = checkoutModel.PostalCode.Trim(),
+                    City = checkoutModel.City.Trim(),
+                    Country = checkoutModel.Country.Trim(),
+                    Status = "Nouvelle",
+                    CreatedAt = now
+                };
+
+                foreach (var product in currentProducts)
+                {
+                    order.Items.Add(new ShowroomOrderItem
+                    {
+                        ShowroomProductId = product.Id,
+                        ProductNameFr = product.NameFr,
+                        BrandNameFr = product.Brand.NameFr,
+                        Size = product.Size,
+                        UnitPriceTnd = product.PriceTnd,
+                        Quantity = cart[product.Id],
+                        CreatedAt = now
+                    });
+                }
+                order.TotalTnd = order.Items.Sum(item => item.UnitPriceTnd * item.Quantity);
+                db.ShowroomOrders.Add(order);
+                try
+                {
+                    await db.SaveChangesAsync();
+                    submittedOrderNumber = order.OrderNumber;
+                    cart.Clear();
+                    checkoutModel = new CheckoutModel();
+                    return;
+                }
+                catch (DbUpdateException) when (attempt < 2)
+                {
+                    // Retry with a fresh context if the unique order number collides.
+                }
+            }
+            checkoutError = "La commande n'a pas pu être enregistrée. Veuillez réessayer dans quelques instants.";
+        }
+        catch
+        {
+            checkoutError = "Une erreur est survenue lors de l'enregistrement. Votre commande n'a pas été confirmée. Veuillez réessayer.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private sealed class CheckoutModel
+    {
+        [Required(ErrorMessage = "Le nom et prénom sont obligatoires.")]
+        [StringLength(180)]
+        public string CustomerName { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "L'adresse e-mail est obligatoire.")]
+        [EmailAddress(ErrorMessage = "Saisissez une adresse e-mail valide.")]
+        [StringLength(254)]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Le téléphone est obligatoire.")]
+        [StringLength(40)]
+        public string Phone { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "L'adresse est obligatoire.")]
+        [StringLength(240)]
+        public string Address { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Le code postal est obligatoire.")]
+        [StringLength(32)]
+        public string PostalCode { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "La ville est obligatoire.")]
+        [StringLength(120)]
+        public string City { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Le pays est obligatoire.")]
+        [StringLength(120)]
+        public string Country { get; set; } = "Tunisie";
     }
 
     private static string FormatPrice(decimal price) =>

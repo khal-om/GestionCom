@@ -670,6 +670,52 @@ namespace GestionCom.Migrations
                     b.ToTable("ShowroomArticles");
                 });
 
+            modelBuilder.Entity("GestionCom.Features.Showroom.Entities.ShowroomOrder", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("integer");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<DateTime>("CreatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<int?>("CreatedBy").HasColumnType("integer");
+                    b.Property<string>("AdminNote").HasColumnType("text");
+                    b.Property<string>("Address").IsRequired().HasMaxLength(240).HasColumnType("character varying(240)");
+                    b.Property<string>("City").IsRequired().HasMaxLength(120).HasColumnType("character varying(120)");
+                    b.Property<string>("Country").IsRequired().HasMaxLength(120).HasColumnType("character varying(120)");
+                    b.Property<string>("CustomerName").IsRequired().HasMaxLength(180).HasColumnType("character varying(180)");
+                    b.Property<string>("Email").IsRequired().HasMaxLength(254).HasColumnType("character varying(254)");
+                    b.Property<string>("OrderNumber").IsRequired().HasMaxLength(32).HasColumnType("character varying(32)");
+                    b.Property<string>("Phone").IsRequired().HasMaxLength(40).HasColumnType("character varying(40)");
+                    b.Property<string>("PostalCode").IsRequired().HasMaxLength(32).HasColumnType("character varying(32)");
+                    b.Property<string>("Status").IsRequired().HasMaxLength(40).HasColumnType("character varying(40)");
+                    b.Property<decimal>("TotalTnd").HasPrecision(18, 2).HasColumnType("numeric(18,2)");
+                    b.Property<DateTime?>("UpdatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<int?>("UpdatedBy").HasColumnType("integer");
+                    b.HasKey("Id");
+                    b.HasIndex("CreatedAt");
+                    b.HasIndex("OrderNumber").IsUnique();
+                    b.ToTable("ShowroomOrders");
+                });
+
+            modelBuilder.Entity("GestionCom.Features.Showroom.Entities.ShowroomOrderItem", b =>
+                {
+                    b.Property<int>("Id").ValueGeneratedOnAdd().HasColumnType("integer");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    b.Property<DateTime>("CreatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<int?>("CreatedBy").HasColumnType("integer");
+                    b.Property<string>("BrandNameFr").IsRequired().HasMaxLength(200).HasColumnType("character varying(200)");
+                    b.Property<string>("ProductNameFr").IsRequired().HasMaxLength(240).HasColumnType("character varying(240)");
+                    b.Property<int>("Quantity").HasColumnType("integer");
+                    b.Property<int?>("ShowroomProductId").HasColumnType("integer");
+                    b.Property<int>("ShowroomOrderId").HasColumnType("integer");
+                    b.Property<string>("Size").HasMaxLength(120).HasColumnType("character varying(120)");
+                    b.Property<decimal>("UnitPriceTnd").HasPrecision(18, 2).HasColumnType("numeric(18,2)");
+                    b.Property<DateTime?>("UpdatedAt").HasColumnType("timestamp with time zone");
+                    b.Property<int?>("UpdatedBy").HasColumnType("integer");
+                    b.HasKey("Id");
+                    b.HasIndex("ShowroomOrderId");
+                    b.HasIndex("ShowroomProductId");
+                    b.ToTable("ShowroomOrderItems");
+                });
+
             modelBuilder.Entity("GestionCom.Features.Showroom.Entities.ShowroomBrand", b =>
                 {
                     b.Property<int>("Id")
@@ -1418,6 +1464,14 @@ namespace GestionCom.Migrations
                     b.Navigation("Vente");
                 });
 
+            modelBuilder.Entity("GestionCom.Features.Showroom.Entities.ShowroomOrderItem", b =>
+                {
+                    b.HasOne("GestionCom.Features.Showroom.Entities.ShowroomOrder", "Order").WithMany("Items").HasForeignKey("ShowroomOrderId").OnDelete(DeleteBehavior.Cascade).IsRequired();
+                    b.HasOne("GestionCom.Features.Showroom.Entities.ShowroomProduct", "Product").WithMany().HasForeignKey("ShowroomProductId").OnDelete(DeleteBehavior.SetNull);
+                    b.Navigation("Order");
+                    b.Navigation("Product");
+                });
+
             modelBuilder.Entity("GestionCom.Features.Showroom.Entities.ShowroomProduct", b =>
                 {
                     b.HasOne("GestionCom.Features.Showroom.Entities.ShowroomBrand", "Brand")
@@ -1506,6 +1560,11 @@ namespace GestionCom.Migrations
             modelBuilder.Entity("GestionCom.Entities.Vente", b =>
                 {
                     b.Navigation("Lignes");
+                });
+
+            modelBuilder.Entity("GestionCom.Features.Showroom.Entities.ShowroomOrder", b =>
+                {
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("GestionCom.Features.Showroom.Entities.ShowroomBrand", b =>
