@@ -191,10 +191,11 @@
                         <div class="showroom-field">
                             <label for="showroom-photos">Photos du produit</label>
                             <InputFile id="showroom-photos" OnChange="OnPhotosSelected" multiple accept="image/jpeg,image/png,image/webp" class="showroom-file-input" />
-                            <small>JPG, PNG ou WebP · 5 Mo maximum par photo · 10 photos maximum par produit.</small>
+                            <small>JPG, PNG ou WebP · 5 Mo maximum par photo · 10 photos maximum par produit. Vous pouvez sélectionner plusieurs fichiers à la fois ou répéter la sélection pour en ajouter.</small>
                             @if (selectedFileNames.Count > 0)
                             {
-                                <small>Photos à ajouter : @string.Join(", ", selectedFileNames)</small>
+                                <small>@selectedFileNames.Count photo(s) prête(s) à être ajoutée(s) : @string.Join(", ", selectedFileNames)</small>
+                                <button type="button" class="showroom-text-button" @onclick="ClearSelectedPhotos">Effacer la sélection</button>
                             }
                         </div>
                         @if (currentImages.Count > 0)
@@ -539,23 +540,30 @@
     {
         try
         {
-            selectedPhotos = args.GetMultipleFiles(MaxPhotoCount).ToList();
-            selectedFileNames = selectedPhotos.Select(photo => photo.Name).ToList();
-            if (currentImages.Count + selectedPhotos.Count > MaxPhotoCount)
+            var newlySelectedPhotos = args.GetMultipleFiles(MaxPhotoCount).ToList();
+
+            if (currentImages.Count + selectedPhotos.Count + newlySelectedPhotos.Count > MaxPhotoCount)
             {
-                selectedPhotos.Clear();
-                selectedFileNames.Clear();
-                SetMessage($"Un produit peut contenir au maximum {MaxPhotoCount} photos au total.", true);
+                SetMessage($"Un produit peut contenir au maximum {MaxPhotoCount} photos au total. Votre sélection précédente a été conservée.", true);
+                return Task.CompletedTask;
             }
+
+            selectedPhotos.AddRange(newlySelectedPhotos);
+            selectedFileNames = selectedPhotos.Select(photo => photo.Name).ToList();
+            message = null;
         }
         catch (InvalidOperationException)
         {
-            selectedPhotos.Clear();
-            selectedFileNames.Clear();
             SetMessage($"Sélectionnez au maximum {MaxPhotoCount} photos à la fois.", true);
         }
 
         return Task.CompletedTask;
+    }
+
+    private void ClearSelectedPhotos()
+    {
+        selectedPhotos.Clear();
+        selectedFileNames.Clear();
     }
 
     private async Task SetPrimaryImageAsync(int imageId)
