@@ -34,6 +34,8 @@ namespace GestionCom.Data
         public DbSet<ShowroomSiteSetting> ShowroomSiteSettings => Set<ShowroomSiteSetting>();
         public DbSet<ShowroomNavigationItem> ShowroomNavigationItems => Set<ShowroomNavigationItem>();
         public DbSet<ShowroomProductOption> ShowroomProductOptions => Set<ShowroomProductOption>();
+        public DbSet<ShowroomOrder> ShowroomOrders => Set<ShowroomOrder>();
+        public DbSet<ShowroomOrderItem> ShowroomOrderItems => Set<ShowroomOrderItem>();
 
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
@@ -244,6 +246,32 @@ namespace GestionCom.Data
 
                 entity.HasIndex(x => new { x.OptionType, x.NormalizedValue })
                     .IsUnique();
+            });
+            modelBuilder.Entity<ShowroomOrder>(entity =>
+            {
+                entity.HasIndex(x => x.OrderNumber).IsUnique();
+                entity.HasIndex(x => x.CreatedAt);
+                entity.Property(x => x.OrderNumber).HasMaxLength(32).IsRequired();
+                entity.Property(x => x.CustomerName).HasMaxLength(180).IsRequired();
+                entity.Property(x => x.Email).HasMaxLength(254).IsRequired();
+                entity.Property(x => x.Phone).HasMaxLength(40).IsRequired();
+                entity.Property(x => x.Address).HasMaxLength(240).IsRequired();
+                entity.Property(x => x.PostalCode).HasMaxLength(32).IsRequired();
+                entity.Property(x => x.City).HasMaxLength(120).IsRequired();
+                entity.Property(x => x.Country).HasMaxLength(120).IsRequired();
+                entity.Property(x => x.Status).HasMaxLength(40).IsRequired();
+                entity.Property(x => x.TotalTnd).HasPrecision(18, 2);
+                entity.HasMany(x => x.Items).WithOne(x => x.Order)
+                    .HasForeignKey(x => x.ShowroomOrderId).OnDelete(DeleteBehavior.Cascade);
+            });
+            modelBuilder.Entity<ShowroomOrderItem>(entity =>
+            {
+                entity.Property(x => x.ProductNameFr).HasMaxLength(240).IsRequired();
+                entity.Property(x => x.BrandNameFr).HasMaxLength(200).IsRequired();
+                entity.Property(x => x.Size).HasMaxLength(120);
+                entity.Property(x => x.UnitPriceTnd).HasPrecision(18, 2);
+                entity.HasOne(x => x.Product).WithMany()
+                    .HasForeignKey(x => x.ShowroomProductId).OnDelete(DeleteBehavior.SetNull);
             });
 
         }
