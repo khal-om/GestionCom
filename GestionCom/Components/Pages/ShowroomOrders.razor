@@ -36,9 +36,22 @@
                         @foreach (var order in FilteredOrders)
                         {
                             <button type="button" class="showroom-order-row @(selectedOrder?.Id == order.Id ? "is-selected" : "")" @onclick="() => SelectOrderAsync(order.Id)" @key="order.Id">
-                                <span class="showroom-order-row-top"><strong>@order.OrderNumber</strong><small>@order.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</small></span>
+                                <span class="showroom-order-row-top">
+                                    <strong>@order.OrderNumber</strong>
+                                    <small>@order.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy · HH:mm")</small>
+                                </span>
                                 <span class="showroom-order-customer">@order.CustomerName</span>
-                                <span class="showroom-order-row-bottom"><span class="showroom-order-status status-@StatusCss(order.Status)">@order.Status</span><strong>@FormatPrice(order.TotalTnd) TND</strong></span>
+                                <span class="showroom-order-contact">@order.Phone <span>·</span> @order.City, @order.Country</span>
+                                <span class="showroom-order-items-preview">@OrderItemsPreview(order)</span>
+                                <span class="showroom-order-row-bottom">
+                                    <span class="showroom-order-status status-@StatusCss(order.Status)">@order.Status</span>
+                                    <span class="showroom-order-quantity-total">@OrderQuantityCount(order) article(s)</span>
+                                    <strong>@FormatPrice(order.TotalTnd) TND</strong>
+                                </span>
+                                @if (order.UpdatedAt.HasValue)
+                                {
+                                    <span class="showroom-order-updated">Modifiée le @order.UpdatedAt.Value.ToLocalTime().ToString("dd/MM à HH:mm")</span>
+                                }
                             </button>
                         }
                     </div>
@@ -120,13 +133,23 @@
          order.Phone.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
          order.Email.Contains(searchText, StringComparison.OrdinalIgnoreCase)));
     private decimal SelectedTotal => selectedOrder?.Items.Sum(item => item.UnitPriceTnd * item.Quantity) ?? 0m;
+    private static int OrderQuantityCount(ShowroomOrder order) => order.Items.Sum(item => item.Quantity);
+    private static string OrderItemsPreview(ShowroomOrder order)
+    {
+        var preview = order.Items.Take(2).Select(item => $"{item.Quantity} × {item.ProductNameFr}");
+        var remaining = order.Items.Count - 2;
+        return remaining > 0 ? $"{string.Join(" · ", preview)} · +{remaining} autre(s)" : string.Join(" · ", preview);
+    }
 
     protected override async Task OnInitializedAsync() => await LoadOrdersAsync();
 
     private async Task LoadOrdersAsync()
     {
         await using var db = await DbFactory.CreateDbContextAsync();
-        orders = await db.ShowroomOrders.AsNoTracking().OrderByDescending(order => order.CreatedAt).ToListAsync();
+        orders = await db.ShowroomOrders.AsNoTracking()
+            .Include(order => order.Items)
+            .OrderByDescending(order => order.CreatedAt)
+            .ToListAsync();
         isLoading = false;
     }
 
