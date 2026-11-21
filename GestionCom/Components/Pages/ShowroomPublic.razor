@@ -269,7 +269,16 @@
                 <h2>@selectedProduct.NameFr</h2>
                 @if (!string.IsNullOrWhiteSpace(selectedProduct.Size)) { <span class="fn-modal-size">@selectedProduct.Size</span> }
                 <strong class="fn-modal-price">@FormatPrice(selectedProduct.PriceTnd) TND</strong>
-                @if (!string.IsNullOrWhiteSpace(selectedProduct.DescriptionFr)) { <p>@selectedProduct.DescriptionFr</p> }
+                @if (!string.IsNullOrWhiteSpace(selectedProduct.ShortDescriptionFr))
+                {
+                    <h4>Description courte</h4>
+                    <p>@selectedProduct.ShortDescriptionFr</p>
+                }
+                @if (!string.IsNullOrWhiteSpace(selectedProduct.DescriptionFr))
+                {
+                    <h4>Description complète</h4>
+                    <p>@selectedProduct.DescriptionFr</p>
+                }
                 @if (!string.IsNullOrWhiteSpace(selectedProduct.HairNeedFr)) { <h4>Besoin capillaire</h4><p>@selectedProduct.HairNeedFr</p> }
                 @if (!string.IsNullOrWhiteSpace(selectedProduct.HairTypeFr)) { <h4>Type de cheveux</h4><p>@selectedProduct.HairTypeFr</p> }
                 @if (!string.IsNullOrWhiteSpace(selectedProduct.HowToUseFr)) { <h4>Conseils d'utilisation</h4><p>@selectedProduct.HowToUseFr</p> }
