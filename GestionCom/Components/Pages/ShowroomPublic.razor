@@ -505,6 +505,23 @@
         checkoutError = null;
         try
         {
+            // Normalize before validating and persisting. Required attributes alone
+            // accept whitespace, which would otherwise become an empty database value.
+            checkoutModel.CustomerName = checkoutModel.CustomerName.Trim();
+            checkoutModel.Email = checkoutModel.Email.Trim();
+            checkoutModel.Phone = checkoutModel.Phone.Trim();
+            checkoutModel.Address = checkoutModel.Address.Trim();
+            checkoutModel.PostalCode = checkoutModel.PostalCode.Trim();
+            checkoutModel.City = checkoutModel.City.Trim();
+            checkoutModel.Country = checkoutModel.Country.Trim();
+
+            var validationResults = new List<ValidationResult>();
+            if (!Validator.TryValidateObject(checkoutModel, new ValidationContext(checkoutModel), validationResults, validateAllProperties: true))
+            {
+                checkoutError = string.Join(" ", validationResults.Select(result => result.ErrorMessage).Where(error => !string.IsNullOrWhiteSpace(error)));
+                return;
+            }
+
             for (var attempt = 0; attempt < 3; attempt++)
             {
                 await using var db = await DbFactory.CreateDbContextAsync();
