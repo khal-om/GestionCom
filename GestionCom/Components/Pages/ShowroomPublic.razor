@@ -257,13 +257,44 @@
 
 @if (selectedProduct is not null)
 {
-    var detailImage = selectedProduct.Images.OrderByDescending(x => x.IsPrimary).ThenBy(x => x.SortOrder).FirstOrDefault();
+    var detailImages = selectedProduct.Images.OrderByDescending(x => x.IsPrimary).ThenBy(x => x.SortOrder).ToList();
+    var detailImage = detailImages.Count > 0 ? detailImages[Math.Clamp(selectedImageIndex, 0, detailImages.Count - 1)] : null;
     <div class="fn-modal-backdrop" @onclick="CloseProduct">
         <section class="fn-product-modal" role="dialog" aria-modal="true" aria-label="Détails du produit" @onclick:stopPropagation="true">
             <button type="button" class="fn-modal-close" aria-label="Fermer" @onclick="CloseProduct">×</button>
-            <div class="fn-modal-product-image">
-                @if (detailImage is not null) { <img src="@detailImage.ImagePath" alt="@(detailImage.AltTextFr ?? selectedProduct.NameFr)" /> }
-                else { <div class="fn-product-placeholder"><b>@selectedProduct.Brand.NameFr</b><strong>@selectedProduct.NameFr</strong></div> }
+            <div class="fn-modal-product-gallery">
+                <div class="fn-modal-product-image">
+                    @if (detailImage is not null)
+                    {
+                        <img src="@detailImage.ImagePath" alt="@(detailImage.AltTextFr ?? selectedProduct.NameFr)" />
+                    }
+                    else
+                    {
+                        <div class="fn-product-placeholder"><b>@selectedProduct.Brand.NameFr</b><strong>@selectedProduct.NameFr</strong></div>
+                    }
+                    @if (detailImages.Count > 1)
+                    {
+                        <button type="button" class="fn-gallery-arrow fn-gallery-previous" aria-label="Photo précédente" @onclick="PreviousProductImage">‹</button>
+                        <button type="button" class="fn-gallery-arrow fn-gallery-next" aria-label="Photo suivante" @onclick="NextProductImage">›</button>
+                        <span class="fn-gallery-counter">@(selectedImageIndex + 1) / @detailImages.Count</span>
+                    }
+                </div>
+                @if (detailImages.Count > 1)
+                {
+                    <div class="fn-gallery-thumbnails" aria-label="Choisir une photo">
+                        @for (var imageIndex = 0; imageIndex < detailImages.Count; imageIndex++)
+                        {
+                            var thumbnailIndex = imageIndex;
+                            var thumbnail = detailImages[thumbnailIndex];
+                            <button type="button" class="fn-gallery-thumbnail @(selectedImageIndex == thumbnailIndex ? "is-active" : "")"
+                                    aria-label="Afficher la photo @(thumbnailIndex + 1)"
+                                    aria-pressed="@(selectedImageIndex == thumbnailIndex)"
+                                    @onclick="() => SelectProductImage(thumbnailIndex)">
+                                <img src="@thumbnail.ImagePath" alt="" />
+                            </button>
+                        }
+                    </div>
+                }
             </div>
             <div class="fn-modal-product-info">
                 <span class="fn-section-kicker">@selectedProduct.Brand.NameFr @if (selectedProduct.Range is not null) { <text>· @selectedProduct.Range.NameFr</text> }</span>
@@ -367,6 +398,7 @@
     private CheckoutModel checkoutModel = new();
     private string? selectedBrandSlug;
     private ShowroomProduct? selectedProduct;
+    private int selectedImageIndex;
     private ElementReference productTrack;
     private bool isAutoplayPaused;
     private string? cartToastProduct;
@@ -476,11 +508,33 @@
     private void OpenProduct(ShowroomProduct product)
     {
         selectedProduct = product;
+        selectedImageIndex = 0;
+    }
+
+    private void SelectProductImage(int index)
+    {
+        if (selectedProduct is null) return;
+        var imageCount = selectedProduct.Images.Count;
+        if (imageCount == 0) return;
+        selectedImageIndex = Math.Clamp(index, 0, imageCount - 1);
+    }
+
+    private void PreviousProductImage()
+    {
+        if (selectedProduct is null || selectedProduct.Images.Count < 2) return;
+        selectedImageIndex = (selectedImageIndex - 1 + selectedProduct.Images.Count) % selectedProduct.Images.Count;
+    }
+
+    private void NextProductImage()
+    {
+        if (selectedProduct is null || selectedProduct.Images.Count < 2) return;
+        selectedImageIndex = (selectedImageIndex + 1) % selectedProduct.Images.Count;
     }
 
     private void CloseProduct()
     {
         selectedProduct = null;
+        selectedImageIndex = 0;
     }
 
     private void ShowCheckoutPreview()
