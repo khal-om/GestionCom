@@ -34,3 +34,39 @@
         max-height: 100%;
     }
 }
+
+
+/* Final containment fix: use viewport-based image limits, not percentage
+   max-heights that can resolve to none when the image's parent is auto-sized. */
+.fn-modal-product-gallery .fn-modal-product-image {
+    display: grid !important;
+    position: relative !important;
+    place-items: center !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    height: clamp(220px, 42vh, 400px) !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+}
+
+.fn-modal-product-gallery .fn-modal-product-image > img {
+    display: block !important;
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: min(42vh, 400px) !important;
+    object-fit: contain !important;
+}
+
+@media (max-width: 700px) {
+    .fn-modal-product-gallery .fn-modal-product-image {
+        height: clamp(150px, 25vh, 220px) !important;
+        padding: 14px 46px !important;
+    }
+
+    .fn-modal-product-gallery .fn-modal-product-image > img {
+        max-width: 88% !important;
+        max-height: min(25vh, 220px) !important;
+    }
+}
