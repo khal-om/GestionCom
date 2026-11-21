@@ -189,13 +189,35 @@
                         
 
                         <div class="showroom-field">
-                            <label for="showroom-photo">Photo principale</label>
-                            <InputFile id="showroom-photo" OnChange="OnPhotoSelected" accept="image/jpeg,image/png,image/webp" class="showroom-file-input" />
-                            <small>JPG, PNG ou WebP · 5 Mo maximum. @selectedFileName</small>
+                            <label for="showroom-photos">Photos du produit</label>
+                            <InputFile id="showroom-photos" OnChange="OnPhotosSelected" multiple accept="image/jpeg,image/png,image/webp" class="showroom-file-input" />
+                            <small>JPG, PNG ou WebP · 5 Mo maximum par photo · 10 photos maximum par produit. Vous pouvez sélectionner plusieurs fichiers à la fois ou répéter la sélection pour en ajouter.</small>
+                            @if (selectedFileNames.Count > 0)
+                            {
+                                <small>@selectedFileNames.Count photo(s) prête(s) à être ajoutée(s) : @string.Join(", ", selectedFileNames)</small>
+                                <button type="button" class="showroom-text-button" @onclick="ClearSelectedPhotos">Effacer la sélection</button>
+                            }
                         </div>
-                        @if (!string.IsNullOrWhiteSpace(currentImagePath))
+                        @if (currentImages.Count > 0)
                         {
-                            <div class="showroom-current-image-wrap"><img src="@currentImagePath" alt="Photo actuelle du produit" /><span>Photo principale actuelle</span></div>
+                            <div class="showroom-image-gallery">
+                                <strong>Photos enregistrées</strong>
+                                <div class="showroom-image-gallery-grid">
+                                    @foreach (var image in currentImages.OrderByDescending(i => i.IsPrimary).ThenBy(i => i.SortOrder))
+                                    {
+                                        <div class="showroom-image-card" @key="image.Id">
+                                            <img src="@image.ImagePath" alt="@(image.AltTextFr ?? model.NameFr)" />
+                                            <div>
+                                                <span>@(image.IsPrimary ? "Photo principale" : "Photo secondaire")</span>
+                                                @if (!image.IsPrimary)
+                                                {
+                                                    <button type="button" class="showroom-text-button" @onclick="() => SetPrimaryImageAsync(image.Id)">Définir comme principale</button>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
                         }
 
                         <div class="showroom-checkbox-row">
@@ -257,15 +279,16 @@
 
 @code {
     private const long MaxPhotoBytes = 5 * 1024 * 1024;
+    private const int MaxPhotoCount = 10;
     private List<ShowroomProduct> products = new();
     private List<ShowroomBrand> brands = new();
     private List<ShowroomRange> ranges = new();
     private List<string> sizes = new();
     private List<string> hairTypes = new();
     private ProductEditorModel model = new();
-    private IBrowserFile? selectedPhoto;
-    private string? selectedFileName;
-    private string? currentImagePath;
+    private List<IBrowserFile> selectedPhotos = new();
+    private List<string> selectedFileNames = new();
+    private List<ShowroomProductImage> currentImages = new();
     private string? message;
     private string searchText = string.Empty;
     private bool isLoading = true;
@@ -335,9 +358,9 @@
     {
         editingId = null;
         model = new ProductEditorModel { BrandId = brands.FirstOrDefault()?.Id ?? 0, IsAvailable = true };
-        selectedPhoto = null;
-        selectedFileName = null;
-        currentImagePath = null;
+        selectedPhotos.Clear();
+        selectedFileNames.Clear();
+        currentImages.Clear();
         message = null;
         isEditorOpen = true;
     }
@@ -356,9 +379,9 @@
             IngredientsFr = product.IngredientsFr, 
             IsAvailable = product.IsAvailable, IsFeatured = product.IsFeatured, IsPublished = product.IsPublished
         };
-        currentImagePath = product.Images.FirstOrDefault(i => i.IsPrimary)?.ImagePath;
-        selectedPhoto = null;
-        selectedFileName = null;
+        currentImages = product.Images.OrderByDescending(i => i.IsPrimary).ThenBy(i => i.SortOrder).ToList();
+        selectedPhotos.Clear();
+        selectedFileNames.Clear();
         message = null;
         isEditorOpen = true;
     }
@@ -509,15 +532,58 @@
     {
         isEditorOpen = false;
         editingId = null;
-        selectedPhoto = null;
-        selectedFileName = null;
+        selectedPhotos.Clear();
+        selectedFileNames.Clear();
     }
 
-    private Task OnPhotoSelected(InputFileChangeEventArgs args)
+    private Task OnPhotosSelected(InputFileChangeEventArgs args)
     {
-        selectedPhoto = args.File;
-        selectedFileName = selectedPhoto.Name;
+        try
+        {
+            var newlySelectedPhotos = args.GetMultipleFiles(MaxPhotoCount).ToList();
+
+            if (currentImages.Count + selectedPhotos.Count + newlySelectedPhotos.Count > MaxPhotoCount)
+            {
+                SetMessage($"Un produit peut contenir au maximum {MaxPhotoCount} photos au total. Votre sélection précédente a été conservée.", true);
+                return Task.CompletedTask;
+            }
+
+            selectedPhotos.AddRange(newlySelectedPhotos);
+            selectedFileNames = selectedPhotos.Select(photo => photo.Name).ToList();
+            message = null;
+        }
+        catch (InvalidOperationException)
+        {
+            SetMessage($"Sélectionnez au maximum {MaxPhotoCount} photos à la fois.", true);
+        }
+
         return Task.CompletedTask;
+    }
+
+    private void ClearSelectedPhotos()
+    {
+        selectedPhotos.Clear();
+        selectedFileNames.Clear();
+    }
+
+    private async Task SetPrimaryImageAsync(int imageId)
+    {
+        if (!editingId.HasValue) return;
+
+        await using var db = await DbFactory.CreateDbContextAsync();
+        var images = await db.ShowroomProductImages
+            .Where(image => image.ProductId == editingId.Value)
+            .ToListAsync();
+
+        foreach (var image in images)
+            image.IsPrimary = image.Id == imageId;
+
+        await db.SaveChangesAsync();
+        await LoadAsync();
+        currentImages = products.First(product => product.Id == editingId.Value)
+            .Images.OrderByDescending(image => image.IsPrimary)
+            .ThenBy(image => image.SortOrder)
+            .ToList();
     }
 
     private async Task SaveProductAsync()
@@ -532,9 +598,14 @@
             SetMessage("Vérifiez la marque et le prix.", true);
             return;
         }
-        if (selectedPhoto is not null && (selectedPhoto.Size > MaxPhotoBytes || !IsAllowedImage(selectedPhoto.ContentType)))
+        if (currentImages.Count + selectedPhotos.Count > MaxPhotoCount)
         {
-            SetMessage("La photo doit être au format JPG, PNG ou WebP et ne pas dépasser 5 Mo.", true);
+            SetMessage($"Un produit peut contenir au maximum {MaxPhotoCount} photos au total.", true);
+            return;
+        }
+        if (selectedPhotos.Any(photo => photo.Size > MaxPhotoBytes || !IsAllowedImage(photo.ContentType)))
+        {
+            SetMessage("Chaque photo doit être au format JPG, PNG ou WebP et ne pas dépasser 5 Mo.", true);
             return;
         }
 
@@ -582,33 +653,48 @@
 
             await db.SaveChangesAsync();
 
-            if (selectedPhoto is not null)
+            if (selectedPhotos.Count > 0)
             {
                 var uploadFolder = Path.Combine(Environment.WebRootPath ?? Path.Combine(Environment.ContentRootPath, "wwwroot"), "uploads", "showroom");
                 Directory.CreateDirectory(uploadFolder);
-                var extension = selectedPhoto.ContentType.ToLowerInvariant() switch
-                {
-                    "image/jpeg" => ".jpg", "image/png" => ".png", "image/webp" => ".webp", _ => throw new InvalidOperationException("Format de photo non autorisé.")
-                };
-                var fileName = $"{Guid.NewGuid():N}{extension}";
-                var fullPath = Path.Combine(uploadFolder, fileName);
-                await using (var stream = File.Create(fullPath))
-                await using (var input = selectedPhoto.OpenReadStream(MaxPhotoBytes))
-                    await input.CopyToAsync(stream);
 
-                foreach (var image in product.Images) image.IsPrimary = false;
-                db.ShowroomProductImages.Add(new ShowroomProductImage
+                var hasPrimaryImage = product.Images.Any(image => image.IsPrimary);
+                var nextSortOrder = product.Images.Count == 0 ? 0 : product.Images.Max(image => image.SortOrder) + 1;
+
+                foreach (var photo in selectedPhotos)
                 {
-                    ProductId = product.Id,
-                    ImagePath = $"/uploads/showroom/{fileName}",
-                    AltTextFr = product.NameFr,
-                    IsPrimary = true,
-                    SortOrder = 0,
-                    CreatedAt = DateTime.UtcNow
-                });
+                    var extension = photo.ContentType.ToLowerInvariant() switch
+                    {
+                        "image/jpeg" => ".jpg",
+                        "image/png" => ".png",
+                        "image/webp" => ".webp",
+                        _ => throw new InvalidOperationException("Format de photo non autorisé.")
+                    };
+                    var fileName = $"{Guid.NewGuid():N}{extension}";
+                    var fullPath = Path.Combine(uploadFolder, fileName);
+
+                    await using (var stream = File.Create(fullPath))
+                    await using (var input = photo.OpenReadStream(MaxPhotoBytes))
+                        await input.CopyToAsync(stream);
+
+                    db.ShowroomProductImages.Add(new ShowroomProductImage
+                    {
+                        ProductId = product.Id,
+                        ImagePath = $"/uploads/showroom/{fileName}",
+                        AltTextFr = product.NameFr,
+                        IsPrimary = !hasPrimaryImage,
+                        SortOrder = nextSortOrder++,
+                        CreatedAt = DateTime.UtcNow
+                    });
+
+                    hasPrimaryImage = true;
+                }
+
                 await db.SaveChangesAsync();
             }
 
+            selectedPhotos.Clear();
+            selectedFileNames.Clear();
             await LoadAsync();
             CancelEdit();
             SetMessage("Fiche showroom enregistrée.", false);
