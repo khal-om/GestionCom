@@ -14,10 +14,10 @@
 
 <PageTitle>FedNad — Soins professionnels pour vos cheveux</PageTitle>
 <HeadContent>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/fednad-sephora-retail.css?v=20261124-1" />
 </HeadContent>
 
-<div class="fn-store">
+<div class="fn-store fn-sephora" id="top">
     <div class="fn-announcement">
         <span>LES SOINS PROFESSIONNELS, À PORTÉE DE MAIN</span>
         <span>KEMON <b>×</b> ACTYVA</span>
@@ -28,15 +28,30 @@
             <span class="fn-wordmark-icon">F</span>
             <span class="fn-wordmark-text">fednad<small>BEAUTÉ CAPILLAIRE</small></span>
         </a>
-        <nav class="fn-nav" aria-label="Navigation principale">
-            <a href="#selection">Les produits</a>
-            <a href="#maisons">Nos maisons</a>
-            <a href="#panier">Comment choisir</a>
-        </nav>
-        <a class="fn-cart-link" href="#panier">
-            <span>Mon panier</span><b>@CartCount</b>
-        </a>
+        <div class="fn-search" role="search">
+            <input type="search" aria-label="Rechercher un produit" placeholder="Rechercher un produit, une marque..." @bind="searchTerm" @bind:event="oninput" />
+            <span class="fn-search-icon" aria-hidden="true">⌕</span>
+        </div>
+        <div class="fn-header-actions">
+            <span class="fn-account-placeholder" aria-label="Espace client, bientôt disponible">
+                <span aria-hidden="true">♙</span><small>Mon compte</small>
+            </span>
+            <a class="fn-cart-link" href="#panier" aria-label="Voir le panier, @CartCount article(s)">
+                <span>Mon panier</span><b>@CartCount</b>
+            </a>
+        </div>
     </header>
+
+    <nav class="fn-retail-nav" aria-label="Navigation des collections">
+        <a href="#top">Accueil</a>
+        <a href="#selection">Nouveautés</a>
+        <a href="#selection">Tous les soins</a>
+        @foreach (var brand in brands)
+        {
+            <a href="#selection" @onclick="() => SelectBrand(brand.Slug)">@brand.NameFr</a>
+        }
+        <a href="#maisons">Nos maisons</a>
+    </nav>
 
     @if (!string.IsNullOrWhiteSpace(cartToastProduct))
     {
@@ -247,10 +262,27 @@
         </section>
     </main>
 
-    <footer class="fn-footer">
+    <section class="fn-service-strip" aria-label="Les engagements FedNad">
+        <div><strong>La sélection professionnelle</strong><span>Des soins Kemon & Actyva choisis avec attention</span></div>
+        <div><strong>Un conseil à votre écoute</strong><span>Une équipe disponible pour vous guider</span></div>
+        <div><strong>Une expérience simple</strong><span>Découvrez, comparez et composez votre routine</span></div>
+    </section>
+
+    <footer class="fn-footer" id="footer">
         <a class="fn-wordmark fn-footer-logo" href="/vitrine"><span class="fn-wordmark-icon">F</span><span class="fn-wordmark-text">fednad<small>BEAUTÉ CAPILLAIRE</small></span></a>
         <p>Des soins professionnels.<br /><strong>Un choix qui vous ressemble.</strong></p>
-        <div class="fn-footer-links"><a href="#selection">Les produits</a><a href="#maisons">Les maisons</a><a href="#panier">Mon panier</a></div>
+        <div class="fn-footer-links">
+            <strong>Découvrir</strong>
+            <a href="#selection">Tous les produits</a>
+            <a href="#maisons">Nos maisons</a>
+            <a href="#panier">Votre panier</a>
+        </div>
+        <div class="fn-footer-links">
+            <strong>FedNad</strong>
+            <a href="#footer">À propos</a>
+            <a href="#footer">Nous contacter</a>
+            <a href="#footer">Aide & informations</a>
+        </div>
         <small>© @DateTime.Now.Year FEDNAD · KEMON · ACTYVA</small>
     </footer>
 </div>
@@ -397,6 +429,7 @@
     private string? submittedOrderNumber;
     private CheckoutModel checkoutModel = new();
     private string? selectedBrandSlug;
+    private string searchTerm = string.Empty;
     private ShowroomProduct? selectedProduct;
     private int selectedImageIndex;
     private ElementReference productTrack;
@@ -405,7 +438,11 @@
 
     private IEnumerable<ShowroomProduct> FilteredProducts =>
         products.Where(product =>
-            selectedBrandSlug is null || product.Brand.Slug == selectedBrandSlug);
+            (selectedBrandSlug is null || product.Brand.Slug == selectedBrandSlug) &&
+            (string.IsNullOrWhiteSpace(searchTerm) ||
+             product.NameFr.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+             product.Brand.NameFr.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+             (product.Range is not null && product.Range.NameFr.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))));
 
     private int CartCount => cart.Values.Sum();
 
