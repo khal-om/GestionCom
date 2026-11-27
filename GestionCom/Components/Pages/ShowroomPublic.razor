@@ -24,6 +24,9 @@
     </div>
 
     <header class="fn-header">
+        <button type="button" class="fn-menu-toggle" aria-label="Ouvrir le menu" aria-expanded="@isMenuOpen" @onclick="ToggleMenu">
+            <span></span><span></span><span></span><small>MENU</small>
+        </button>
         <a class="fn-wordmark" href="/vitrine" aria-label="FedNad, accueil">
             <span class="fn-wordmark-icon">F</span>
             <span class="fn-wordmark-text">fednad<small>BEAUTÉ CAPILLAIRE</small></span>
@@ -41,6 +44,24 @@
             </a>
         </div>
     </header>
+
+    @if (isMenuOpen)
+    {
+        <div class="fn-menu-backdrop" @onclick="CloseMenu">
+            <aside class="fn-menu-panel" @onclick:stopPropagation="true" aria-label="Menu principal">
+                <div class="fn-menu-panel-heading"><div><small>EXPLORER FEDNAD</small><strong>Votre univers beauté</strong></div><button type="button" aria-label="Fermer le menu" @onclick="CloseMenu">×</button></div>
+                <div class="fn-menu-columns">
+                    <div class="fn-menu-group"><strong>Nos collections</strong><a href="#selection" @onclick="CloseMenu">Tous les soins</a><a href="#selection" @onclick="CloseMenu">Nouveautés</a><a href="#offres" @onclick="CloseMenu">Offres & bons plans</a><a href="#selection" @onclick="CloseMenu">Les essentiels</a></div>
+                    <div class="fn-menu-group"><strong>Par besoin</strong><a href="#selection" @onclick="CloseMenu">Cheveux secs & abîmés</a><a href="#selection" @onclick="CloseMenu">Éclat & protection couleur</a><a href="#selection" @onclick="CloseMenu">Volume & légèreté</a><a href="#selection" @onclick="CloseMenu">Cuir chevelu</a></div>
+                    <div class="fn-menu-group"><strong>Nos maisons</strong>
+                        @foreach (var brand in brands) { <a href="#selection" @onclick="() => { SelectBrand(brand.Slug); CloseMenu(); }">@brand.NameFr</a> }
+                        <a href="#maisons" @onclick="CloseMenu">Découvrir les marques</a>
+                    </div>
+                    <div class="fn-menu-feature"><span>LE CONSEIL FEDNAD</span><strong>La bonne routine commence par le bon soin.</strong><p>Explorez notre sélection professionnelle Kemon & Actyva.</p><a href="#selection" @onclick="CloseMenu">Découvrir la sélection ↗</a></div>
+                </div>
+            </aside>
+        </div>
+    }
 
     <nav class="fn-retail-nav" aria-label="Navigation des collections">
         <a href="#top">Accueil</a>
@@ -111,6 +132,16 @@
                 <div class="fn-hero-sticker">LE BON<br />GESTE<span>✳</span></div>
             </div>
             <a class="fn-scroll-cue" href="#selection"><span></span> DÉCOUVRIR LA SÉLECTION</a>
+        </section>
+
+        <section class="fn-promo-section" id="offres">
+            <div class="fn-promo-heading"><div><span class="fn-section-kicker">LES AVANTAGES FEDNAD</span><h2>Un peu plus de soin.<br /><em>Un peu plus d'avantages.</em></h2></div><p>Découvrez nos sélections et offres spéciales autour des soins professionnels.</p></div>
+            <div class="fn-promo-grid">
+                <a class="fn-promo-card fn-promo-dark" href="#selection"><span class="fn-promo-tag">OFFRE DÉCOUVERTE · EXEMPLE</span><strong>Votre routine<br />à prix doux.</strong><span class="fn-promo-discount">JUSQU'À -20%</span><small>Sur une sélection de soins · Offre à configurer</small><b>Explorer les soins ↗</b></a>
+                <a class="fn-promo-card fn-promo-soft" href="#selection"><span class="fn-promo-tag">LE DUO GAGNANT</span><strong>Le soin parfait<br />en deux gestes.</strong><span class="fn-promo-discount">DUO -15%</span><small>Shampooing + soin · Exemple de campagne</small><b>Composer ma routine ↗</b></a>
+                <a class="fn-promo-card fn-promo-outline" href="#maisons"><span class="fn-promo-tag">CADEAU & DÉCOUVERTE</span><strong>Un rituel qui<br />vous ressemble.</strong><span class="fn-promo-discount">ÉCHANTILLONS OFFERTS</span><small>Avantage à définir selon disponibilité</small><b>Nos maisons ↗</b></a>
+            </div>
+            <p class="fn-promo-disclaimer">Visuels et avantages présentés à titre de démonstration. Les offres définitives, dates et conditions seront ajoutées avant leur activation.</p>
         </section>
 
         <section class="fn-brand-bar" id="maisons">
@@ -423,6 +454,7 @@
     private readonly Dictionary<int, int> cart = new();
 
     private bool isLoading = true;
+    private bool isMenuOpen;
     private bool showCheckoutPreview;
     private bool isSubmitting;
     private string? checkoutError;
@@ -497,9 +529,14 @@
         await JS.InvokeVoidAsync("fednadShowroom.setAutoplayPaused", isAutoplayPaused);
     }
 
+    private void ToggleMenu() => isMenuOpen = !isMenuOpen;
+
+    private void CloseMenu() => isMenuOpen = false;
+
     private void SelectBrand(string? slug)
     {
         selectedBrandSlug = slug;
+        isMenuOpen = false;
     }
 
     private void AddToCart(ShowroomProduct product)
